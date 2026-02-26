@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # AI Healthcare Project Template
 
 이 프로젝트는 AI 모델 추론(Inference) 워커와 FastAPI API 서버를 통합한 서비스 템플릿입니다. 
@@ -174,3 +175,6 @@ chmod +x scripts/certbot.sh
 - **API 추가**: `app/apis/v1/` 아래에 새로운 라우터 파일을 생성하고 `app/apis/v1/__init__.py`에 등록하세요.
 - **DB 모델 추가**: `app/models/`에 Tortoise 모델을 정의하고 `app/db/databases.py`의 `MODELS` 리스트에 추가하세요.
 - **AI 로직 추가**: `ai_worker/tasks/`에 새로운 처리 로직을 작성하고 `ai_worker/main.py`에서 호출하도록 구성하세요.
+=======
+# AI_04
+>>>>>>> c4d4c2535ea0bd01fe1ae658f105cf710530d0bb
