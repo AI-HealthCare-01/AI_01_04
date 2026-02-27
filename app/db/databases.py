@@ -9,12 +9,12 @@ TORTOISE_APP_MODELS = [
     "app.models.users",
     "app.models.user_credentials",
     "app.models.user_auth_providers",
-    "app.models.diseases",      # Disease, DiseaseGuideline
+    "app.models.diseases",  # Disease, DiseaseGuideline
     "app.models.drugs",
     "app.models.prescriptions",  # Prescription, PrescriptionMemo, MedicationIntakeLog
-    "app.models.chatbot",        # ChatbotSession, ChatbotMessage, ChatbotSessionSummary
+    "app.models.chatbot",  # ChatbotSession, ChatbotMessage, ChatbotSessionSummary
     "app.models.vector_documents",
-    "app.models.user_features",   # UserFeatureSnapshot, UserCurrentFeatures
+    "app.models.user_features",  # UserFeatureSnapshot, UserCurrentFeatures
     "app.models.recommendations",  # RecommendationBatch, Recommendation, UserActiveRecommendation, RecommendationFeedback
 ]
 

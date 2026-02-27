@@ -6,6 +6,7 @@
 - fields.XXXField()가 컬럼을 정의합니다.
 - auto_now_add=True: 레코드 생성 시 자동으로 현재 시간 저장
 """
+
 from enum import StrEnum
 
 from tortoise import fields, models

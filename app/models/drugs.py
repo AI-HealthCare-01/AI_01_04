@@ -4,6 +4,7 @@
 📚 학습 포인트:
 - 마스터 데이터: prescriptions 등에서 FK로 참조됨
 """
+
 from tortoise import fields, models
 
 
