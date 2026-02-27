@@ -4,9 +4,9 @@ from fastapi import APIRouter, Depends, status
 from fastapi.responses import ORJSONResponse as Response
 
 from app.dependencies.security import get_request_user
+from app.dtos.dashboard import DashboardSummaryResponse
 from app.models.users import User
 from app.services.dashboard import DashboardService
-from app.dtos.dashboard import DashboardSummaryResponse
 
 dashboard_router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 

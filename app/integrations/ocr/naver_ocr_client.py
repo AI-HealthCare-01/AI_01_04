@@ -1,17 +1,22 @@
 # 네이버 OCR API 호출 (HTTP)
 # 입력: 이미지/PDF 파일 경로 or bytes
-#출력: raw JSON (네이버 응답 그대로)
+# 출력: raw JSON (네이버 응답 그대로)
 
 import json
 import uuid
 from pathlib import Path
-
+from typing import Any, cast
 import httpx
 
 from app.core import config
 from app.integrations.ocr.exceptions import (
-    OCRAuthError, OCRRateLimitError, OCRRequestError, OCRServerError, OCRTimeoutError
+    OCRAuthError,
+    OCRRateLimitError,
+    OCRBadRequestError,
+    OCRServerError,
+    OCRTimeoutError,
 )
+
 
 class NaverOCRClient:
     def __init__(self):
@@ -34,7 +39,7 @@ class NaverOCRClient:
         try:
             async with httpx.AsyncClient(timeout=30.0) as client:
                 with path.open("rb") as f:
-                    files = {
+                    files: Any = {
                         "file": (path.name, f, "application/octet-stream"),
                         "message": (None, json.dumps(message), "application/json"),
                     }
@@ -47,7 +52,7 @@ class NaverOCRClient:
         if resp.status_code == 429:
             raise OCRRateLimitError("OCR rate limited.")
         if 400 <= resp.status_code < 500:
-            raise OCRRequestError(f"OCR bad request: {resp.text}")
+            raise OCRBadRequestError(f"OCR bad request: {resp.text}")
         if resp.status_code >= 500:
             raise OCRServerError("OCR server error.")
 

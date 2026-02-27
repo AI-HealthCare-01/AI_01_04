@@ -1,7 +1,4 @@
-from datetime import date
-
 class DashboardService:
-
     async def get_summary(self, user):
         """
         Dashboard 요약 정보 생성

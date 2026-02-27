@@ -1,18 +1,18 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, File, UploadFile, Path, status
+from fastapi import APIRouter, Depends, File, Path, UploadFile, status
 from fastapi.responses import ORJSONResponse as Response
 
 from app.dependencies.security import get_request_user
-from app.models.users import User
-from app.services.scan_analysis import ScanAnalysisService
 from app.dtos.scan import (
-    ScanUploadResponse,
     ScanAnalyzeResponse,
     ScanResultResponse,
     ScanResultUpdateRequest,
     ScanSaveResponse,
+    ScanUploadResponse,
 )
+from app.models.users import User
+from app.services.scan_analysis import ScanAnalysisService
 
 scan_router = APIRouter(prefix="/scans", tags=["scans"])
 
@@ -25,7 +25,7 @@ scan_router = APIRouter(prefix="/scans", tags=["scans"])
 async def upload_scan(
     user: Annotated[User, Depends(get_request_user)],
     scan_service: Annotated[ScanAnalysisService, Depends(ScanAnalysisService)],
-    file: UploadFile = File(...),
+    file: UploadFile = File(...),  # noqa: B008
 ) -> Response:
     """
     처방전 파일 업로드
@@ -94,7 +94,7 @@ async def update_scan_result(
     user: Annotated[User, Depends(get_request_user)],
     scan_service: Annotated[ScanAnalysisService, Depends(ScanAnalysisService)],
     scan_id: Annotated[int, Path(..., ge=1)],
-    data: ScanResultUpdateRequest = ...,
+    data: ScanResultUpdateRequest,
 ) -> Response:
     """
     OCR 결과 수정

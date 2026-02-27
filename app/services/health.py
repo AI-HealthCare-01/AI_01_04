@@ -1,17 +1,14 @@
 from __future__ import annotations
 
-from typing import Dict, List, Tuple
-
 from fastapi import HTTPException
 from starlette import status
 
 from app.dtos.health import HealthLogUpdateRequest
-from app.utils.datetime import normalize_from_to, date_range_inclusive
+from app.utils.datetime import date_range_inclusive, normalize_from_to, parse_date_yyyy_mm_dd
 from app.utils.progress import rate_bucket
 
-
-_MEM: Dict[int, Dict[str, List[dict]]] = {}
-_LOG_INDEX: Dict[int, Tuple[int, str]] = {}
+_MEM: dict[int, dict[str, list[dict]]] = {}
+_LOG_INDEX: dict[int, tuple[int, str]] = {}
 _NEXT_LOG_ID = 100000  # medication이랑 구분하려고 큰 숫자부터
 
 
@@ -35,7 +32,7 @@ def _seed_if_empty(user_id: int, date_str: str) -> None:
     user_map[date_str] = items
 
 
-def _calc_rate(items: List[dict]) -> int:
+def _calc_rate(items: list[dict]) -> int:
     if not items:
         return 0
     done = sum(1 for x in items if x["status"] == "done")
@@ -84,7 +81,7 @@ class HealthService:
 
         day = await self.get_day_detail(user_id=user_id, date=date_str)
         return {"log_id": log_id, "updated": True, "day": day}
-    
+
     async def ensure_day_seed(self, user_id: int, date: str) -> None:
         _seed_if_empty(user_id, date)
 

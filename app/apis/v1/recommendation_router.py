@@ -4,14 +4,14 @@ from fastapi import APIRouter, Depends, Path, status
 from fastapi.responses import ORJSONResponse as Response
 
 from app.dependencies.security import get_request_user
-from app.models.users import User
-from app.services.recommendations import RecommendationService
 from app.dtos.recommendations import (
-    ScanRecommendationListResponse,
-    RecommendationUpdateRequest,
     RecommendationResponse,
     RecommendationSaveResponse,
+    RecommendationUpdateRequest,
+    ScanRecommendationListResponse,
 )
+from app.models.users import User
+from app.services.recommendations import RecommendationService
 
 recommendation_router = APIRouter(prefix="/recommendations", tags=["recommendations"])
 
@@ -47,7 +47,7 @@ async def update_recommendation(
     user: Annotated[User, Depends(get_request_user)],
     recommendation_service: Annotated[RecommendationService, Depends(RecommendationService)],
     recommendation_id: Annotated[int, Path(..., ge=1)],
-    data: RecommendationUpdateRequest = ...,
+    data: RecommendationUpdateRequest,
 ) -> Response:
     """
     추천 항목 수정 (운동 빈도/양 등 사용자 편집)
