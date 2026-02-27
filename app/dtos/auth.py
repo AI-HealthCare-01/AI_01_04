@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from datetime import date
 from typing import Annotated
 
@@ -8,14 +10,11 @@ from app.validators.user_validators import validate_birthday, validate_password,
 
 
 class SignUpRequest(BaseModel):
-    email: Annotated[
-        EmailStr,
-        Field(None, max_length=40),
-    ]
+    email: Annotated[EmailStr, Field(..., max_length=40)]
     password: Annotated[str, Field(min_length=8), AfterValidator(validate_password)]
-    name: Annotated[str, Field(max_length=20)]
+    name: Annotated[str, Field(..., max_length=20)]
     gender: Gender
-    birth_date: Annotated[date, AfterValidator(validate_birthday)]
+    birthday: Annotated[date, AfterValidator(validate_birthday)]
     phone_number: Annotated[str, AfterValidator(validate_phone_number)]
 
 

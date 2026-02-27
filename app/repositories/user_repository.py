@@ -1,13 +1,21 @@
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime
 from typing import Any
 
 from pydantic import EmailStr
 
+from app.core import config
 from app.models.users import Gender, User, UserRole
 
-ALLOWED_UPDATE_FIELDS = ["name", "nickname", "phone_number", "gender", "birth_date"]
+ALLOWED_UPDATE_FIELDS = [
+    "name",
+    "nickname",
+    "phone_number",
+    "gender",
+    "birth_date",
+    "profile_image_url",  # 프로필 업로드
+]
 
 
 class UserRepository:
@@ -39,6 +47,8 @@ class UserRepository:
         gender: Gender | None = None,
         nickname: str | None = None,
         role: UserRole = UserRole.USER,
+        # ✅ 만약 init migration에 is_admin이 있으면 여기도 받을 수 있음
+        # is_admin: bool = False,
     ) -> User:
         return await self._model.create(
             email=email,
@@ -48,17 +58,30 @@ class UserRepository:
             birth_date=birth_date,
             gender=gender,
             role=role,
+            # is_admin=is_admin,
+            is_active=True,  # ✅ 컬럼 존재 시 명시적으로
+            deleted_at=None,  # ✅ 컬럼 존재 시 명시적으로
         )
 
     async def update_instance(self, user: User, data: dict[str, Any]) -> None:
-        # 허용된 필드만 업데이트
         update_fields: list[str] = []
+
         for key, value in data.items():
             if key not in ALLOWED_UPDATE_FIELDS:
                 continue
-            if value is not None:
-                setattr(user, key, value)
-                update_fields.append(key)
+            if value is None:
+                continue
+
+            setattr(user, key, value)
+            update_fields.append(key)
 
         if update_fields:
             await user.save(update_fields=update_fields)
+
+    async def deactivate_user(self, user_id: int) -> None:
+        # ✅ soft delete 정책: is_active=False + deleted_at 기록
+        now = datetime.now(config.TIMEZONE)
+
+        # deleted_at 컬럼이 진짜로 있는 경우에만 update에 포함해야 함
+        # (없으면 migration/모델부터 맞춰야 함)
+        await self._model.filter(id=user_id).update(is_active=False, deleted_at=now)
