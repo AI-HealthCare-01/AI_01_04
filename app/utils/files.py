@@ -81,7 +81,7 @@ def build_storage_path(
 ) -> Path:
     """
     저장 경로 예시:
-      {base_dir}/uploads/{user_id}/2026-02-26/{uuid}_{sanitized_name}.pdf
+    {base_dir}/uploads/{user_id}/2026-02-26/{uuid}_{sanitized_name}.pdf
     날짜 폴더는 필요하면 서비스에서 추가해도 됨.
     """
     safe_name = sanitize_filename(original_filename)
@@ -111,3 +111,35 @@ async def save_upload_file(upload: UploadFile, dest: Path) -> Path:
 
     await upload.seek(0)
     return dest
+
+
+async def save_user_upload_file(
+    user_id: int,
+    upload: UploadFile,
+    base_dir: str | Path = "storage",
+) -> str:
+    """
+    업로드 파일 검증 + 저장까지 한 번에 처리.
+    반환: 저장된 file_path (str)
+    """
+
+    if not upload.filename:
+        raise FileValidationError("파일명이 없습니다.")
+
+    # 1️⃣ 확장자 검증
+    validate_extension(upload.filename)
+
+    # 2️⃣ 용량 검증
+    await validate_size(upload)
+
+    # 3️⃣ 저장 경로 생성
+    dest = build_storage_path(
+        base_dir=base_dir,
+        user_id=user_id,
+        original_filename=upload.filename,
+    )
+
+    # 4️⃣ 저장
+    await save_upload_file(upload, dest)
+
+    return str(dest)

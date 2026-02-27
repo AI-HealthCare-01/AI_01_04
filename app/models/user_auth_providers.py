@@ -5,6 +5,7 @@ OAuth/소셜 로그인 제공자 정보 (ERD 기반)
 - ForeignKey: N:1 관계 (한 사용자가 여러 provider를 가질 수 있음)
 - 예: 같은 사용자가 Google, Kakao 둘 다로 로그인 가능
 """
+
 from tortoise import fields, models
 
 
