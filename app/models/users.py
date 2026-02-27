@@ -1,9 +1,16 @@
+"""
+사용자 관련 모델 (ERD 기반)
+- Tortois ORM에서 models.Model을 상속하면 DB 테이블이 됩니다.
+- fields.XXXField()가 컬럼을 정의합니다.
+- auto_now_add=True: 레코드 생성 시 자동으로 현재
+"""
 from enum import StrEnum
 
 from tortoise import fields, models
 
 
 class Gender(StrEnum):
+    """성별 (ERD: gender varchar)"""
     MALE = "MALE"
     FEMALE = "FEMALE"
 
