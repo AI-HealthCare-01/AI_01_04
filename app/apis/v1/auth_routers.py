@@ -1,3 +1,5 @@
+# 인증 전용 라우터 : signup, login, refresh
+
 from typing import Annotated
 
 from fastapi import APIRouter, Cookie, Depends, HTTPException, status
