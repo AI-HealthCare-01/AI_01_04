@@ -1,5 +1,3 @@
-# /users/me 조회, 수정
-
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, status
@@ -17,6 +15,7 @@ user_router = APIRouter(prefix="/users", tags=["users"])
 async def user_me_info(
     user: Annotated[User, Depends(get_request_user)],
 ) -> Response:
+    # 현재 로그인한 사용자 정보 반환
     return Response(UserInfoResponse.model_validate(user).model_dump(), status_code=status.HTTP_200_OK)
 
 
@@ -26,5 +25,6 @@ async def update_user_me_info(
     user: Annotated[User, Depends(get_request_user)],
     user_manage_service: Annotated[UserManageService, Depends(UserManageService)],
 ) -> Response:
+    # 내 정보 수정
     updated_user = await user_manage_service.update_user(user=user, data=update_data)
     return Response(UserInfoResponse.model_validate(updated_user).model_dump(), status_code=status.HTTP_200_OK)

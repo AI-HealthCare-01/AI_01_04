@@ -5,14 +5,15 @@
 import json
 import uuid
 from pathlib import Path
-from typing import Any, cast
+from typing import Any
+
 import httpx
 
 from app.core import config
 from app.integrations.ocr.exceptions import (
     OCRAuthError,
-    OCRRateLimitError,
     OCRBadRequestError,
+    OCRRateLimitError,
     OCRServerError,
     OCRTimeoutError,
 )

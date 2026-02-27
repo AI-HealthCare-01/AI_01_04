@@ -29,3 +29,5 @@ class ScanResultUpdateRequest(BaseModel):
 class ScanSaveResponse(BaseModel):
     scan_id: int
     saved: bool
+    seeded_date: str | None = None
+    created_prescriptions: list[int] | None = None

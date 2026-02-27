@@ -6,6 +6,7 @@
 - reference_type + reference_id: 어떤 엔티티의 내용인지 (다형성 참조)
 - MySQL에는 vector 타입이 없어 JSON으로 저장 (1536차원 = OpenAI embedding)
 """
+
 from tortoise import fields, models
 
 

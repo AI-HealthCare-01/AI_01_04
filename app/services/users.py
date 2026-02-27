@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from tortoise.transactions import in_transaction
 
 from app.dtos.users import UserUpdateRequest
@@ -15,10 +17,12 @@ class UserManageService:
     async def update_user(self, user: User, data: UserUpdateRequest) -> User:
         if data.email:
             await self.auth_service.check_email_exists(data.email)
+
         if data.phone_number:
             normalized_phone_number = normalize_phone_number(data.phone_number)
             await self.auth_service.check_phone_number_exists(normalized_phone_number)
             data.phone_number = normalized_phone_number
+
         async with in_transaction():
             await self.repo.update_instance(user=user, data=data.model_dump(exclude_none=True))
             await user.refresh_from_db()

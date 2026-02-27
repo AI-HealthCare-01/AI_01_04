@@ -6,6 +6,7 @@
 - 스냅샷: 특정 시점의 상태 저장 (추천 생성 시점 복원용)
 - user_current_features: 현재 최신 상태만 유지 (1:1)
 """
+
 from tortoise import fields, models
 
 

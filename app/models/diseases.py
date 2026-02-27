@@ -5,6 +5,7 @@
 - FK가 없는 독립 테이블: 다른 테이블을 참조하지 않음
 - icd_code: 국제질병분류코드 (WHO 표준)
 """
+
 from tortoise import fields, models
 
 
