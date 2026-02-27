@@ -4,14 +4,14 @@ from fastapi import APIRouter, Depends, Path, Query, status
 from fastapi.responses import ORJSONResponse as Response
 
 from app.dependencies.security import get_request_user
-from app.models.users import User
-from app.services.health import HealthService
 from app.dtos.health import (
-    HealthHistoryListResponse,
     HealthDayDetailResponse,
+    HealthHistoryListResponse,
     HealthLogUpdateRequest,
     HealthLogUpdateResponse,
 )
+from app.models.users import User
+from app.services.health import HealthService
 
 health_router = APIRouter(prefix="/health", tags=["health"])
 
@@ -42,7 +42,7 @@ async def update_health_log(
     user: Annotated[User, Depends(get_request_user)],
     health_service: Annotated[HealthService, Depends(HealthService)],
     log_id: Annotated[int, Path(..., ge=1)],
-    request: HealthLogUpdateRequest = ...,
+    request: HealthLogUpdateRequest,
 ) -> Response:
     result = await health_service.update_log(user_id=user.id, log_id=log_id, data=request)
     return Response(HealthLogUpdateResponse.model_validate(result).model_dump(), status_code=status.HTTP_200_OK)

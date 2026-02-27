@@ -2,7 +2,6 @@ import os
 import re
 import uuid
 from pathlib import Path
-from typing import Iterable
 
 from fastapi import UploadFile
 

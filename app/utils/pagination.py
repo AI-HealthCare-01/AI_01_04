@@ -14,7 +14,7 @@ class PageParams:
     page_size: int = 20
     max_page_size: int = 100
 
-    def normalized(self) -> "PageParams":
+    def normalized(self) -> PageParams:
         page = int(self.page)
         page_size = int(self.page_size)
 

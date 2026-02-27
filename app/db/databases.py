@@ -4,10 +4,10 @@ from tortoise.contrib.fastapi import register_tortoise
 
 from app.core import config
 
+
 TORTOISE_APP_MODELS = [
     "aerich.models",
     "app.models.users",
-<<<<<<< HEAD
     "app.models.user_credentials",
     "app.models.user_auth_providers",
     "app.models.diseases",      # Disease, DiseaseGuideline
@@ -17,10 +17,9 @@ TORTOISE_APP_MODELS = [
     "app.models.vector_documents",
     "app.models.user_features",   # UserFeatureSnapshot, UserCurrentFeatures
     "app.models.recommendations",  # RecommendationBatch, Recommendation, UserActiveRecommendation, RecommendationFeedback
-=======
     ""
->>>>>>> 73df214 (feat: add dashboard, health, medication, scan, recommendation APIs and OCR integration base)
 ]
+
 
 TORTOISE_ORM = {
     "connections": {
