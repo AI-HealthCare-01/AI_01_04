@@ -20,8 +20,8 @@ health_router = APIRouter(prefix="/health", tags=["health"])
 async def get_health_history(
     user: Annotated[User, Depends(get_request_user)],
     health_service: Annotated[HealthService, Depends(HealthService)],
-    date_from: Annotated[str | None, Query(None, alias="from")] = None,
-    date_to: Annotated[str | None, Query(None, alias="to")] = None,
+    date_from: Annotated[str | None, Query(alias="from")] = None,
+    date_to: Annotated[str | None, Query(alias="to")] = None,
 ) -> Response:
     result = await health_service.list_history(user_id=user.id, date_from=date_from, date_to=date_to)
     return Response(HealthHistoryListResponse.model_validate(result).model_dump(), status_code=status.HTTP_200_OK)

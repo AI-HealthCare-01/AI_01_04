@@ -24,8 +24,8 @@ medication_router = APIRouter(prefix="/medications", tags=["medications"])
 async def get_medication_history(
     user: Annotated[User, Depends(get_request_user)],
     medication_service: Annotated[MedicationService, Depends(MedicationService)],
-    date_from: Annotated[str | None, Query(None, alias="from", description="YYYY-MM-DD")] = None,
-    date_to: Annotated[str | None, Query(None, alias="to", description="YYYY-MM-DD")] = None,
+    date_from: Annotated[str | None, Query(alias="from", description="YYYY-MM-DD")] = None,
+    date_to: Annotated[str | None, Query(alias="to", description="YYYY-MM-DD")] = None,
 ) -> Response:
     result = await medication_service.list_history(user_id=user.id, date_from=date_from, date_to=date_to)
     return Response(MedicationHistoryListResponse.model_validate(result).model_dump(), status_code=status.HTTP_200_OK)

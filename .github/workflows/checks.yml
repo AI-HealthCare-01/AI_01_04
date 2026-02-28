@@ -44,13 +44,20 @@ jobs:
   test:
     runs-on: ubuntu-latest
     services:
-      mysql:
-        image: mysql:8.0
+      postgres:
+        image: pgvector/pgvector:pg16
         env:
-          MYSQL_ROOT_PASSWORD: pw1234
-          MYSQL_DATABASE: ai_health
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test
         ports:
-          - 3306:3306
+          - 5432:5432
+    env:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: test
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -67,6 +74,11 @@ jobs:
 
       - name: Install dependencies
         run: uv sync --group app --frozen
+
+      - name: Init PostgreSQL (pgvector extension)
+        run: |
+          sudo apt-get update && sudo apt-get install -y postgresql-client
+          PGPASSWORD=postgres psql -h postgres -U postgres -d test -c "CREATE EXTENSION IF NOT EXISTS vector;"
 
       - name: Check if tests exist
         id: check_tests
