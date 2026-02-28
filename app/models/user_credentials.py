@@ -9,6 +9,7 @@
   2. 비밀번호 변경 이력 관리 용이
   3. 보안상 민감 정보 분리
 """
+
 from tortoise import fields, models
 
 

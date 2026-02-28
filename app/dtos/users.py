@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from datetime import date, datetime
 from typing import Annotated
 
@@ -11,10 +13,7 @@ from app.validators.user_validators import validate_birthday, validate_phone_num
 
 class UserUpdateRequest(BaseModel):
     name: Annotated[str | None, Field(None, min_length=2, max_length=20)]
-    email: Annotated[
-        EmailStr | None,
-        Field(None, max_length=40),
-    ]
+    email: Annotated[EmailStr | None, Field(None, max_length=40)]
     phone_number: Annotated[
         str | None,
         Field(None, description="Available Format: +8201011112222, 01011112222, 010-1111-2222"),
@@ -25,10 +24,10 @@ class UserUpdateRequest(BaseModel):
         Field(None, description="Date Format: YYYY-MM-DD"),
         optional_after_validator(validate_birthday),
     ]
-    gender: Annotated[
-        Gender | None,
-        Field(None, description="'MALE' or 'FEMALE'"),
-    ]
+    gender: Annotated[Gender | None, Field(None, description="'MALE' or 'FEMALE'")]
+
+    # 프로필 이미지 URL도 수정 가능하게
+    profile_image_url: Annotated[str | None, Field(None, max_length=500)]
 
 
 class UserInfoResponse(BaseSerializerModel):
@@ -38,4 +37,9 @@ class UserInfoResponse(BaseSerializerModel):
     phone_number: str
     birthday: date
     gender: Gender
+    is_active: bool
+    is_admin: bool
+    last_login: datetime | None = None
+    profile_image_url: str | None = None
     created_at: datetime
+    updated_at: datetime

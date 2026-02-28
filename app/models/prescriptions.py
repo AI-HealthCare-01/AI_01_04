@@ -5,6 +5,7 @@
 - 여러 FK를 가진 테이블: users, diseases, drugs를 모두 참조
 - CASCADE: 부모 삭제 시 자식도 삭제 (예: 사용자 삭제 → 처방전 삭제)
 """
+
 from tortoise import fields, models
 
 

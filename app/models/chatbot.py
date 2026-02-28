@@ -5,6 +5,7 @@
 - 세션 → 메시지: 1:N (한 대화에 여러 메시지)
 - sender: 'user' 또는 'assistant' (누가 보냈는지)
 """
+
 from tortoise import fields, models
 
 

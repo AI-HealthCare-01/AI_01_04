@@ -6,6 +6,7 @@
 - recommendations: 개별 추천 결과 (rank, score, A/B 테스트용 model_version 등)
 - user_active_recommendations: 사용자에게 현재 노출 중인 추천 (N:N 중간 테이블)
 """
+
 from tortoise import fields, models
 
 
