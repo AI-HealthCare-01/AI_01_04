@@ -68,11 +68,11 @@ class UserRepository:
         nickname: str | None = None,
         role: UserRole = UserRole.USER,
         **_: Any,
-    ) -> User:
+        ) -> User:
         payload: dict[str, Any] = {
-            email=email,
-            name=name,
-            phone_number=phone_number,
+            "email": email,
+            "name": name,
+            "phone_number": phone_number,
         }
 
         if nickname is not None and self._has_field("nickname"):
