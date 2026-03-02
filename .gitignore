@@ -13,3 +13,6 @@ wheels/
 *.coverage
 .coverage.*
 .DS_Store
+# local/prod env secrets
+envs/example.local.env
+envs/example.prod.env
