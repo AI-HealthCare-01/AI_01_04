@@ -12,12 +12,10 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from tortoise import fields, models
+from tortoise.fields.relational import OneToOneRelation
 
-if TYPE_CHECKING:
-    from app.models.users import User
+from app.models.users import User
 
 
 class UserCredential(models.Model):
@@ -27,12 +25,13 @@ class UserCredential(models.Model):
     users 테이블과 1:1 관계
     """
 
-    user: User = fields.OneToOneField(  # type: ignore[assignment]
+    user: OneToOneRelation[User] = fields.OneToOneField(
         "models.User",
         on_delete=fields.CASCADE,
         related_name="credential",
-        pk=True,  # user_id가 PK (1:1이므로)
+        pk=True,
     )
+
     password_hash = fields.CharField(max_length=255)
     password_updated_at = fields.DatetimeField(null=True)
 
