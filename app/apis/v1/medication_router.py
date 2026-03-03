@@ -26,11 +26,11 @@ SortOrder = Literal["asc", "desc"]
 async def get_medication_history(
     user: Annotated[User, Depends(get_request_user)],
     medication_service: Annotated[MedicationService, Depends(MedicationService)],
-    date_from: Annotated[str | None, Query(None, alias="from", description="YYYY-MM-DD")] = None,
-    date_to: Annotated[str | None, Query(None, alias="to", description="YYYY-MM-DD")] = None,
-    page: Annotated[int, Query(1, ge=1, description="1-based page")] = 1,
-    size: Annotated[int, Query(14, ge=1, le=100, description="page size")] = 14,
-    sort: Annotated[SortOrder, Query("desc", description="date sort order: asc|desc")] = "desc",
+    date_from: str | None = Query(default=None, alias="from", description="YYYY-MM-DD"),
+    date_to: str | None = Query(default=None, alias="to", description="YYYY-MM-DD"),
+    page: int = Query(default=1, ge=1, description="1-based page"),
+    size: int = Query(default=14, ge=1, le=100, description="page size"),
+    sort: SortOrder = Query(default="desc", description="date sort order: asc|desc"),
 ) -> Response:
     result = await medication_service.list_history(
         user_id=user.id,
