@@ -23,7 +23,7 @@ class VectorDocument(models.Model):
     reference_type = fields.CharField(max_length=100)
     reference_id = fields.IntField()
     content = fields.TextField()
-    embedding = fields.JSONField()  # [0.1, -0.2, ...] 1536개 float
+    embedding: list[float] = fields.JSONField()  # [0.1, -0.2, ...] 1536개 float
     created_at = fields.DatetimeField(auto_now_add=True)
 
     class Meta:

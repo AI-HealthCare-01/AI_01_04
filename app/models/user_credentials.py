@@ -10,7 +10,14 @@
   3. 보안상 민감 정보 분리
 """
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from tortoise import fields, models
+
+if TYPE_CHECKING:
+    from app.models.users import User
 
 
 class UserCredential(models.Model):
@@ -20,7 +27,7 @@ class UserCredential(models.Model):
     users 테이블과 1:1 관계
     """
 
-    user = fields.OneToOneField(
+    user: User = fields.OneToOneField(  # type: ignore[assignment]
         "models.User",
         on_delete=fields.CASCADE,
         related_name="credential",

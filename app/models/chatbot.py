@@ -6,7 +6,14 @@
 - sender: 'user' 또는 'assistant' (누가 보냈는지)
 """
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from tortoise import fields, models
+
+if TYPE_CHECKING:
+    from app.models.users import User
 
 
 class ChatbotSession(models.Model):
@@ -15,7 +22,7 @@ class ChatbotSession(models.Model):
     """
 
     id = fields.IntField(pk=True)
-    user = fields.ForeignKeyField(
+    user: User = fields.ForeignKeyField(  # type: ignore[assignment]
         "models.User",
         on_delete=fields.CASCADE,
         related_name="chatbot_sessions",
@@ -33,7 +40,7 @@ class ChatbotMessage(models.Model):
     """
 
     id = fields.IntField(pk=True)
-    session = fields.ForeignKeyField(
+    session: ChatbotSession = fields.ForeignKeyField(  # type: ignore[assignment]
         "models.ChatbotSession",
         on_delete=fields.CASCADE,
         related_name="messages",
@@ -54,7 +61,7 @@ class ChatbotSessionSummary(models.Model):
     """
 
     id = fields.IntField(pk=True)
-    session = fields.ForeignKeyField(
+    session: ChatbotSession = fields.ForeignKeyField(  # type: ignore[assignment]
         "models.ChatbotSession",
         on_delete=fields.CASCADE,
         related_name="summaries",

@@ -45,11 +45,15 @@ class MedicationIntakeRepository:
         from_dt: datetime,
         to_dt: datetime,
     ) -> list[MedicationIntakeLog]:
-        return await self._model.filter(
-            prescription__user_id=user_id,
-            intake_datetime__gte=from_dt,
-            intake_datetime__lte=to_dt,
-        ).order_by("intake_datetime").prefetch_related("prescription")
+        return (
+            await self._model.filter(
+                prescription__user_id=user_id,
+                intake_datetime__gte=from_dt,
+                intake_datetime__lte=to_dt,
+            )
+            .order_by("intake_datetime")
+            .prefetch_related("prescription")
+        )
 
     async def list_by_prescription_for_user(
         self,

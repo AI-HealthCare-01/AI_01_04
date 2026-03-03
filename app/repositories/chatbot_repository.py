@@ -29,12 +29,7 @@ class ChatbotRepository:
         limit: int = 50,
         offset: int = 0,
     ) -> list[ChatbotSession]:
-        return (
-            await self._session_model.filter(user_id=user_id)
-            .order_by("-started_at")
-            .offset(offset)
-            .limit(limit)
-        )
+        return await self._session_model.filter(user_id=user_id).order_by("-started_at").offset(offset).limit(limit)
 
     async def list_sessions_by_date_range(
         self,
@@ -69,10 +64,14 @@ class ChatbotRepository:
         limit: int = 100,
     ) -> list[ChatbotMessage]:
         """세션의 메시지 목록 (session이 user 소유인지 검증)"""
-        return await self._message_model.filter(
-            session_id=session_id,
-            session__user_id=user_id,
-        ).order_by("created_at").limit(limit)
+        return (
+            await self._message_model.filter(
+                session_id=session_id,
+                session__user_id=user_id,
+            )
+            .order_by("created_at")
+            .limit(limit)
+        )
 
     async def add_message(
         self,

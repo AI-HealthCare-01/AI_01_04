@@ -6,7 +6,14 @@ OAuth/소셜 로그인 제공자 정보 (ERD 기반)
 - 예: 같은 사용자가 Google, Kakao 둘 다로 로그인 가능
 """
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from tortoise import fields, models
+
+if TYPE_CHECKING:
+    from app.models.users import User
 
 
 class UserAuthProvider(models.Model):
@@ -17,7 +24,7 @@ class UserAuthProvider(models.Model):
     """
 
     id = fields.IntField(pk=True)
-    user = fields.ForeignKeyField(
+    user: User = fields.ForeignKeyField(  # type: ignore[assignment]
         "models.User",
         on_delete=fields.CASCADE,
         related_name="auth_providers",

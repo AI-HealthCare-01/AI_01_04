@@ -6,6 +6,8 @@
 - icd_code: 국제질병분류코드 (WHO 표준)
 """
 
+from __future__ import annotations
+
 from tortoise import fields, models
 
 
@@ -32,7 +34,7 @@ class DiseaseGuideline(models.Model):
     """
 
     id = fields.IntField(pk=True)
-    disease = fields.ForeignKeyField(
+    disease: Disease = fields.ForeignKeyField(  # type: ignore[assignment]
         "models.Disease",
         on_delete=fields.CASCADE,
         related_name="guidelines",

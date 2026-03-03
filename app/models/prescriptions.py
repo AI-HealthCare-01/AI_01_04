@@ -6,7 +6,16 @@
 - CASCADE: 부모 삭제 시 자식도 삭제 (예: 사용자 삭제 → 처방전 삭제)
 """
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from tortoise import fields, models
+
+if TYPE_CHECKING:
+    from app.models.diseases import Disease
+    from app.models.drugs import Drug
+    from app.models.users import User
 
 
 class Prescription(models.Model):
@@ -20,18 +29,18 @@ class Prescription(models.Model):
     """
 
     id = fields.IntField(pk=True)
-    user = fields.ForeignKeyField(
+    user: User = fields.ForeignKeyField(  # type: ignore[assignment]
         "models.User",
         on_delete=fields.CASCADE,
         related_name="prescriptions",
     )
-    disease = fields.ForeignKeyField(
+    disease: Disease | None = fields.ForeignKeyField(  # type: ignore[assignment]
         "models.Disease",
         on_delete=fields.SET_NULL,
         null=True,
         related_name="prescriptions",
     )
-    drug = fields.ForeignKeyField(
+    drug: Drug | None = fields.ForeignKeyField(  # type: ignore[assignment]
         "models.Drug",
         on_delete=fields.SET_NULL,
         null=True,
@@ -56,7 +65,7 @@ class PrescriptionMemo(models.Model):
     """
 
     id = fields.IntField(pk=True)
-    prescription = fields.ForeignKeyField(
+    prescription: Prescription = fields.ForeignKeyField(  # type: ignore[assignment]
         "models.Prescription",
         on_delete=fields.CASCADE,
         related_name="memos",
@@ -77,7 +86,7 @@ class MedicationIntakeLog(models.Model):
     """
 
     id = fields.IntField(pk=True)
-    prescription = fields.ForeignKeyField(
+    prescription: Prescription = fields.ForeignKeyField(  # type: ignore[assignment]
         "models.Prescription",
         on_delete=fields.CASCADE,
         related_name="intake_logs",

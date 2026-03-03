@@ -49,11 +49,15 @@ class RecommendationRepository:
         from_dt: datetime,
         to_dt: datetime,
     ) -> list[Recommendation]:
-        return await self._rec_model.filter(
-            user_id=user_id,
-            created_at__gte=from_dt,
-            created_at__lte=to_dt,
-        ).order_by("created_at").prefetch_related("batch")
+        return (
+            await self._rec_model.filter(
+                user_id=user_id,
+                created_at__gte=from_dt,
+                created_at__lte=to_dt,
+            )
+            .order_by("created_at")
+            .prefetch_related("batch")
+        )
 
     async def list_active_for_user(self, user_id: int) -> list[UserActiveRecommendation]:
         """현재 사용자에게 노출 중인 활성 추천"""
