@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 질병 관련 모델 (ERD 기반)
 
@@ -9,6 +11,7 @@
 from __future__ import annotations
 
 from tortoise import fields, models
+from tortoise.fields.relational import ForeignKeyRelation
 
 
 class Disease(models.Model):
@@ -34,11 +37,13 @@ class DiseaseGuideline(models.Model):
     """
 
     id = fields.IntField(pk=True)
-    disease: Disease = fields.ForeignKeyField(  # type: ignore[assignment]
+
+    disease: ForeignKeyRelation[Disease] = fields.ForeignKeyField(
         "models.Disease",
         on_delete=fields.CASCADE,
         related_name="guidelines",
     )
+
     category = fields.CharField(max_length=100)
     content = fields.TextField()
     created_at = fields.DatetimeField(auto_now_add=True)

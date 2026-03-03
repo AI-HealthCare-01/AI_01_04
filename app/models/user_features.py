@@ -7,11 +7,10 @@
 - user_current_features: 현재 최신 상태만 유지 (1:1)
 """
 
-from __future__ import annotations
-
 from typing import TYPE_CHECKING
 
 from tortoise import fields, models
+from tortoise.fields.relational import ForeignKeyRelation
 
 if TYPE_CHECKING:
     from app.models.users import User
@@ -25,11 +24,13 @@ class UserFeatureSnapshot(models.Model):
     """
 
     id = fields.IntField(pk=True)
-    user: User = fields.ForeignKeyField(  # type: ignore[assignment]
+
+    user: ForeignKeyRelation["User"] = fields.ForeignKeyField(
         "models.User",
         on_delete=fields.CASCADE,
         related_name="feature_snapshots",
     )
+
     feature_json = fields.TextField()
     created_at = fields.DatetimeField(auto_now_add=True)
 
@@ -44,12 +45,13 @@ class UserCurrentFeatures(models.Model):
     user_id가 PK (1:1 관계, 항상 최신만 유지)
     """
 
-    user: User = fields.OneToOneField(  # type: ignore[assignment]
+    user: ForeignKeyRelation["User"] = fields.OneToOneField(
         "models.User",
         on_delete=fields.CASCADE,
         related_name="current_features",
         pk=True,
     )
+
     feature_json = fields.TextField()
     updated_at = fields.DatetimeField(auto_now=True)
 
