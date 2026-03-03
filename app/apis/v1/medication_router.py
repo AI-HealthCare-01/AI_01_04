@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, Path, Query, status
 from fastapi.responses import ORJSONResponse as Response
@@ -15,6 +15,8 @@ from app.services.medication import MedicationService
 
 medication_router = APIRouter(prefix="/medications", tags=["medications"])
 
+SortOrder = Literal["asc", "desc"]
+
 
 @medication_router.get(
     "/history",
@@ -24,10 +26,20 @@ medication_router = APIRouter(prefix="/medications", tags=["medications"])
 async def get_medication_history(
     user: Annotated[User, Depends(get_request_user)],
     medication_service: Annotated[MedicationService, Depends(MedicationService)],
-    date_from: Annotated[str | None, Query(alias="from", description="YYYY-MM-DD")] = None,
-    date_to: Annotated[str | None, Query(alias="to", description="YYYY-MM-DD")] = None,
+    date_from: Annotated[str | None, Query(None, alias="from", description="YYYY-MM-DD")] = None,
+    date_to: Annotated[str | None, Query(None, alias="to", description="YYYY-MM-DD")] = None,
+    page: Annotated[int, Query(1, ge=1, description="1-based page")] = 1,
+    size: Annotated[int, Query(14, ge=1, le=100, description="page size")] = 14,
+    sort: Annotated[SortOrder, Query("desc", description="date sort order: asc|desc")] = "desc",
 ) -> Response:
-    result = await medication_service.list_history(user_id=user.id, date_from=date_from, date_to=date_to)
+    result = await medication_service.list_history(
+        user_id=user.id,
+        date_from=date_from,
+        date_to=date_to,
+        page=page,
+        size=size,
+        sort=sort,
+    )
     return Response(MedicationHistoryListResponse.model_validate(result).model_dump(), status_code=status.HTTP_200_OK)
 
 

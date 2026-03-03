@@ -1,74 +1,121 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Literal
 
 from fastapi import HTTPException
 from starlette import status
 
 from app.dtos.medication import MedicationLogUpdateRequest
-from app.utils.datetime import date_range_inclusive, normalize_from_to, parse_date_yyyy_mm_dd
+from app.models.prescriptions import MedicationIntakeLog
+from app.utils.datetime import DateTimeError, normalize_from_to, parse_date_yyyy_mm_dd
+from app.utils.pagination import paginate_list
 from app.utils.progress import rate_bucket
 
-# DB 붙이면 _MEM/_LOG_INDEX/_seed_if_empty 부분을 repo 조회/생성으로 교체하면 됨
-# ===== 임시 In-Memory 저장소 (DB 붙으면 Repo로 교체) =====
-# user_id -> date -> checklist items
-# item: {"id": int, "label": str, "status": "taken|skipped|delayed", "intake_datetime": str|None}
-_MEM: dict[int, dict[str, list[dict]]] = {}
-# log_id -> (user_id, date)
-_LOG_INDEX: dict[int, tuple[int, str]] = {}
-_NEXT_LOG_ID = 1
+SortOrder = Literal["asc", "desc"]
 
 
-def _seed_if_empty(user_id: int, date_str: str) -> None:
-    """
-    해당 날짜에 데이터 없으면 기본 체크리스트(아침/점심/저녁/자기전) 생성
-    """
-    global _NEXT_LOG_ID
-
-    user_map = _MEM.setdefault(user_id, {})
-    if date_str in user_map:
-        return
-
-    labels = ["아침", "점심", "저녁", "자기전"]
-    items = []
-    for lb in labels:
-        log_id = _NEXT_LOG_ID
-        _NEXT_LOG_ID += 1
-        item = {"id": log_id, "label": lb, "status": "skipped", "intake_datetime": None}
-        items.append(item)
-        _LOG_INDEX[log_id] = (user_id, date_str)
-
-    user_map[date_str] = items
-
-
-def _calc_rate(items: list[dict]) -> int:
-    if not items:
+def _calc_rate_from_logs(logs: list[MedicationIntakeLog]) -> int:
+    if not logs:
         return 0
-    taken = sum(1 for x in items if x["status"] == "taken")
-    total = len(items)
+    taken = sum(1 for x in logs if x.status == "taken")
+    total = len(logs)
     return int(round((taken / total) * 100))
 
 
-class MedicationService:
-    async def list_history(self, user_id: int, date_from: str | None, date_to: str | None) -> dict:
-        start, end = normalize_from_to(date_from, date_to)
-        days = list(reversed(date_range_inclusive(start, end)))
+def _make_label(log: MedicationIntakeLog) -> str:
+    # 우선순위: slot_label > drug name > fallback
+    if getattr(log, "slot_label", None):
+        return log.slot_label  # type: ignore[return-value]
+    # select_related("prescription__drug")가 되어있다는 전제
+    drug = getattr(getattr(log, "prescription", None), "drug", None)
+    if drug and getattr(drug, "name", None):
+        return str(drug.name)
+    return "복용"
 
-        items = []
+
+class MedicationService:
+    async def list_history(
+        self,
+        user_id: int,
+        date_from: str | None,
+        date_to: str | None,
+        page: int = 1,
+        size: int = 14,
+        sort: SortOrder = "desc",
+    ) -> dict:
+        try:
+            start, end = normalize_from_to(date_from, date_to)
+        except DateTimeError as e:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e
+
+        # 기간 내 로그를 전부 가져와 날짜별로 묶기
+        # (Prescription -> User 조인)
+        logs = await MedicationIntakeLog.filter(
+            prescription__user_id=user_id,
+            intake_date__gte=start,
+            intake_date__lte=end,
+        ).all()
+
+        by_date: dict[str, list[MedicationIntakeLog]] = {}
+        for lg in logs:
+            ds = lg.intake_date.isoformat()
+            by_date.setdefault(ds, []).append(lg)
+
+        # 요청 구간의 "모든 날짜"를 row로 반환 (로그 없어도 row는 존재)
+        days = []
+        cur = start
+        while cur <= end:
+            days.append(cur)
+            cur = cur.fromordinal(cur.toordinal() + 1)
+
+        if sort == "desc":
+            days = list(reversed(days))
+
+        rows: list[dict] = []
         for d in days:
             ds = d.isoformat()
-            _seed_if_empty(user_id, ds)
-            day_items = _MEM[user_id][ds]
-            rate = _calc_rate(day_items)
-            items.append({"date": ds, "rate": rate})
+            day_logs = by_date.get(ds, [])
+            rate = _calc_rate_from_logs(day_logs)
+            bucket = "none" if not day_logs else rate_bucket(rate)
 
-        return {"items": items}
+            rows.append(
+                {
+                    "date": ds,
+                    "rate": rate,
+                    "bucket": bucket,
+                    "detail_key": ds,
+                }
+            )
+
+        return paginate_list(rows, page=page, page_size=size)
 
     async def get_day_detail(self, user_id: int, date: str) -> dict:
-        _seed_if_empty(user_id, date)
-        items = _MEM[user_id][date]
-        rate = _calc_rate(items)
-        bucket = "none" if not items else rate_bucket(rate)
+        # 날짜 형식 검증
+        try:
+            dt = parse_date_yyyy_mm_dd(date)
+        except DateTimeError as e:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e
+
+        logs = await MedicationIntakeLog.filter(
+            prescription__user_id=user_id,
+            intake_date=dt,
+        ).select_related("prescription", "prescription__drug").all()
+
+        # 프론트 체크리스트에 필요한 필드 구성
+        items = []
+        for lg in logs:
+            items.append(
+                {
+                    "id": lg.id,
+                    "label": _make_label(lg),
+                    "status": lg.status,
+                    "intake_datetime": lg.intake_datetime.isoformat() if lg.intake_datetime else None,
+                }
+            )
+
+        rate = _calc_rate_from_logs(logs)
+        bucket = "none" if not logs else rate_bucket(rate)
 
         return {
             "date": date,
@@ -78,42 +125,27 @@ class MedicationService:
         }
 
     async def update_log(self, user_id: int, log_id: int, data: MedicationLogUpdateRequest) -> dict:
-        key = _LOG_INDEX.get(log_id)
-        if not key:
+        log = await MedicationIntakeLog.filter(id=log_id).select_related("prescription").first()
+        if not log:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="log not found.")
-
-        owner_id, date_str = key
-        if owner_id != user_id:
+        if log.prescription.user_id != user_id:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="forbidden.")
 
-        # 해당 item 찾아서 업데이트
-        items = _MEM[user_id][date_str]
-        found = False
-        for it in items:
-            if it["id"] == log_id:
-                it["status"] = data.status
-                # taken이면 복용시간 기록, 아니면 제거(정책은 취향)
-                it["intake_datetime"] = datetime.now().isoformat() if data.status == "taken" else None
-                found = True
-                break
+        # 상태 변경 + 즉시 반영 규칙
+        log.status = data.status
+        if data.status == "taken":
+            log.intake_datetime = datetime.now()
+        else:
+            # 체크 해제/지연이면 복용 시각 제거(정책)
+            log.intake_datetime = None
 
-        if not found:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="log not found in day.")
+        await log.save()
 
-        # 업데이트 후 day 재계산해서 반환
-        day = await self.get_day_detail(user_id=user_id, date=date_str)
+        # 저장 직후 day 재계산해서 반환 (DoD: 즉시 일치)
+        day = await self.get_day_detail(user_id=user_id, date=log.intake_date.isoformat())
 
         return {
             "log_id": log_id,
             "updated": True,
             "day": day,
         }
-
-    async def ensure_day_seed(self, user_id: int, date: str) -> None:
-        _seed_if_empty(user_id, date)
-
-    async def ensure_range_seed(self, user_id: int, date_from: str, date_to: str) -> None:
-        start = parse_date_yyyy_mm_dd(date_from)
-        end = parse_date_yyyy_mm_dd(date_to)
-        for d in date_range_inclusive(start, end):
-            _seed_if_empty(user_id, d.isoformat())
