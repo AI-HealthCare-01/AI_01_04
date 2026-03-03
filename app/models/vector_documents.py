@@ -8,8 +8,11 @@
 """
 
 from __future__ import annotations
-from tortoise import fields, models
+
 from typing import Any
+
+from tortoise import fields, models
+
 
 class VectorDocument(models.Model):
     """

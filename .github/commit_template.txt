@@ -1,7 +1,7 @@
 # Commit Convention
 # <이모지> <타입>: <간결한 커밋 메시지 요약>
 # ✨ feat     : 새로운 기능 추가
-# 🐛 git push origin feature/api-user      : 버그 수정
+# 🐛 fix      : 버그 수정
 # 💡 chore    : 기능 추가 없이 코드 수정 (오타, 주석 등)
 # 🎨 style    : 코드 포매팅 수정
 # 📝 docs     : 문서 수정 (README 등)

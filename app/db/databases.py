@@ -4,7 +4,6 @@ from tortoise.contrib.fastapi import register_tortoise
 
 from app.core import config
 
-
 TORTOISE_APP_MODELS = [
     "aerich.models",
     "app.models.users",

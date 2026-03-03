@@ -12,8 +12,8 @@ from __future__ import annotations
 from tortoise import fields, models
 from tortoise.fields.relational import ForeignKeyRelation
 
-from app.models.users import User
 from app.models.user_features import UserFeatureSnapshot
+from app.models.users import User
 
 
 class RecommendationBatch(models.Model):

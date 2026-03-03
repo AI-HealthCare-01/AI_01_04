@@ -36,7 +36,7 @@ class DiseaseGuideline(models.Model):
 
     id = fields.IntField(pk=True)
 
-    disease: ForeignKeyRelation["Disease"] = fields.ForeignKeyField(
+    disease: ForeignKeyRelation[Disease] = fields.ForeignKeyField(
         "models.Disease",
         on_delete=fields.CASCADE,
         related_name="guidelines",

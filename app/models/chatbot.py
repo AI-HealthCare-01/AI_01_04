@@ -23,7 +23,7 @@ class ChatbotSession(models.Model):
     """
 
     id = fields.IntField(pk=True)
-    user: ForeignKeyRelation["User"] = fields.ForeignKeyField(
+    user: ForeignKeyRelation[User] = fields.ForeignKeyField(
         "models.User",
         on_delete=fields.CASCADE,
         related_name="chatbot_sessions",
@@ -41,7 +41,7 @@ class ChatbotMessage(models.Model):
     """
 
     id = fields.IntField(pk=True)
-    session: ForeignKeyRelation["ChatbotSession"] = fields.ForeignKeyField(
+    session: ForeignKeyRelation[ChatbotSession] = fields.ForeignKeyField(
         "models.ChatbotSession",
         on_delete=fields.CASCADE,
         related_name="messages",
@@ -62,7 +62,7 @@ class ChatbotSessionSummary(models.Model):
     """
 
     id = fields.IntField(pk=True)
-    session: ForeignKeyRelation["ChatbotSession"] = fields.ForeignKeyField(
+    session: ForeignKeyRelation[ChatbotSession] = fields.ForeignKeyField(
         "models.ChatbotSession",
         on_delete=fields.CASCADE,
         related_name="summaries",

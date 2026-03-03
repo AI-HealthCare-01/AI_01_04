@@ -4,9 +4,11 @@ from enum import StrEnum
 
 from tortoise import fields, models
 
+
 class UserRole(StrEnum):
     USER = "USER"
     ADMIN = "ADMIN"
+
 
 class Gender(StrEnum):
     MALE = "MALE"
