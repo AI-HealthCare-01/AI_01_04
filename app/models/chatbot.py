@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 챗봇 세션/메시지 모델 (ERD 기반)
 
@@ -6,7 +8,13 @@
 - sender: 'user' 또는 'assistant' (누가 보냈는지)
 """
 
+from typing import TYPE_CHECKING
+
 from tortoise import fields, models
+from tortoise.fields.relational import ForeignKeyRelation
+
+if TYPE_CHECKING:
+    from app.models.users import User
 
 
 class ChatbotSession(models.Model):
@@ -15,11 +23,13 @@ class ChatbotSession(models.Model):
     """
 
     id = fields.IntField(pk=True)
-    user = fields.ForeignKeyField(
+
+    user: ForeignKeyRelation["User"] = fields.ForeignKeyField(
         "models.User",
         on_delete=fields.CASCADE,
         related_name="chatbot_sessions",
     )
+
     started_at = fields.DatetimeField(null=True)
     ended_at = fields.DatetimeField(null=True)
 
@@ -33,11 +43,13 @@ class ChatbotMessage(models.Model):
     """
 
     id = fields.IntField(pk=True)
-    session = fields.ForeignKeyField(
+
+    session: ForeignKeyRelation["ChatbotSession"] = fields.ForeignKeyField(
         "models.ChatbotSession",
         on_delete=fields.CASCADE,
         related_name="messages",
     )
+
     sender = fields.CharField(max_length=20)  # user, assistant
     message = fields.TextField()
     created_at = fields.DatetimeField(auto_now_add=True)
@@ -54,11 +66,13 @@ class ChatbotSessionSummary(models.Model):
     """
 
     id = fields.IntField(pk=True)
-    session = fields.ForeignKeyField(
+
+    session: ForeignKeyRelation["ChatbotSession"] = fields.ForeignKeyField(
         "models.ChatbotSession",
         on_delete=fields.CASCADE,
         related_name="summaries",
     )
+
     summary = fields.TextField()
     created_at = fields.DatetimeField(auto_now_add=True)
 
