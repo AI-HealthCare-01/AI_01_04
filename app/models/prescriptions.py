@@ -79,7 +79,6 @@ class MedicationIntakeLog(models.Model):
         on_delete=fields.CASCADE,
         related_name="intake_logs",
     )
-
     # ✅ EPIC4
     intake_date = fields.DateField(index=True)
     slot_label = fields.CharField(max_length=30, null=True)
@@ -91,8 +90,4 @@ class MedicationIntakeLog(models.Model):
 
     class Meta:
         table = "medication_intake_logs"
-        # (선택) 조회 최적화
-        indexes = (
-            ("intake_date", "status"),
-            ("prescription_id", "intake_date"),
-        )
+        indexes = (("intake_date", "status"),)
