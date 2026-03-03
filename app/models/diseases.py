@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 질병 관련 모델 (ERD 기반)
 
