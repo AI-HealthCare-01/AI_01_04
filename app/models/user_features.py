@@ -7,7 +7,12 @@
 - user_current_features: 현재 최신 상태만 유지 (1:1)
 """
 
+from __future__ import annotations
+
 from tortoise import fields, models
+from tortoise.fields.relational import ForeignKeyRelation, OneToOneRelation
+
+from app.models.users import User
 
 
 class UserFeatureSnapshot(models.Model):
@@ -18,7 +23,8 @@ class UserFeatureSnapshot(models.Model):
     """
 
     id = fields.IntField(pk=True)
-    user = fields.ForeignKeyField(
+
+    user: ForeignKeyRelation[User] = fields.ForeignKeyField(
         "models.User",
         on_delete=fields.CASCADE,
         related_name="feature_snapshots",
@@ -37,7 +43,7 @@ class UserCurrentFeatures(models.Model):
     user_id가 PK (1:1 관계, 항상 최신만 유지)
     """
 
-    user = fields.OneToOneField(
+    user: OneToOneRelation[User] = fields.OneToOneField(
         "models.User",
         on_delete=fields.CASCADE,
         related_name="current_features",

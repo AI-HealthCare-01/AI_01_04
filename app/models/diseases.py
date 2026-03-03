@@ -6,7 +6,10 @@
 - icd_code: 국제질병분류코드 (WHO 표준)
 """
 
+from __future__ import annotations
+
 from tortoise import fields, models
+from tortoise.fields.relational import ForeignKeyRelation
 
 
 class Disease(models.Model):
@@ -32,7 +35,8 @@ class DiseaseGuideline(models.Model):
     """
 
     id = fields.IntField(pk=True)
-    disease = fields.ForeignKeyField(
+
+    disease: ForeignKeyRelation["Disease"] = fields.ForeignKeyField(
         "models.Disease",
         on_delete=fields.CASCADE,
         related_name="guidelines",

@@ -10,7 +10,12 @@
   3. 보안상 민감 정보 분리
 """
 
+from __future__ import annotations
+
 from tortoise import fields, models
+from tortoise.fields.relational import OneToOneRelation
+
+from app.models.users import User
 
 
 class UserCredential(models.Model):
@@ -20,11 +25,11 @@ class UserCredential(models.Model):
     users 테이블과 1:1 관계
     """
 
-    user = fields.OneToOneField(
+    user: OneToOneRelation[User] = fields.OneToOneField(
         "models.User",
         on_delete=fields.CASCADE,
-        related_name="credential",
-        pk=True,  # user_id가 PK (1:1이므로)
+        related_name="credentials",
+        pk=True,
     )
     password_hash = fields.CharField(max_length=255)
     password_updated_at = fields.DatetimeField(null=True)

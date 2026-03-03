@@ -7,7 +7,13 @@
 - user_active_recommendations: 사용자에게 현재 노출 중인 추천 (N:N 중간 테이블)
 """
 
+from __future__ import annotations
+
 from tortoise import fields, models
+from tortoise.fields.relational import ForeignKeyRelation
+
+from app.models.users import User
+from app.models.user_features import UserFeatureSnapshot
 
 
 class RecommendationBatch(models.Model):
@@ -18,7 +24,8 @@ class RecommendationBatch(models.Model):
     """
 
     id = fields.IntField(pk=True)
-    user = fields.ForeignKeyField(
+
+    user: ForeignKeyRelation[User] = fields.ForeignKeyField(
         "models.User",
         on_delete=fields.CASCADE,
         related_name="recommendation_batches",
@@ -41,22 +48,24 @@ class Recommendation(models.Model):
     """
 
     id = fields.IntField(pk=True)
-    user = fields.ForeignKeyField(
+
+    user: ForeignKeyRelation[User] = fields.ForeignKeyField(
         "models.User",
         on_delete=fields.CASCADE,
         related_name="recommendations",
     )
-    feature_snapshot = fields.ForeignKeyField(
+    feature_snapshot: ForeignKeyRelation[UserFeatureSnapshot] | None = fields.ForeignKeyField(
         "models.UserFeatureSnapshot",
         on_delete=fields.SET_NULL,
         null=True,
         related_name="recommendations",
     )
-    batch = fields.ForeignKeyField(
+    batch: ForeignKeyRelation[RecommendationBatch] = fields.ForeignKeyField(
         "models.RecommendationBatch",
         on_delete=fields.CASCADE,
         related_name="recommendations",
     )
+
     recommendation_type = fields.CharField(max_length=50, null=True)
     source = fields.CharField(max_length=100, null=True)
     content = fields.TextField(null=True)
@@ -83,12 +92,13 @@ class UserActiveRecommendation(models.Model):
     """
 
     id = fields.IntField(pk=True)
-    user = fields.ForeignKeyField(
+
+    user: ForeignKeyRelation[User] = fields.ForeignKeyField(
         "models.User",
         on_delete=fields.CASCADE,
         related_name="active_recommendations",
     )
-    recommendation = fields.ForeignKeyField(
+    recommendation: ForeignKeyRelation[Recommendation] = fields.ForeignKeyField(
         "models.Recommendation",
         on_delete=fields.CASCADE,
         related_name="active_users",
@@ -107,17 +117,18 @@ class RecommendationFeedback(models.Model):
     """
 
     id = fields.IntField(pk=True)
-    recommendation = fields.ForeignKeyField(
+
+    recommendation: ForeignKeyRelation[Recommendation] = fields.ForeignKeyField(
         "models.Recommendation",
         on_delete=fields.CASCADE,
         related_name="feedbacks",
     )
-    user = fields.ForeignKeyField(
+    user: ForeignKeyRelation[User] = fields.ForeignKeyField(
         "models.User",
         on_delete=fields.CASCADE,
         related_name="recommendation_feedbacks",
     )
-    feedback_type = fields.CharField(max_length=50)  # like, dislike, click 등
+    feedback_type = fields.CharField(max_length=50)
     created_at = fields.DatetimeField(auto_now_add=True)
 
     class Meta:

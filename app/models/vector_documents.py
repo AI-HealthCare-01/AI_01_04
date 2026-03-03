@@ -7,8 +7,9 @@
 - MySQL에는 vector 타입이 없어 JSON으로 저장 (1536차원 = OpenAI embedding)
 """
 
+from __future__ import annotations
 from tortoise import fields, models
-
+from typing import Any
 
 class VectorDocument(models.Model):
     """
@@ -23,7 +24,7 @@ class VectorDocument(models.Model):
     reference_type = fields.CharField(max_length=100)
     reference_id = fields.IntField()
     content = fields.TextField()
-    embedding = fields.JSONField()  # [0.1, -0.2, ...] 1536개 float
+    embedding: dict[str, Any] | list[Any] = fields.JSONField()
     created_at = fields.DatetimeField(auto_now_add=True)
 
     class Meta:

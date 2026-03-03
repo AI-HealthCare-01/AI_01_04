@@ -1,45 +1,44 @@
-"""
-처방전 관련 모델 (ERD 기반)
+from __future__ import annotations
 
-📚 학습 포인트:
-- 여러 FK를 가진 테이블: users, diseases, drugs를 모두 참조
-- CASCADE: 부모 삭제 시 자식도 삭제 (예: 사용자 삭제 → 처방전 삭제)
-"""
+from typing import TYPE_CHECKING
 
 from tortoise import fields, models
+from tortoise.fields.relational import ForeignKeyRelation
+
+if TYPE_CHECKING:
+    from app.models.users import User
+    from app.models.diseases import Disease
+    from app.models.drugs import Drug
 
 
 class Prescription(models.Model):
-    """
-    처방전 테이블 (ERD: prescriptions)
-
-    - user: 누구의 처방인지
-    - disease: 어떤 질병에 대한 처방인지
-    - drug: 어떤 약인지
-    - dose_*: 복용량 정보
-    """
-
     id = fields.IntField(pk=True)
-    user = fields.ForeignKeyField(
+
+    user: ForeignKeyRelation["User"] = fields.ForeignKeyField(
         "models.User",
         on_delete=fields.CASCADE,
         related_name="prescriptions",
     )
-    disease = fields.ForeignKeyField(
+
+    # ✅ null=True 이므로 Optional로 선언
+    disease: ForeignKeyRelation["Disease"] | None = fields.ForeignKeyField(
         "models.Disease",
         on_delete=fields.SET_NULL,
         null=True,
         related_name="prescriptions",
     )
-    drug = fields.ForeignKeyField(
+
+    # ✅ null=True 이므로 Optional로 선언
+    drug: ForeignKeyRelation["Drug"] | None = fields.ForeignKeyField(
         "models.Drug",
         on_delete=fields.SET_NULL,
         null=True,
         related_name="prescriptions",
     )
-    dose_count = fields.IntField(null=True)  # 1일 복용 횟수
-    dose_amount = fields.CharField(max_length=50, null=True)  # 1회 복용량 (예: "1정")
-    dose_unit = fields.CharField(max_length=20, null=True)  # 단위 (정, ml 등)
+
+    dose_count = fields.IntField(null=True)
+    dose_amount = fields.CharField(max_length=50, null=True)
+    dose_unit = fields.CharField(max_length=20, null=True)
     start_date = fields.DateField(null=True)
     end_date = fields.DateField(null=True)
     created_at = fields.DatetimeField(auto_now_add=True)
@@ -49,18 +48,14 @@ class Prescription(models.Model):
 
 
 class PrescriptionMemo(models.Model):
-    """
-    처방전 메모 (ERD: prescription_memos)
-
-    사용자가 복용 후 효과/부작용을 기록
-    """
-
     id = fields.IntField(pk=True)
-    prescription = fields.ForeignKeyField(
+
+    prescription: ForeignKeyRelation["Prescription"] = fields.ForeignKeyField(
         "models.Prescription",
         on_delete=fields.CASCADE,
         related_name="memos",
     )
+
     memo_datetime = fields.DatetimeField()
     effect = fields.TextField(null=True)
     side_effect = fields.TextField(null=True)
@@ -73,18 +68,29 @@ class MedicationIntakeLog(models.Model):
     """
     복용 기록 (ERD: medication_intake_logs)
 
-    실제로 약을 먹은 시각과 상태 기록
+    EPIC4(일자별 이력/체크리스트/달성률) 지원:
+    - intake_date: 일자별 집계
+    - slot_label: 체크리스트 슬롯(아침/점심/저녁/자기전)
+    - intake_datetime: taken이면 now, 해제면 None
     """
 
     id = fields.IntField(pk=True)
-    prescription = fields.ForeignKeyField(
+
+    prescription: ForeignKeyRelation["Prescription"] = fields.ForeignKeyField(
         "models.Prescription",
         on_delete=fields.CASCADE,
         related_name="intake_logs",
     )
-    intake_datetime = fields.DatetimeField()
-    status = fields.CharField(max_length=50)  # taken, skipped, missed 등
+
+    intake_date = fields.DateField(index=True)
+    slot_label = fields.CharField(max_length=30, null=True)
+    intake_datetime = fields.DatetimeField(null=True)
+
+    status = fields.CharField(max_length=50)  # taken / skipped / delayed
+
     created_at = fields.DatetimeField(auto_now_add=True)
+    updated_at = fields.DatetimeField(auto_now=True)
 
     class Meta:
         table = "medication_intake_logs"
+        indexes = (("intake_date", "status"),)
