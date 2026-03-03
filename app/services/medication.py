@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Literal
+from typing import Any, Literal, cast
 
 from fastapi import HTTPException
 from starlette import status
@@ -19,15 +19,11 @@ SortOrder = Literal["asc", "desc"]
 def _calc_rate_from_logs(logs: list[MedicationIntakeLog]) -> int:
     if not logs:
         return 0
-    taken = sum(1 for x in logs if x.status == "taken")
-    total = len(logs)
-    return int(round((taken / total) * 100))
+    taken = sum(1 for lg in logs if lg.status == "taken")
+    return int(round((taken / len(logs)) * 100))
 
 
 def _slots_by_dose_count(dose_count: int | None) -> list[str]:
-    """
-    dose_count 기반 기본 슬롯. (EPIC4)
-    """
     if dose_count is None:
         return ["아침"]
     if dose_count >= 4:
@@ -40,7 +36,6 @@ def _slots_by_dose_count(dose_count: int | None) -> list[str]:
 
 
 def _make_label(log: MedicationIntakeLog) -> str:
-    # 우선순위: slot_label > drug name > fallback
     slot = getattr(log, "slot_label", None)
     if slot:
         return str(slot)
@@ -54,11 +49,6 @@ def _make_label(log: MedicationIntakeLog) -> str:
 
 class MedicationService:
     async def _seed_day_if_empty(self, *, user_id: int, date_str: str) -> None:
-        """
-        ✅ 해당 날짜 체크리스트 로그가 없으면 DB에 생성(seed)
-        - 사용자 활성 처방(prescriptions)을 기준으로 dose_count 슬롯 생성
-        - status 기본값: skipped
-        """
         d = parse_date_yyyy_mm_dd(date_str)
 
         existing_cnt = await MedicationIntakeLog.filter(
@@ -68,7 +58,6 @@ class MedicationService:
         if existing_cnt > 0:
             return
 
-        # "활성 처방" (기간이 null일 수 있으니 유연하게)
         pres_q = Q(user_id=user_id)
         pres_q &= Q(start_date__lte=d) | Q(start_date__isnull=True)
         pres_q &= Q(end_date__gte=d) | Q(end_date__isnull=True)
@@ -115,11 +104,8 @@ class MedicationService:
         sliced = days[offset : offset + size]
 
         rows: list[dict] = []
-
         for d in sliced:
             ds = d.isoformat()
-
-            # ✅ 로그 없으면 생성해서 "빈 날짜"도 row가 나오게
             await self._seed_day_if_empty(user_id=user_id, date_str=ds)
 
             day_logs = await MedicationIntakeLog.filter(
@@ -130,19 +116,12 @@ class MedicationService:
             rate = _calc_rate_from_logs(day_logs)
             bucket = "none" if not day_logs else rate_bucket(rate)
 
-            rows.append(
-                {
-                    "date": ds,
-                    "rate": rate,
-                    "bucket": bucket,
-                }
-            )
+            rows.append({"date": ds, "rate": rate, "bucket": bucket})
 
         meta = build_page_meta(total=total, page=page, page_size=size)
         return {"items": rows, "meta": meta}
 
     async def get_day_detail(self, user_id: int, date: str) -> dict:
-        # 날짜 형식 검증 + seed
         try:
             dt = parse_date_yyyy_mm_dd(date)
         except DateTimeError as e:
@@ -177,17 +156,29 @@ class MedicationService:
         return {"date": date, "rate": rate, "bucket": bucket, "items": items}
 
     async def update_log(self, user_id: int, log_id: int, data: MedicationLogUpdateRequest) -> dict:
-        log = await MedicationIntakeLog.filter(id=log_id).select_related("prescription").first()
+        log = (
+            await MedicationIntakeLog.filter(
+                id=log_id,
+                prescription__user_id=user_id,
+            )
+            .select_related("prescription")
+            .first()
+        )
+
         if not log:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="log not found.")
-        if log.prescription.user_id != user_id:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="forbidden.")
 
-        # ✅ 상태 변경 + 정책: taken이면 시간 기록, 아니면 시간 제거
         log.status = data.status
-        log.intake_datetime = datetime.now() if data.status == "taken" else None
+
+        # mypy가 intake_datetime을 datetime(Non-Optional)로 추론하는 환경이라,
+        # Any 캐스트로 속성 대입만 타입체크에서 제외
+        log_any = cast(Any, log)
+        if data.status == "taken":
+            log_any.intake_datetime = datetime.now()
+        else:
+            log_any.intake_datetime = None
+
         await log.save()
 
         day = await self.get_day_detail(user_id=user_id, date=log.intake_date.isoformat())
-
         return {"log_id": log_id, "updated": True, "day": day}
