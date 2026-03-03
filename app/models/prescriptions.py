@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from typing import TYPE_CHECKING
+
 from tortoise import fields, models
 from tortoise.fields.relational import ForeignKeyRelation
 
