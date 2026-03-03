@@ -6,13 +6,26 @@ Bucket = Literal["good", "warn", "bad", "none"]
 MedicationStatus = Literal["taken", "skipped", "delayed"]
 
 
+class PageMeta(BaseModel):
+    total: int = Field(ge=0)
+    page: int = Field(ge=1)
+    page_size: int = Field(ge=1)
+    total_pages: int = Field(ge=0)
+    has_prev: bool
+    has_next: bool
+
+
 class MedicationHistoryRow(BaseModel):
     date: str  # YYYY-MM-DD
     rate: int = Field(ge=0, le=100)
+    bucket: Bucket
+    # 상세 접근 키(현 구조에서는 date로 상세 접근하므로 동일값 제공)
+    detail_key: str
 
 
 class MedicationHistoryListResponse(BaseModel):
     items: list[MedicationHistoryRow]
+    meta: PageMeta
 
 
 class MedicationChecklistItem(BaseModel):
