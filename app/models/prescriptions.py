@@ -73,7 +73,7 @@ class MedicationIntakeLog(models.Model):
     """
     복용 기록 (ERD: medication_intake_logs)
 
-    실제로 약을 먹은 시각과 상태 기록
+    실제로 약을 먹은 시각과 상태 기록 + (EPIC4) 슬롯/일자 기반 체크리스트 지원
     """
 
     id = fields.IntField(pk=True)
@@ -82,9 +82,22 @@ class MedicationIntakeLog(models.Model):
         on_delete=fields.CASCADE,
         related_name="intake_logs",
     )
-    intake_datetime = fields.DatetimeField()
-    status = fields.CharField(max_length=50)  # taken, skipped, missed 등
+
+    # ✅ EPIC4용: 일자별 조회/집계 빠르게
+    intake_date = fields.DateField(index=True)
+
+    # ✅ EPIC4용: 프론트 체크리스트 드롭다운/표시에 필요
+    # 예: "아침", "점심", "저녁", "자기전"
+    slot_label = fields.CharField(max_length=30, null=True)
+
+    # 실제 복용 시각 (taken이면 now 세팅, 체크 해제면 null)
+    intake_datetime = fields.DatetimeField(null=True)
+
+    status = fields.CharField(max_length=50)  # taken, skipped, delayed 등
+
     created_at = fields.DatetimeField(auto_now_add=True)
+    updated_at = fields.DatetimeField(auto_now=True)
 
     class Meta:
         table = "medication_intake_logs"
+        indexes = (("intake_date", "status"),)
