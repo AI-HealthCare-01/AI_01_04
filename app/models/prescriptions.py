@@ -20,7 +20,6 @@ class Prescription(models.Model):
         related_name="prescriptions",
     )
 
-    # ✅ null=True 이므로 Optional로 선언
     disease: ForeignKeyRelation[Disease] | None = fields.ForeignKeyField(
         "models.Disease",
         on_delete=fields.SET_NULL,
@@ -28,7 +27,6 @@ class Prescription(models.Model):
         related_name="prescriptions",
     )
 
-    # ✅ null=True 이므로 Optional로 선언
     drug: ForeignKeyRelation[Drug] | None = fields.ForeignKeyField(
         "models.Drug",
         on_delete=fields.SET_NULL,
@@ -36,9 +34,9 @@ class Prescription(models.Model):
         related_name="prescriptions",
     )
 
-    dose_count = fields.IntField(null=True)
-    dose_amount = fields.CharField(max_length=50, null=True)
-    dose_unit = fields.CharField(max_length=20, null=True)
+    dose_count = fields.IntField(null=True)  # 1일 복용 횟수
+    dose_amount = fields.CharField(max_length=50, null=True)  # 1회 복용량 (예: "1정")
+    dose_unit = fields.CharField(max_length=20, null=True)  # 단위 (정, ml 등)
     start_date = fields.DateField(null=True)
     end_date = fields.DateField(null=True)
     created_at = fields.DatetimeField(auto_now_add=True)
@@ -82,15 +80,18 @@ class MedicationIntakeLog(models.Model):
         related_name="intake_logs",
     )
 
+    # ✅ EPIC4
     intake_date = fields.DateField(index=True)
     slot_label = fields.CharField(max_length=30, null=True)
     intake_datetime = fields.DatetimeField(null=True)
 
-    status = fields.CharField(max_length=50)  # taken / skipped / delayed
-
+    status = fields.CharField(max_length=50)  # taken, skipped, delayed 등
     created_at = fields.DatetimeField(auto_now_add=True)
-    updated_at = fields.DatetimeField(auto_now=True)
 
     class Meta:
         table = "medication_intake_logs"
-        indexes = (("intake_date", "status"),)
+        # (선택) 조회 최적화
+        indexes = (
+            ("intake_date", "status"),
+            ("prescription_id", "intake_date"),
+        )

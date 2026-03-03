@@ -8,10 +8,13 @@ OAuth/소셜 로그인 제공자 정보 (ERD 기반)
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from tortoise import fields, models
 from tortoise.fields.relational import ForeignKeyRelation
 
-from app.models.users import User
+if TYPE_CHECKING:
+    from app.models.users import User
 
 
 class UserAuthProvider(models.Model):
@@ -28,7 +31,8 @@ class UserAuthProvider(models.Model):
         on_delete=fields.CASCADE,
         related_name="auth_providers",
     )
-    provider = fields.CharField(max_length=50)
+
+    provider = fields.CharField(max_length=50)  # google, kakao, naver 등
     provider_user_id = fields.CharField(max_length=255)
     created_at = fields.DatetimeField(auto_now_add=True)
 

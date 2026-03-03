@@ -41,6 +41,7 @@ class DiseaseGuideline(models.Model):
         on_delete=fields.CASCADE,
         related_name="guidelines",
     )
+
     category = fields.CharField(max_length=100)
     content = fields.TextField()
     created_at = fields.DatetimeField(auto_now_add=True)

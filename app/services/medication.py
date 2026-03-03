@@ -9,20 +9,12 @@ from app.dtos.medication import MedicationLogUpdateRequest
 from app.utils.datetime import date_range_inclusive, normalize_from_to, parse_date_yyyy_mm_dd
 from app.utils.progress import rate_bucket
 
-# DB 붙이면 _MEM/_LOG_INDEX/_seed_if_empty 부분을 repo 조회/생성으로 교체하면 됨
-# ===== 임시 In-Memory 저장소 (DB 붙으면 Repo로 교체) =====
-# user_id -> date -> checklist items
-# item: {"id": int, "label": str, "status": "taken|skipped|delayed", "intake_datetime": str|None}
 _MEM: dict[int, dict[str, list[dict]]] = {}
-# log_id -> (user_id, date)
 _LOG_INDEX: dict[int, tuple[int, str]] = {}
 _NEXT_LOG_ID = 1
 
 
 def _seed_if_empty(user_id: int, date_str: str) -> None:
-    """
-    해당 날짜에 데이터 없으면 기본 체크리스트(아침/점심/저녁/자기전) 생성
-    """
     global _NEXT_LOG_ID
 
     user_map = _MEM.setdefault(user_id, {})
@@ -86,21 +78,22 @@ class MedicationService:
         if owner_id != user_id:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="forbidden.")
 
-        # 해당 item 찾아서 업데이트
         items = _MEM[user_id][date_str]
         found = False
         for it in items:
             if it["id"] == log_id:
                 it["status"] = data.status
-                # taken이면 복용시간 기록, 아니면 제거(정책은 취향)
-                it["intake_datetime"] = datetime.now().isoformat() if data.status == "taken" else None
+
+                # ✅ str | None 로 맞춤 (mypy assignment 에러 방지)
+                intake_dt: str | None = datetime.now().isoformat() if data.status == "taken" else None
+                it["intake_datetime"] = intake_dt
+
                 found = True
                 break
 
         if not found:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="log not found in day.")
 
-        # 업데이트 후 day 재계산해서 반환
         day = await self.get_day_detail(user_id=user_id, date=date_str)
 
         return {

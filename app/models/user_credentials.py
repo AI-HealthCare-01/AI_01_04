@@ -28,9 +28,10 @@ class UserCredential(models.Model):
     user: OneToOneRelation[User] = fields.OneToOneField(
         "models.User",
         on_delete=fields.CASCADE,
-        related_name="credentials",
+        related_name="credential",
         pk=True,
     )
+
     password_hash = fields.CharField(max_length=255)
     password_updated_at = fields.DatetimeField(null=True)
 
