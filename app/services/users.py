@@ -26,8 +26,12 @@ class UserManageService:
             await self.auth_service.check_phone_number_exists(normalized_phone_number)
             data.phone_number = normalized_phone_number
 
+        update_data = data.model_dump(exclude_none=True)
+        if "birthday" in update_data:
+            update_data["birth_date"] = update_data.pop("birthday")
+
         async with in_transaction():
-            await self.repo.update_instance(user=user, data=data.model_dump(exclude_none=True))
+            await self.repo.update_instance(user=user, data=update_data)
             await user.refresh_from_db()
 
         return user

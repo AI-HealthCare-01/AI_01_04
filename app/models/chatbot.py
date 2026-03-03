@@ -21,7 +21,6 @@ class ChatbotSession(models.Model):
     """
     챗봇 대화 세션 (ERD: chatbot_sessions)
     """
-
     id = fields.IntField(pk=True)
     user: ForeignKeyRelation[User] = fields.ForeignKeyField(
         "models.User",
@@ -46,6 +45,7 @@ class ChatbotMessage(models.Model):
         on_delete=fields.CASCADE,
         related_name="messages",
     )
+
     sender = fields.CharField(max_length=20)  # user, assistant
     message = fields.TextField()
     created_at = fields.DatetimeField(auto_now_add=True)
@@ -67,6 +67,7 @@ class ChatbotSessionSummary(models.Model):
         on_delete=fields.CASCADE,
         related_name="summaries",
     )
+
     summary = fields.TextField()
     created_at = fields.DatetimeField(auto_now_add=True)
 

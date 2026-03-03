@@ -87,6 +87,7 @@ class MedicationIntakeLog(models.Model):
 
     status = fields.CharField(max_length=50)  # taken, skipped, delayed 등
     created_at = fields.DatetimeField(auto_now_add=True)
+    updated_at = fields.DatetimeField(auto_now=True)
 
     class Meta:
         table = "medication_intake_logs"

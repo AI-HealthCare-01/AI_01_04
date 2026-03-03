@@ -7,6 +7,7 @@ from tortoise.transactions import in_transaction
 
 from app.dtos.auth import LoginRequest, SignUpRequest
 from app.models.users import User
+from app.repositories.user_credential_repository import UserCredentialRepository
 from app.repositories.user_repository import UserRepository
 from app.services.jwt import JwtService
 from app.utils.common import normalize_phone_number
@@ -17,6 +18,7 @@ from app.utils.security import hash_password, verify_password
 class AuthService:
     def __init__(self):
         self.user_repo = UserRepository()
+        self.credential_repo = UserCredentialRepository()
         self.jwt_service = JwtService()
 
     async def signup(self, data: SignUpRequest) -> User:
@@ -28,11 +30,14 @@ class AuthService:
         async with in_transaction():
             user = await self.user_repo.create_user(
                 email=data.email,
-                hashed_password=hash_password(data.password),
                 name=data.name,
                 phone_number=normalized_phone_number,
+                birth_date=data.birthday,
                 gender=data.gender,
-                birthday=data.birthday,
+            )
+            await self.credential_repo.create_for_user(
+                user=user,
+                password_hash=hash_password(data.password),
             )
             return user
 
@@ -45,7 +50,14 @@ class AuthService:
                 detail="이메일 또는 비밀번호가 올바르지 않습니다.",
             )
 
-        if not verify_password(data.password, user.hashed_password):
+        credential = await self.credential_repo.get_by_user_id(user.id)
+        if not credential:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="이메일 또는 비밀번호가 올바르지 않습니다.",
+            )
+
+        if not verify_password(data.password, credential.password_hash):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="이메일 또는 비밀번호가 올바르지 않습니다.",
