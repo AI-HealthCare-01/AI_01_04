@@ -13,9 +13,6 @@ from __future__ import annotations
 from tortoise import fields, models
 from tortoise.fields.relational import ForeignKeyRelation
 
-if TYPE_CHECKING:
-    from app.models.diseases import Disease
-
 
 class Disease(models.Model):
     """

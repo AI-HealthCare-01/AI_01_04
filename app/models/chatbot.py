@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 """
 챗봇 세션/메시지 모델 (ERD 기반)
 
@@ -7,6 +5,8 @@ from __future__ import annotations
 - 세션 → 메시지: 1:N (한 대화에 여러 메시지)
 - sender: 'user' 또는 'assistant' (누가 보냈는지)
 """
+
+from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
@@ -21,15 +21,12 @@ class ChatbotSession(models.Model):
     """
     챗봇 대화 세션 (ERD: chatbot_sessions)
     """
-
     id = fields.IntField(pk=True)
-
-    user: ForeignKeyRelation["User"] = fields.ForeignKeyField(
+    user: ForeignKeyRelation[User] = fields.ForeignKeyField(
         "models.User",
         on_delete=fields.CASCADE,
         related_name="chatbot_sessions",
     )
-
     started_at = fields.DatetimeField(null=True)
     ended_at = fields.DatetimeField(null=True)
 
@@ -43,8 +40,7 @@ class ChatbotMessage(models.Model):
     """
 
     id = fields.IntField(pk=True)
-
-    session: ForeignKeyRelation["ChatbotSession"] = fields.ForeignKeyField(
+    session: ForeignKeyRelation[ChatbotSession] = fields.ForeignKeyField(
         "models.ChatbotSession",
         on_delete=fields.CASCADE,
         related_name="messages",
@@ -66,8 +62,7 @@ class ChatbotSessionSummary(models.Model):
     """
 
     id = fields.IntField(pk=True)
-
-    session: ForeignKeyRelation["ChatbotSession"] = fields.ForeignKeyField(
+    session: ForeignKeyRelation[ChatbotSession] = fields.ForeignKeyField(
         "models.ChatbotSession",
         on_delete=fields.CASCADE,
         related_name="summaries",
