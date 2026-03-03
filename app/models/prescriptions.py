@@ -7,6 +7,12 @@
 """
 
 from tortoise import fields, models
+from tortoise.fields.relational import ForeignKeyRelation
+
+if TYPE_CHECKING:
+    from app.models.diseases import Disease
+    from app.models.drugs import Drug
+    from app.models.users import User
 
 
 class Prescription(models.Model):
@@ -20,18 +26,23 @@ class Prescription(models.Model):
     """
 
     id = fields.IntField(pk=True)
-    user = fields.ForeignKeyField(
+
+    user: ForeignKeyRelation[User] = fields.ForeignKeyField(
         "models.User",
         on_delete=fields.CASCADE,
         related_name="prescriptions",
     )
-    disease = fields.ForeignKeyField(
+
+    # ✅ null=True 이므로 Optional로 선언
+    disease: ForeignKeyRelation[Disease] | None = fields.ForeignKeyField(
         "models.Disease",
         on_delete=fields.SET_NULL,
         null=True,
         related_name="prescriptions",
     )
-    drug = fields.ForeignKeyField(
+
+    # ✅ null=True 이므로 Optional로 선언
+    drug: ForeignKeyRelation[Drug] | None = fields.ForeignKeyField(
         "models.Drug",
         on_delete=fields.SET_NULL,
         null=True,
@@ -56,7 +67,8 @@ class PrescriptionMemo(models.Model):
     """
 
     id = fields.IntField(pk=True)
-    prescription = fields.ForeignKeyField(
+
+    prescription: ForeignKeyRelation[Prescription] = fields.ForeignKeyField(
         "models.Prescription",
         on_delete=fields.CASCADE,
         related_name="memos",
@@ -77,7 +89,8 @@ class MedicationIntakeLog(models.Model):
     """
 
     id = fields.IntField(pk=True)
-    prescription = fields.ForeignKeyField(
+
+    prescription: ForeignKeyRelation[Prescription] = fields.ForeignKeyField(
         "models.Prescription",
         on_delete=fields.CASCADE,
         related_name="intake_logs",
