@@ -47,7 +47,7 @@ class UserInfoResponse(BaseSerializerModel):
     updated_at: datetime
 
     @classmethod
-    def from_user(cls, user: User) -> "UserInfoResponse":
+    def from_user(cls, user: User) -> UserInfoResponse:
         return cls(
             id=user.id,
             name=user.name,

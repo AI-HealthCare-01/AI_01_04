@@ -1,9 +1,10 @@
 set -eo pipefail
 
-COLOR_GREEN=$(tput setaf 2)
-COLOR_BLUE=$(tput setaf 4)
-COLOR_RED=$(tput setaf 1)
-COLOR_NC=$(tput sgr0)
+# tput는 non-TTY 환경에서 실패할 수 있음
+COLOR_GREEN=$(tput setaf 2 2>/dev/null || echo "")
+COLOR_BLUE=$(tput setaf 4 2>/dev/null || echo "")
+COLOR_RED=$(tput setaf 1 2>/dev/null || echo "")
+COLOR_NC=$(tput sgr0 2>/dev/null || echo "")
 
 cd "$(dirname "$0")/../.."
 
