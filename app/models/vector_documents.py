@@ -9,8 +9,6 @@
 
 from __future__ import annotations
 
-from typing import Any
-
 from tortoise import fields, models
 
 
@@ -27,7 +25,7 @@ class VectorDocument(models.Model):
     reference_type = fields.CharField(max_length=100)
     reference_id = fields.IntField()
     content = fields.TextField()
-    embedding: dict[str, Any] | list[Any] = fields.JSONField()
+    embedding: list[float] = fields.JSONField()  # type: ignore[assignment]
     created_at = fields.DatetimeField(auto_now_add=True)
 
     class Meta:
