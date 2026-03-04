@@ -5,8 +5,6 @@ from typing import Any
 from unittest.mock import Mock, patch
 
 import pytest
-import pytest_asyncio
-from _pytest.fixtures import FixtureRequest
 from tortoise import generate_config
 from tortoise.contrib.test import finalizer, initializer
 
@@ -49,17 +47,20 @@ def get_test_db_config() -> dict[str, Any]:
     return tortoise_config
 
 
-@pytest.fixture(scope="session", autouse=True)
-def initialize(request: FixtureRequest) -> Generator[None, None]:
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    with patch("tortoise.contrib.test.getDBConfig", Mock(return_value=get_test_db_config())):
-        initializer(modules=TORTOISE_APP_MODELS)
-    yield
-    finalizer()
+@pytest.fixture(scope="session")
+def event_loop():
+    """TestCase를 위한 event loop 생성 및 설정"""
+    policy = asyncio.get_event_loop_policy()
+    loop = policy.new_event_loop()
+    policy.set_event_loop(loop)
+    yield loop
     loop.close()
 
 
-@pytest_asyncio.fixture(autouse=True, scope="session")  # type: ignore[type-var]
-def event_loop() -> None:
-    pass
+@pytest.fixture(scope="session", autouse=True)
+def initialize_db(event_loop) -> Generator[None, None]:
+    """TestCase를 위한 DB 초기화"""
+    with patch("tortoise.contrib.test.getDBConfig", Mock(return_value=get_test_db_config())):
+        initializer(modules=TORTOISE_APP_MODELS)
+        yield
+        finalizer()
