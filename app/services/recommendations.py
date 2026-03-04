@@ -25,9 +25,7 @@ class RecommendationService:
     async def list_by_user(self, user_id: int, limit: int = 50, offset: int = 0) -> list:
         """사용자의 추천 목록 조회"""
         try:
-            recommendations = await self.recommendation_repo.list_by_user(
-                user_id, limit=limit, offset=offset
-            )
+            recommendations = await self.recommendation_repo.list_by_user(user_id, limit=limit, offset=offset)
             return [
                 {
                     "id": rec.id,
