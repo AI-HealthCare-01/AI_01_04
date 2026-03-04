@@ -1,12 +1,14 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 from tortoise import fields, models
 from tortoise.fields.relational import ForeignKeyRelation
 
 if TYPE_CHECKING:
     from app.models.users import User
+
+HealthStatus = Literal["done", "skipped"]
 
 
 class HealthChecklistTemplate(models.Model):
@@ -32,7 +34,8 @@ class HealthChecklistTemplate(models.Model):
 class HealthChecklistLog(models.Model):
     """
     사용자 일자별 건강관리 로그
-    - date 기준으로 하루 체크리스트를 조회/집계
+
+    - date 기준으로 하루 체크리스트 조회/집계
     - status: done / skipped
     - checked_at: done이면 now, 해제면 None
     """
@@ -42,7 +45,7 @@ class HealthChecklistLog(models.Model):
     user: ForeignKeyRelation["User"] = fields.ForeignKeyField(
         "models.User",
         on_delete=fields.CASCADE,
-        related_name="health_logs",
+        related_name="health_checklist_logs",
     )
 
     template: ForeignKeyRelation["HealthChecklistTemplate"] = fields.ForeignKeyField(
@@ -60,4 +63,4 @@ class HealthChecklistLog(models.Model):
 
     class Meta:
         table = "health_checklist_logs"
-        indexes = (("user_id", "date"),)
+        indexes = (("user_id", "date"), ("date", "status"))
