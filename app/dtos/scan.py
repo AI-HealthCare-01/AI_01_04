@@ -23,7 +23,7 @@ class ScanResultResponse(BaseModel):
 class ScanResultUpdateRequest(BaseModel):
     document_date: str | None = None
     diagnosis: str | None = None
-    drugs: list[str] = []
+    drugs: list[str] | None = None
 
 
 class ScanSaveResponse(BaseModel):
