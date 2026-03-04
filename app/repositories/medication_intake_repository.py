@@ -7,7 +7,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime
 
 from app.models.prescriptions import MedicationIntakeLog, Prescription
 
@@ -54,6 +54,17 @@ class MedicationIntakeRepository:
             .order_by("intake_datetime")
             .prefetch_related("prescription")
         )
+
+    async def list_by_intake_date(
+        self,
+        user_id: int,
+        intake_date: date,
+    ) -> list[MedicationIntakeLog]:
+        """특정 일자의 복용 기록 (일자별 집계용)"""
+        return await self._model.filter(
+            prescription__user_id=user_id,
+            intake_date=intake_date,
+        ).prefetch_related("prescription", "prescription__drug")
 
     async def list_by_prescription_for_user(
         self,

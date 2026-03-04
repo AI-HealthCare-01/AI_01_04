@@ -1,52 +1,100 @@
 from __future__ import annotations
 
-from datetime import date
+import logging
+from datetime import datetime
 from typing import Any
 
+from fastapi import HTTPException
+
+from app.core import config
+from app.models.users import User
+from app.repositories.medication_intake_repository import MedicationIntakeRepository
+from app.repositories.prescription_repository import PrescriptionRepository
 from app.services.health import HealthService
-from app.services.medication import MedicationService
+
+logger = logging.getLogger(__name__)
 
 
 class DashboardService:
     def __init__(
         self,
-        medication_service: MedicationService | None = None,
+        prescription_repo: PrescriptionRepository | None = None,
+        medication_repo: MedicationIntakeRepository | None = None,
         health_service: HealthService | None = None,
     ) -> None:
-        self._medication_service = medication_service or MedicationService()
-        self._health_service = health_service or HealthService()
+        self.prescription_repo = prescription_repo or PrescriptionRepository()
+        self.medication_repo = medication_repo or MedicationIntakeRepository()
+        self.health_service = health_service or HealthService()
 
-    async def get_summary(self, user: Any) -> dict:
+    async def get_summary(self, user: User) -> dict[str, Any]:
         """
         Dashboard 요약 정보 생성
 
-        - recent_prescription / remaining_medication_days: repository 파트에서 채울 예정이라 여기선 placeholder 유지
-        - today_medication_completed: 오늘 복약 달성률이 100%이면 True
-        - today_health_completed: 오늘 건강관리 달성률이 100%이면 True
+        - recent_prescription: 최근 처방전 1건
+        - remaining_medication_days: 남은 약 일수 (가장 가까운 end_date 기준)
+        - today_medication_completed: 오늘 복약 모두 완료 여부
+        - today_health_completed: 오늘 건강관리 달성률 100% 여부 (HealthService 연동)
         """
-        today = date.today().isoformat()
-
-        # 오늘 복약 상태
-        med_done = False
         try:
-            med_day = await self._medication_service.get_day_detail(user_id=user.id, date=today)
-            if med_day.get("items"):
-                med_done = int(med_day.get("rate", 0)) >= 100
-        except Exception:
-            med_done = False
+            return await self._get_summary_impl(user)
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.exception("Dashboard get_summary failed")
+            raise HTTPException(status_code=500, detail=str(e)) from e
 
-        # 오늘 건강관리 상태
-        health_done = False
+    async def _get_summary_impl(self, user: User) -> dict[str, Any]:
+        user_id = user.id
+        today = datetime.now(config.TIMEZONE).date()
+
+        # 1) 최근 처방전 1건
+        prescriptions = await self.prescription_repo.list_by_user(user_id, limit=1)
+        recent_prescription: dict[str, Any] | None = None
+        if prescriptions:
+            rx = prescriptions[0]
+            await rx.fetch_related("drug", "disease")
+            recent_prescription = {
+                "id": rx.id,
+                "drug_name": rx.drug.name if rx.drug else None,
+                "disease_name": rx.disease.name if rx.disease else None,
+                "start_date": rx.start_date.isoformat() if rx.start_date else None,
+                "end_date": rx.end_date.isoformat() if rx.end_date else None,
+                "dose_count": rx.dose_count,
+            }
+
+        # 2) 남은 약 일수: 유효한 처방전 중 end_date가 가장 가까운 것 기준
+        remaining_medication_days = 0
+        all_prescriptions = await self.prescription_repo.list_by_user(user_id, limit=50)
+        future_end_dates = [
+            (p.end_date - today).days for p in all_prescriptions if p.end_date and p.end_date >= today
+        ]
+        if future_end_dates:
+            remaining_medication_days = min(future_end_dates)
+
+        # 3) 오늘 복약 완료 여부 (intake_date 컬럼 필요 - epic4_medication 마이그레이션)
         try:
-            health_day = await self._health_service.get_day_detail(user_id=user.id, date=today)
+            today_logs = await self.medication_repo.list_by_intake_date(user_id, today)
+        except Exception as e:
+            logger.warning("list_by_intake_date failed (run epic4_medication migration?): %s", e)
+            today_logs = []
+
+        today_medication_completed = False
+        if today_logs:
+            today_medication_completed = all(log.status == "taken" for log in today_logs)
+
+        # 4) 오늘 건강관리 완료 여부 (HealthService.get_day_detail rate 100%)
+        today_health_completed = False
+        try:
+            health_day = await self.health_service.get_day_detail(user_id=user_id, date=today.isoformat())
             if health_day.get("items"):
-                health_done = int(health_day.get("rate", 0)) >= 100
-        except Exception:
-            health_done = False
+                today_health_completed = int(health_day.get("rate", 0)) >= 100
+        except Exception as e:
+            logger.warning("health get_day_detail failed: %s", e)
+            today_health_completed = False
 
         return {
-            "recent_prescription": None,
-            "remaining_medication_days": 0,
-            "today_medication_completed": med_done,
-            "today_health_completed": health_done,
+            "recent_prescription": recent_prescription,
+            "remaining_medication_days": remaining_medication_days,
+            "today_medication_completed": today_medication_completed,
+            "today_health_completed": today_health_completed,
         }

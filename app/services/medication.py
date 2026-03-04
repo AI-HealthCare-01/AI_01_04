@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from datetime import datetime
 from typing import Any, Literal, cast
 
@@ -9,9 +10,13 @@ from tortoise.expressions import Q
 
 from app.dtos.medication import MedicationLogUpdateRequest
 from app.models.prescriptions import MedicationIntakeLog, Prescription
+from app.repositories.medication_intake_repository import MedicationIntakeRepository
+from app.repositories.prescription_repository import PrescriptionRepository
 from app.utils.datetime import DateTimeError, date_range_inclusive, normalize_from_to, parse_date_yyyy_mm_dd
 from app.utils.pagination import build_page_meta
 from app.utils.progress import rate_bucket
+
+logger = logging.getLogger(__name__)
 
 SortOrder = Literal["asc", "desc"]
 
@@ -48,6 +53,10 @@ def _make_label(log: MedicationIntakeLog) -> str:
 
 
 class MedicationService:
+    def __init__(self):
+        self.prescription_repo = PrescriptionRepository()
+        self.medication_repo = MedicationIntakeRepository()
+
     async def _seed_day_if_empty(self, *, user_id: int, date_str: str) -> None:
         d = parse_date_yyyy_mm_dd(date_str)
 
@@ -156,29 +165,29 @@ class MedicationService:
         return {"date": date, "rate": rate, "bucket": bucket, "items": items}
 
     async def update_log(self, user_id: int, log_id: int, data: MedicationLogUpdateRequest) -> dict:
-        log = (
-            await MedicationIntakeLog.filter(
-                id=log_id,
-                prescription__user_id=user_id,
-            )
-            .select_related("prescription")
-            .first()
-        )
+        try:
+            log = await self.medication_repo.get_by_id_for_user(user_id, log_id)
+            if not log:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="log not found.")
 
-        if not log:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="log not found.")
+            await log.fetch_related("prescription")
 
-        log.status = data.status
+            log.status = data.status
 
-        # mypy가 intake_datetime을 datetime(Non-Optional)로 추론하는 환경이라,
-        # Any 캐스트로 속성 대입만 타입체크에서 제외
-        log_any = cast(Any, log)
-        if data.status == "taken":
-            log_any.intake_datetime = datetime.now()
-        else:
-            log_any.intake_datetime = None
+            # mypy가 intake_datetime을 datetime(Non-Optional)로 추론하는 환경이라,
+            # Any 캐스트로 속성 대입만 타입체크에서 제외
+            log_any = cast(Any, log)
+            if data.status == "taken":
+                log_any.intake_datetime = datetime.now()
+            else:
+                log_any.intake_datetime = None
 
-        await log.save()
+            await log.save()
 
-        day = await self.get_day_detail(user_id=user_id, date=log.intake_date.isoformat())
-        return {"log_id": log_id, "updated": True, "day": day}
+            day = await self.get_day_detail(user_id=user_id, date=log.intake_date.isoformat())
+            return {"log_id": log_id, "updated": True, "day": day}
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.exception("update_log failed")
+            raise HTTPException(status_code=500, detail=str(e)) from e
