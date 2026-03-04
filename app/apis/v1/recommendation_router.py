@@ -137,7 +137,7 @@ async def add_recommendation_feedback(
     user: Annotated[User, Depends(get_request_user)],
     recommendation_service: Annotated[RecommendationService, Depends(RecommendationService)],
     recommendation_id: Annotated[int, Path(..., ge=1)],
-    feedback_type: Annotated[str, Query(..., regex="^(like|dislike|click)$")],
+    feedback_type: Annotated[str, Query(..., pattern="^(like|dislike|click)$")],
 ) -> Response:
     """
     추천에 대한 피드백 추가 (like, dislike, click)
