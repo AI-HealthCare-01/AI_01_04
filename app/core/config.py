@@ -39,3 +39,5 @@ class Config(BaseSettings):
 
     NAVER_OCR_SECRET_KEY: str = ""
     NAVER_OCR_API_URL: str = ""
+    OPENAI_API_KEY: str = ""
+    OPENAI_MODEL: str = "gpt-4o-mini"

@@ -26,6 +26,8 @@ from app.utils.datetime import parse_date_yyyy_mm_dd
 from app.utils.files import (
     save_user_upload_file,
 )
+from app.integrations.ocr.openai_client import ai_postprocess
+
 
 # 임시: scan_id -> scan data
 _SCAN_STORE: dict[int, dict[str, Any]] = {}
@@ -98,14 +100,26 @@ class ScanAnalysisService:
             cur["status"] = "failed"
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)) from e
 
+        try:
+            ai_result = ai_postprocess(
+                raw_text=parsed.get("raw_text") or "",
+                ocr_raw=raw,
+            )
+        except Exception as e:
+            cur["status"] = "failed"
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"AI postprocess failed: {e}",
+            ) from e
+
         cur["status"] = "done"
         cur["analyzed_at"] = datetime.now().isoformat()
 
-        cur["document_date"] = parsed.get("document_date")
-        cur["diagnosis"] = parsed.get("diagnosis")
-        cur["drugs"] = parsed.get("drugs", [])
-        cur["raw_text"] = parsed.get("raw_text")
-        cur["ocr_raw"] = parsed.get("ocr_raw")
+        cur["document_date"] = ai_result.get("document_date")
+        cur["diagnosis"] = ai_result.get("diagnosis")
+        cur["drugs"] = ai_result.get("drugs", [])
+        cur["raw_text"] = ai_result.get("raw_text")
+        cur["ocr_raw"] = ai_result.get("ocr_raw")
 
         return {"scan_id": scan_id, "status": cur["status"]}
 
