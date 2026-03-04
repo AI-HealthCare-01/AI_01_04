@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime
+from typing import Any
 
 from fastapi import HTTPException, UploadFile
 from starlette import status
@@ -126,7 +127,7 @@ class ScanAnalysisService:
             if not cur:
                 raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="scan not found.")
 
-            update_fields = {}
+            update_fields: dict[str, Any] = {}
             if data.document_date is not None:
                 parse_date_yyyy_mm_dd(data.document_date)
                 update_fields["document_date"] = data.document_date
@@ -163,7 +164,7 @@ class ScanAnalysisService:
             await self.health_service.ensure_day_seed(user_id=user.id, date=doc_date)
 
             diagnosis = cur.get("diagnosis")
-            drug_names_raw = cur.get("drugs") or []
+            drug_names_raw: Any = cur.get("drugs", [])
             drug_names: list[str] = drug_names_raw if isinstance(drug_names_raw, list) else []
 
             disease_obj = None
