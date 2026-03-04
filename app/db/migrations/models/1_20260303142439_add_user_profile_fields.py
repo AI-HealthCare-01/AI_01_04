@@ -5,18 +5,20 @@ RUN_IN_TRANSACTION = True
 
 async def upgrade(db: BaseDBAsyncClient) -> str:
     return """
-        ALTER TABLE "users" ADD "profile_image_url" VARCHAR(500);
-        ALTER TABLE "users" ADD "is_active" BOOL NOT NULL DEFAULT True;
-        ALTER TABLE "users" ADD "updated_at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP;
-        ALTER TABLE "users" ADD "last_login" TIMESTAMPTZ;"""
+        ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "profile_image_url" VARCHAR(500);
+        ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "is_active" BOOL NOT NULL DEFAULT True;
+        ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "updated_at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP;
+        ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "last_login" TIMESTAMPTZ;
+    """
 
 
 async def downgrade(db: BaseDBAsyncClient) -> str:
     return """
-        ALTER TABLE "users" DROP COLUMN "profile_image_url";
-        ALTER TABLE "users" DROP COLUMN "is_active";
-        ALTER TABLE "users" DROP COLUMN "updated_at";
-        ALTER TABLE "users" DROP COLUMN "last_login";"""
+        ALTER TABLE "users" DROP COLUMN IF EXISTS "profile_image_url";
+        ALTER TABLE "users" DROP COLUMN IF EXISTS "is_active";
+        ALTER TABLE "users" DROP COLUMN IF EXISTS "updated_at";
+        ALTER TABLE "users" DROP COLUMN IF EXISTS "last_login";
+    """
 
 
 MODELS_STATE = (

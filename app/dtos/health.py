@@ -17,7 +17,7 @@ class HealthHistoryListResponse(BaseModel):
 
 class HealthChecklistItem(BaseModel):
     id: int
-    label: str  # 예: "물 마시기", "걷기", ...
+    label: str
     status: HealthStatus
 
 

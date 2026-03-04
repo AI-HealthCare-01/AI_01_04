@@ -6,16 +6,16 @@ RUN_IN_TRANSACTION = True
 async def upgrade(db: BaseDBAsyncClient) -> str:
     return """
         ALTER TABLE "users" ALTER COLUMN "id" TYPE BIGINT USING "id"::BIGINT;
-        ALTER TABLE "users" ADD "profile_image_url" VARCHAR(500);
-        ALTER TABLE "users" ADD "last_login" TIMESTAMPTZ;
-        ALTER TABLE "users" ADD "is_active" BOOL NOT NULL DEFAULT True;
-        ALTER TABLE "users" ADD "birthday" DATE NOT NULL;
-        ALTER TABLE "users" ADD "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP;
-        ALTER TABLE "users" ADD "is_admin" BOOL NOT NULL DEFAULT False;
-        ALTER TABLE "users" ADD "hashed_password" VARCHAR(128) NOT NULL;
-        ALTER TABLE "users" DROP COLUMN "birth_date";
-        ALTER TABLE "users" DROP COLUMN "nickname";
-        ALTER TABLE "users" DROP COLUMN "role";
+        ALTER TABLE "users" ADD COLUMN IF NOT EXIST "profile_image_url" VARCHAR(500);
+        ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "last_login" TIMESTAMPTZ;
+        ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "is_active" BOOL NOT NULL DEFAULT True;
+        ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "birthday" DATE NOT NULL;
+        ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP;
+        ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "is_admin" BOOL NOT NULL DEFAULT False;
+        ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "hashed_password" VARCHAR(128) NOT NULL;
+        ALTER TABLE "users" DROP COLUMN IF EXISTS "birth_date";
+        ALTER TABLE "users" DROP COLUMN IF EXISTS "nickname";
+        ALTER TABLE "users" DROP COLUMN IF EXISTS "role";
         ALTER TABLE "users" ALTER COLUMN "gender" SET NOT NULL;
         ALTER TABLE "users" ALTER COLUMN "name" TYPE VARCHAR(20) USING "name"::VARCHAR(20);
         ALTER TABLE "user_credentials" ALTER COLUMN "user_id" TYPE BIGINT USING "user_id"::BIGINT;
@@ -44,13 +44,13 @@ async def downgrade(db: BaseDBAsyncClient) -> str:
         ALTER TABLE "users" ADD "birth_date" DATE;
         ALTER TABLE "users" ADD "nickname" VARCHAR(50);
         ALTER TABLE "users" ADD "role" VARCHAR(5) NOT NULL DEFAULT 'USER';
-        ALTER TABLE "users" DROP COLUMN "profile_image_url";
-        ALTER TABLE "users" DROP COLUMN "last_login";
-        ALTER TABLE "users" DROP COLUMN "is_active";
-        ALTER TABLE "users" DROP COLUMN "birthday";
-        ALTER TABLE "users" DROP COLUMN "updated_at";
-        ALTER TABLE "users" DROP COLUMN "is_admin";
-        ALTER TABLE "users" DROP COLUMN "hashed_password";
+        ALTER TABLE "users" DROP COLUMN IF EXISTS "profile_image_url";
+        ALTER TABLE "users" DROP COLUMN IF EXISTS "last_login";
+        ALTER TABLE "users" DROP COLUMN IF EXISTS "is_active";
+        ALTER TABLE "users" DROP COLUMN IF EXISTS "birthday";
+        ALTER TABLE "users" DROP COLUMN IF EXISTS "updated_at";
+        ALTER TABLE "users" DROP COLUMN IF EXISTS "is_admin";
+        ALTER TABLE "users" DROP COLUMN IF EXISTS "hashed_password";
         ALTER TABLE "users" ALTER COLUMN "gender" DROP NOT NULL;
         ALTER TABLE "users" ALTER COLUMN "name" TYPE VARCHAR(100) USING "name"::VARCHAR(100);
         ALTER TABLE "prescriptions" ALTER COLUMN "user_id" TYPE INT USING "user_id"::INT;
