@@ -89,7 +89,7 @@ class RecommendationRepository:
         user_id: int,
         batch_id: int,
         *,
-        scan_id: int | None = None,   # ✅ 추가
+        scan_id: int | None = None,  # ✅ 추가
         recommendation_type: str | None = None,
         source: str | None = None,
         content: str | None = None,
@@ -137,7 +137,7 @@ class RecommendationRepository:
             user_id=user_id,
             feedback_type=feedback_type,
         )
-    
+
     async def clear_active_for_user(self, user_id: int) -> int:
         return await self._active_model.filter(user_id=user_id).delete()
 
@@ -151,8 +151,11 @@ class RecommendationRepository:
         """
         같은 scan_id로 생성된 추천이 이미 있으면 재사용하기 위한 조회
         """
+        return await self._rec_model.filter(user_id=user_id, scan_id=scan_id).order_by("rank", "id").all()
+
+    async def list_by_user_scan(self, user_id: int, scan_id: int) -> list[Recommendation]:
         return (
             await self._rec_model.filter(user_id=user_id, scan_id=scan_id)
-            .order_by("rank", "id")
-            .all()
+            .order_by("rank", "-created_at")
+            .prefetch_related("batch")
         )
