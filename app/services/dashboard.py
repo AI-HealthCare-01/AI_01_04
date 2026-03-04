@@ -57,11 +57,7 @@ class DashboardService:
         # 남은 약 일수: 유효한 처방전 중 end_date가 가장 가까운 것 기준
         remaining_medication_days = 0
         all_prescriptions = await self.prescription_repo.list_by_user(user_id, limit=50)
-        future_end_dates = [
-            (p.end_date - today).days
-            for p in all_prescriptions
-            if p.end_date and p.end_date >= today
-        ]
+        future_end_dates = [(p.end_date - today).days for p in all_prescriptions if p.end_date and p.end_date >= today]
         if future_end_dates:
             remaining_medication_days = min(future_end_dates)
 
