@@ -16,6 +16,7 @@ from app.integrations.ocr.exceptions import (
     OCRTimeoutError,
 )
 from app.integrations.ocr.naver_ocr_client import NaverOCRClient
+from app.integrations.ocr.openai_client import ai_postprocess
 from app.integrations.ocr.parser import parse_ocr_result
 from app.models.diseases import Disease
 from app.models.drugs import Drug
@@ -26,8 +27,6 @@ from app.utils.datetime import parse_date_yyyy_mm_dd
 from app.utils.files import (
     save_user_upload_file,
 )
-from app.integrations.ocr.openai_client import ai_postprocess
-
 
 # 임시: scan_id -> scan data
 _SCAN_STORE: dict[int, dict[str, Any]] = {}
