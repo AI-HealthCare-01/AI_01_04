@@ -7,7 +7,8 @@ from fastapi import HTTPException
 from starlette import status
 
 from app.dtos.health import HealthLogUpdateRequest
-from app.models.health import HealthChecklistLog, HealthChecklistTemplate
+from app.models.health import HealthChecklistLog
+from app.repositories.health_repository import HealthRepository
 from app.utils.datetime import DateTimeError, date_range_inclusive, normalize_from_to, parse_date_yyyy_mm_dd
 from app.utils.progress import rate_bucket
 
@@ -20,6 +21,9 @@ def _calc_rate_from_logs(logs: list[HealthChecklistLog]) -> int:
 
 
 class HealthService:
+    def __init__(self):
+        self.health_repo = HealthRepository()
+
     async def _seed_day_if_empty(self, *, user_id: int, date_str: str) -> None:
         d = parse_date_yyyy_mm_dd(date_str)
 
@@ -27,7 +31,7 @@ class HealthService:
         if existing_cnt > 0:
             return
 
-        templates = await HealthChecklistTemplate.filter(is_active=True).order_by("sort_order", "id").all()
+        templates = await self.health_repo.list_active_templates()
         if not templates:
             return
 
@@ -60,7 +64,13 @@ class HealthService:
 
             day_logs = await HealthChecklistLog.filter(user_id=user_id, date=d).all()
             rate = _calc_rate_from_logs(day_logs)
-            rows.append({"date": ds, "rate": rate})
+
+            rows.append(
+                {
+                    "date": ds,
+                    "rate": rate,
+                }
+            )
 
         return {"items": rows}
 
@@ -72,14 +82,14 @@ class HealthService:
 
         await self._seed_day_if_empty(user_id=user_id, date_str=date)
 
-        logs = await HealthChecklistLog.filter(user_id=user_id, date=d).select_related("template").order_by("id").all()
+        logs = await self.health_repo.list_logs_by_user_date(user_id=user_id, dt=d)
 
         items: list[dict] = []
         for lg in logs:
             items.append(
                 {
                     "id": lg.id,
-                    "label": lg.template.label,
+                    "label": lg.template.label if lg.template else "",
                     "status": lg.status,
                 }
             )
@@ -87,16 +97,20 @@ class HealthService:
         rate = _calc_rate_from_logs(logs)
         bucket = "none" if not logs else rate_bucket(rate)
 
-        return {"date": date, "rate": rate, "bucket": bucket, "items": items}
+        return {
+            "date": date,
+            "rate": rate,
+            "bucket": bucket,
+            "items": items,
+        }
 
     async def update_log(self, user_id: int, log_id: int, data: HealthLogUpdateRequest) -> dict:
-        log = await HealthChecklistLog.filter(id=log_id, user_id=user_id).select_related("template").first()
+        log = await self.health_repo.get_by_id_for_user(user_id=user_id, log_id=log_id)
         if not log:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="log not found.")
 
         log.status = data.status
 
-        # mypy/ruff 대응: Optional 속성 대입은 Any로 캐스팅
         log_any = cast(Any, log)
         if data.status == "done":
             log_any.checked_at = datetime.now()

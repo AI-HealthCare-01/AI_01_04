@@ -20,6 +20,9 @@ logger = logging.getLogger(__name__)
 
 SortOrder = Literal["asc", "desc"]
 
+# ✅ DTO에 맞춘 status 고정
+AllowedStatus = Literal["taken", "skipped", "delayed"]
+
 
 def _calc_rate_from_logs(logs: list[MedicationIntakeLog]) -> int:
     if not logs:
@@ -50,6 +53,18 @@ def _make_label(log: MedicationIntakeLog) -> str:
         return str(drug.name)
 
     return "복용"
+
+
+def _normalize_status(raw: str) -> AllowedStatus:
+    """
+    DB에 과거 값(missed 등)이 섞여있어도 API 응답/업데이트는 DTO 스펙으로 고정.
+    """
+    if raw == "taken":
+        return "taken"
+    if raw == "delayed":
+        return "delayed"
+    # 그 외는 skipped로 정규화 (missed 포함)
+    return "skipped"
 
 
 class MedicationService:
@@ -83,7 +98,7 @@ class MedicationService:
                         prescription_id=p.id,
                         intake_date=d,
                         slot_label=sl,
-                        status="skipped",
+                        status="skipped",  # ✅ seed는 기본 skipped
                         intake_datetime=None,
                     )
                 )
@@ -125,7 +140,14 @@ class MedicationService:
             rate = _calc_rate_from_logs(day_logs)
             bucket = "none" if not day_logs else rate_bucket(rate)
 
-            rows.append({"date": ds, "rate": rate, "bucket": bucket})
+            rows.append(
+                {
+                    "date": ds,
+                    "rate": rate,
+                    "bucket": bucket,
+                    "detail_key": ds,  # ✅ DTO에 있음
+                }
+            )
 
         meta = build_page_meta(total=total, page=page, page_size=size)
         return {"items": rows, "meta": meta}
@@ -154,7 +176,7 @@ class MedicationService:
                 {
                     "id": lg.id,
                     "label": _make_label(lg),
-                    "status": lg.status,
+                    "status": _normalize_status(lg.status),
                     "intake_datetime": lg.intake_datetime.isoformat() if lg.intake_datetime else None,
                 }
             )
@@ -170,14 +192,12 @@ class MedicationService:
             if not log:
                 raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="log not found.")
 
-            await log.fetch_related("prescription")
+            # ✅ DTO 기준으로만 저장
+            new_status: AllowedStatus = _normalize_status(data.status)
+            log.status = new_status
 
-            log.status = data.status
-
-            # mypy가 intake_datetime을 datetime(Non-Optional)로 추론하는 환경이라,
-            # Any 캐스트로 속성 대입만 타입체크에서 제외
             log_any = cast(Any, log)
-            if data.status == "taken":
+            if new_status == "taken":
                 log_any.intake_datetime = datetime.now()
             else:
                 log_any.intake_datetime = None
@@ -186,6 +206,7 @@ class MedicationService:
 
             day = await self.get_day_detail(user_id=user_id, date=log.intake_date.isoformat())
             return {"log_id": log_id, "updated": True, "day": day}
+
         except HTTPException:
             raise
         except Exception as e:
