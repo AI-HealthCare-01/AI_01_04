@@ -21,6 +21,7 @@ class ChatbotSession(models.Model):
     """
     챗봇 대화 세션 (ERD: chatbot_sessions)
     """
+
     id = fields.IntField(pk=True)
     user: ForeignKeyRelation[User] = fields.ForeignKeyField(
         "models.User",

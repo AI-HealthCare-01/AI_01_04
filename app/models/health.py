@@ -42,13 +42,13 @@ class HealthChecklistLog(models.Model):
 
     id = fields.IntField(pk=True)
 
-    user: ForeignKeyRelation["User"] = fields.ForeignKeyField(
+    user: ForeignKeyRelation[User] = fields.ForeignKeyField(
         "models.User",
         on_delete=fields.CASCADE,
         related_name="health_checklist_logs",
     )
 
-    template: ForeignKeyRelation["HealthChecklistTemplate"] = fields.ForeignKeyField(
+    template: ForeignKeyRelation[HealthChecklistTemplate] = fields.ForeignKeyField(
         "models.HealthChecklistTemplate",
         on_delete=fields.CASCADE,
         related_name="logs",
