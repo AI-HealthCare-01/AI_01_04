@@ -72,12 +72,7 @@ class HealthService:
 
         await self._seed_day_if_empty(user_id=user_id, date_str=date)
 
-        logs = (
-            await HealthChecklistLog.filter(user_id=user_id, date=d)
-            .select_related("template")
-            .order_by("id")
-            .all()
-        )
+        logs = await HealthChecklistLog.filter(user_id=user_id, date=d).select_related("template").order_by("id").all()
 
         items: list[dict] = []
         for lg in logs:

@@ -13,3 +13,6 @@ wheels/
 *.coverage
 .coverage.*
 .DS_Store
+
+# Amazon Q rules (개인 설정)
+.amazonq/
