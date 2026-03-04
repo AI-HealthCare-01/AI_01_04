@@ -8,7 +8,7 @@ from starlette import status
 
 from app.dtos.recommendations import RecommendationType, RecommendationUpdateRequest
 from app.repositories.recommendation_repository import RecommendationRepository
-from app.services.scan_analysis import _SCAN_STORE  # noqa: PLC0415
+from app.repositories.scan_repository import ScanRepository
 
 logger = logging.getLogger(__name__)
 
@@ -40,20 +40,28 @@ def _rec_to_response_dict(rec: Any) -> dict:
 class RecommendationService:
     def __init__(self):
         self.recommendation_repo = RecommendationRepository()
+        self.scan_repo = ScanRepository()
 
     async def get_for_scan(self, user_id: int, scan_id: int) -> dict:
-        scan = _SCAN_STORE.get(scan_id)
+        """
+        scan 기반 추천 조회/생성 (옵션 A)
+        - Recommendation.scan_id 컬럼이 있어야 함
+        - 이미 생성된 추천이 있으면 재사용
+        """
+        scan = await self.scan_repo.get_by_id_for_user(user_id, scan_id)
         if not scan:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="scan not found")
 
-        # ✅ Option A: 같은 scan_id로 이미 생성된 추천이 있으면 재사용
-        existing = await self.recommendation_repo.list_by_scan_for_user(user_id=user_id, scan_id=scan_id)
+        # 1) 이미 scan_id로 생성된 rec가 있으면 재사용
+        existing = await self.recommendation_repo.list_by_user_scan(user_id=user_id, scan_id=scan_id)
         if existing:
             return {"scan_id": scan_id, "items": [_rec_to_response_dict(r) for r in existing]}
 
         diagnosis = scan.get("diagnosis")
-        drugs: list[str] = scan.get("drugs") or []
+        drugs_raw = scan.get("drugs") or []
+        drugs: list[str] = drugs_raw if isinstance(drugs_raw, list) else []
 
+        # 2) 배치 생성
         batch = await self.recommendation_repo.create_batch(
             user_id=user_id,
             retrieval_strategy="scan-mvp",
@@ -61,11 +69,12 @@ class RecommendationService:
 
         created: list[Any] = []
 
+        # 3) 진단 기반 추천
         if diagnosis:
             rec = await self.recommendation_repo.create_recommendation(
                 user_id=user_id,
                 batch_id=batch.id,
-                scan_id=scan_id,  # ✅ 저장!
+                scan_id=scan_id,  # ✅ 옵션 A 핵심
                 recommendation_type="followup",
                 source="scan.diagnosis",
                 content=f"진단명 '{diagnosis}' 기준으로 생활관리/추적 관찰 항목을 확인해보세요.",
@@ -76,11 +85,12 @@ class RecommendationService:
             if rec:
                 created.append(rec)
 
+        # 4) 약물 기반 추천
         for i, drug in enumerate(drugs[:10], start=1):
             rec = await self.recommendation_repo.create_recommendation(
                 user_id=user_id,
                 batch_id=batch.id,
-                scan_id=scan_id,  # ✅ 저장!
+                scan_id=scan_id,
                 recommendation_type="medication",
                 source="scan.drugs",
                 content=f"약물 '{drug}' 복용 관련 주의사항/복용법을 확인해보세요.",
@@ -91,11 +101,12 @@ class RecommendationService:
             if rec:
                 created.append(rec)
 
+        # 5) fallback
         if not created:
             rec = await self.recommendation_repo.create_recommendation(
                 user_id=user_id,
                 batch_id=batch.id,
-                scan_id=scan_id,  # ✅ 저장!
+                scan_id=scan_id,
                 recommendation_type="lifestyle",
                 source="scan",
                 content="스캔 결과에서 진단/약물 정보를 찾지 못했어요. 텍스트 보정 또는 수동 입력 후 다시 시도해 주세요.",
@@ -153,6 +164,7 @@ class RecommendationService:
             rec = await self.recommendation_repo.get_recommendation_for_user(user_id, recommendation_id)
             if not rec:
                 raise HTTPException(status_code=404, detail="Recommendation not found")
+
             rec.status = "revoked"
             await rec.save(update_fields=["status"])
         except HTTPException:
@@ -162,13 +174,22 @@ class RecommendationService:
             raise HTTPException(status_code=500, detail=str(e)) from e
 
     async def save_for_scan(self, user_id: int, scan_id: int) -> dict:
+        """
+        scan 기반 추천을 active로 반영
+        - scan_id로 이미 생성된 Recommendation을 가져와서
+          is_selected=True 우선, 없으면 전체 반영
+        """
         try:
-            generated = await self.get_for_scan(user_id=user_id, scan_id=scan_id)
-            items: list[dict] = generated.get("items") or []
-            created_ids = [it["id"] for it in items]
+            recs = await self.recommendation_repo.list_by_user_scan(user_id=user_id, scan_id=scan_id)
+            if not recs:
+                # 없으면 생성부터
+                generated = await self.get_for_scan(user_id=user_id, scan_id=scan_id)
+                ids = [it["id"] for it in (generated.get("items") or [])]
+            else:
+                ids = [r.id for r in recs]
 
-            selected_ids = [it["id"] for it in items if it.get("is_selected") is True]
-            target_ids = selected_ids or created_ids
+            selected = [r.id for r in recs if getattr(r, "is_selected", False)]
+            target_ids = selected or ids
 
             await self.recommendation_repo.clear_active_for_user(user_id)
             await self.recommendation_repo.assign_active_many(user_id=user_id, recommendation_ids=target_ids)

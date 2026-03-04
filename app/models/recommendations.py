@@ -92,7 +92,6 @@ class Recommendation(models.Model):
         indexes = (("user_id", "scan_id"),)
 
 
-
 class UserActiveRecommendation(models.Model):
     """
     사용자 활성 추천 (ERD: user_active_recommendations)

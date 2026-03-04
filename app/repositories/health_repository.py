@@ -15,12 +15,7 @@ class HealthRepository:
         return await self._tpl_model.filter(is_active=True).order_by("sort_order", "id").all()
 
     async def list_logs_by_user_date(self, user_id: int, dt: date) -> list[HealthChecklistLog]:
-        return (
-            await self._log_model.filter(user_id=user_id, date=dt)
-            .prefetch_related("template")
-            .order_by("id")
-            .all()
-        )
+        return await self._log_model.filter(user_id=user_id, date=dt).prefetch_related("template").order_by("id").all()
 
     async def get_by_id_for_user(self, user_id: int, log_id: int) -> HealthChecklistLog | None:
         return await self._log_model.get_or_none(id=log_id, user_id=user_id).prefetch_related("template")
