@@ -47,6 +47,42 @@ class ScanAnalysisService:
             logger.exception("upload_file failed")
             raise HTTPException(status_code=500, detail=str(e)) from e
 
+    async def _handle_ocr_analysis(self, user_id: int, scan_id: int, file_path: str) -> tuple[dict, dict]:
+        """OCR 분석 및 에러 처리"""
+        try:
+            raw = await self.ocr_client.analyze_file(file_path=file_path)
+            parsed = parse_ocr_result(raw)
+            return raw, parsed
+        except OCRTimeoutError as e:
+            await self.scan_repo.update(user_id, scan_id, status="failed")
+            raise HTTPException(status_code=status.HTTP_504_GATEWAY_TIMEOUT, detail=str(e)) from e
+        except OCRRateLimitError as e:
+            await self.scan_repo.update(user_id, scan_id, status="failed")
+            raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail=str(e)) from e
+        except OCRAuthError as e:
+            await self.scan_repo.update(user_id, scan_id, status="failed")
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="OCR 인증 실패") from e
+        except OCRBadRequestError as e:
+            await self.scan_repo.update(user_id, scan_id, status="failed")
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e
+        except OCRServerError as e:
+            await self.scan_repo.update(user_id, scan_id, status="failed")
+            raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(e)) from e
+        except OCRError as e:
+            await self.scan_repo.update(user_id, scan_id, status="failed")
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)) from e
+
+    async def _handle_ai_postprocess(self, user_id: int, scan_id: int, parsed: dict, raw: dict) -> dict:
+        """AI 후처리 및 에러 처리"""
+        try:
+            return ai_postprocess(raw_text=parsed.get("raw_text") or "", ocr_raw=raw)
+        except Exception as e:
+            await self.scan_repo.update(user_id, scan_id, status="failed")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"AI postprocess failed: {e}",
+            ) from e
+
     async def start_analysis(self, user, scan_id: int) -> dict:
         try:
             cur = await self.scan_repo.get_by_id_for_user(user.id, scan_id)
@@ -62,39 +98,8 @@ class ScanAnalysisService:
 
             await self.scan_repo.update(user.id, scan_id, status="processing")
 
-            try:
-                raw = await self.ocr_client.analyze_file(file_path=file_path)
-                parsed = parse_ocr_result(raw)
-            except OCRTimeoutError as e:
-                await self.scan_repo.update(user.id, scan_id, status="failed")
-                raise HTTPException(status_code=status.HTTP_504_GATEWAY_TIMEOUT, detail=str(e)) from e
-            except OCRRateLimitError as e:
-                await self.scan_repo.update(user.id, scan_id, status="failed")
-                raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail=str(e)) from e
-            except OCRAuthError as e:
-                await self.scan_repo.update(user.id, scan_id, status="failed")
-                raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="OCR 인증 실패") from e
-            except OCRBadRequestError as e:
-                await self.scan_repo.update(user.id, scan_id, status="failed")
-                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e
-            except OCRServerError as e:
-                await self.scan_repo.update(user.id, scan_id, status="failed")
-                raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(e)) from e
-            except OCRError as e:
-                await self.scan_repo.update(user.id, scan_id, status="failed")
-                raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)) from e
-
-            try:
-                ai_result = ai_postprocess(
-                    raw_text=parsed.get("raw_text") or "",
-                    ocr_raw=raw,
-                )
-            except Exception as e:
-                await self.scan_repo.update(user.id, scan_id, status="failed")
-                raise HTTPException(
-                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail=f"AI postprocess failed: {e}",
-                ) from e
+            raw, parsed = await self._handle_ocr_analysis(user.id, scan_id, file_path)
+            ai_result = await self._handle_ai_postprocess(user.id, scan_id, parsed, raw)
 
             await self.scan_repo.update(
                 user.id,
