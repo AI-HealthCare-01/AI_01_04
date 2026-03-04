@@ -1,13 +1,14 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
 from fastapi.staticfiles import StaticFiles
-
-from contextlib import asynccontextmanager
 
 from app.apis.v1 import v1_routers
 from app.core import config
 from app.db.databases import initialize_tortoise
 from app.models.health import HealthChecklistTemplate
+
 
 async def seed_health_templates() -> None:
     labels = ["물 마시기", "걷기", "스트레칭"]
