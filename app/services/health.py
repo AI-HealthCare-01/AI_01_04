@@ -101,6 +101,7 @@ class HealthService:
 
         log.status = data.status
 
+        # mypy/ruff 대응: Optional 속성 대입은 Any로 캐스팅
         log_any = cast(Any, log)
         if data.status == "done":
             log_any.checked_at = datetime.now()
