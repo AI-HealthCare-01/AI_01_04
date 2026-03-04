@@ -1,5 +1,7 @@
-from openai import OpenAI
 import json
+
+from openai import OpenAI  # type: ignore[import-not-found]
+
 from app.core import config
 
 client = OpenAI(api_key=config.OPENAI_API_KEY)
@@ -15,6 +17,7 @@ SYSTEM_PROMPT = """
 - raw_text: 입력 원문 그대로
 - ocr_raw: 입력 원본 JSON 그대로
 """
+
 
 def ai_postprocess(raw_text: str, ocr_raw: dict) -> dict:
     user_payload = {
