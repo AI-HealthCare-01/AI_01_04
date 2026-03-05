@@ -1,11 +1,25 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from tortoise import fields, models
 from tortoise.fields.relational import ForeignKeyRelation
 
-from app.models.users import User
+if TYPE_CHECKING:
+    from app.models.users import User
 
 
 class Scan(models.Model):
+    """
+    처방전 스캔 도메인 모델
+
+    - status: uploaded → processing → done → updated → saved / failed
+    - drugs: OCR 파싱된 약물명 목록 (JSON 배열)
+    - ocr_raw: Naver OCR 원본 응답 (JSON)
+    """
+
     id = fields.IntField(pk=True)
+
     user: ForeignKeyRelation[User] = fields.ForeignKeyField(
         "models.User",
         on_delete=fields.CASCADE,
