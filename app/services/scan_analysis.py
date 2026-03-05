@@ -215,18 +215,32 @@ class ScanAnalysisService:
 
             disease_obj = None
             if diagnosis:
-                disease_obj = await Disease.get_or_none(name=diagnosis)
-                if not disease_obj:
-                    disease_obj = await Disease.create(name=diagnosis)
+                disease_obj, _ = await Disease.get_or_create(name=diagnosis)
 
             created_prescriptions: list[int] = []
+            skipped_duplicates: list[str] = []
             start = parse_date_yyyy_mm_dd(doc_date)
             end = start
 
             for drug_name in drug_names:
-                drug_obj = await Drug.get_or_none(name=drug_name)
-                if not drug_obj:
-                    drug_obj = await Drug.create(name=drug_name)
+                drug_obj, _ = await Drug.get_or_create(name=drug_name)
+
+                # 중복 방지: 같은 사용자/약/기간(+질병) 처방은 생성하지 않음
+                exists_qs = Prescription.filter(
+                    user_id=user.id,
+                    drug_id=drug_obj.id,
+                    start_date=start,
+                    end_date=end,
+                )
+                if disease_obj is not None:
+                    exists_qs = exists_qs.filter(disease_id=disease_obj.id)
+                else:
+                    exists_qs = exists_qs.filter(disease_id__isnull=True)
+
+                already = await exists_qs.first()
+                if already:
+                    skipped_duplicates.append(drug_name)
+                    continue
 
                 prescription = await Prescription.create(
                     user=user,
@@ -252,6 +266,9 @@ class ScanAnalysisService:
                 "saved": True,
                 "seeded_date": doc_date,
                 "created_prescriptions": created_prescriptions,
+                "skipped_duplicates": skipped_duplicates,
+                "created_count": len(created_prescriptions),
+                "skipped_count": len(skipped_duplicates),
             }
         except HTTPException:
             raise
