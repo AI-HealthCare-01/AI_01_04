@@ -188,7 +188,7 @@ class RecommendationService:
             else:
                 ids = [r.id for r in recs]
 
-            selected = [r.id for r in recs if getattr(r, "is_selected", False)]
+            selected = [r.id for r in recs if r.is_selected is True]
             target_ids = selected or ids
 
             await self.recommendation_repo.clear_active_for_user(user_id)

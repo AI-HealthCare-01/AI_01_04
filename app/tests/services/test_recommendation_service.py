@@ -110,13 +110,18 @@ class TestRecommendationService(TestCase):
         assert len(result) == 1
         assert result[0]["content"] == "활성추천"
 
-    async def test_get_for_scan(self):
-        service = RecommendationService()
-        result = await service.get_for_scan(user_id=1, scan_id=42)
-        assert result["scan_id"] == 42
-        assert result["items"] == []
+    async def test_get_for_scan_not_found(self):
+        from fastapi import HTTPException
 
-    async def test_save_for_scan(self):
         service = RecommendationService()
-        result = await service.save_for_scan(user_id=1, scan_id=42)
-        assert result["saved"] is True
+        with self.assertRaises(HTTPException) as ctx:
+            await service.get_for_scan(user_id=1, scan_id=42)
+        assert ctx.exception.status_code == 404
+
+    async def test_save_for_scan_not_found(self):
+        from fastapi import HTTPException
+
+        service = RecommendationService()
+        with self.assertRaises(HTTPException) as ctx:
+            await service.save_for_scan(user_id=1, scan_id=42)
+        assert ctx.exception.status_code == 404
