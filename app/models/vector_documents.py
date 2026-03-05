@@ -25,7 +25,7 @@ class VectorDocument(models.Model):
     reference_type = fields.CharField(max_length=100)
     reference_id = fields.IntField()
     content = fields.TextField()
-    embedding: list[float] = fields.JSONField()  # type: ignore[assignment]
+    embedding: list[float] = fields.JSONField()  # type: ignore[assignment]  # DB: vector(1536), Tortoise는 vector 타입 미지원으로 JSONField 유지 (raw SQL로 읽기/쓰기)
     created_at = fields.DatetimeField(auto_now_add=True)
 
     class Meta:
