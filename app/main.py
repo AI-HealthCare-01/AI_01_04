@@ -9,6 +9,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.apis.v1 import v1_routers
 from app.core import config
+from app.db.databases import initialize_tortoise
 from app.models.health import HealthChecklistTemplate
 
 logger = logging.getLogger(__name__)
@@ -57,6 +58,7 @@ app.add_middleware(
 )
 
 app.include_router(v1_routers)
+initialize_tortoise(app)
 
 # ✅ static 파일 서빙 (프로필 업로드, 스캔 업로드 등)
 # /static/uploads/...  →  {FILE_STORAGE_DIR}/uploads/...
