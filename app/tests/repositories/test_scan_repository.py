@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+from tortoise.contrib.test import TestCase
+
 from app.models.users import User
 from app.repositories.scan_repository import ScanRepository
-from tortoise.contrib.test import TestCase
+
 
 class TestScanRepository(TestCase):
     async def test_create_and_get_scan(self):
