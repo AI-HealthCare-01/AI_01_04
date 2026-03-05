@@ -57,6 +57,9 @@ class MedicationService:
         self.prescription_repo = PrescriptionRepository()
         self.medication_repo = MedicationIntakeRepository()
 
+    async def ensure_day_seed(self, *, user_id: int, date: str) -> None:
+        await self._seed_day_if_empty(user_id=user_id, date_str=date)
+
     async def _seed_day_if_empty(self, *, user_id: int, date_str: str) -> None:
         d = parse_date_yyyy_mm_dd(date_str)
 
