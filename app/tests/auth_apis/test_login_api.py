@@ -13,16 +13,18 @@ class TestLoginAPI(TestCase):
             "password": "Password123!",
             "name": "로그인테스터",
             "gender": "FEMALE",
-            "birth_date": "1995-05-05",
+            "birthday": "1995-05-05",
             "phone_number": "01011112222",
         }
         login_data = {"email": "login_test@example.com", "password": "Password123!"}
 
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-            await client.post("/api/v1/auth/signup", json=signup_data)
+            signup_response = await client.post("/api/v1/auth/signup", json=signup_data)
+            print(f"\n회원가입 응답: {signup_response.status_code} - {signup_response.json()}")
 
             # 로그인 시도
             response = await client.post("/api/v1/auth/login", json=login_data)
+            print(f"로그인 응답: {response.status_code} - {response.json()}")
         assert response.status_code == status.HTTP_200_OK
         assert "access_token" in response.json()
         # 쿠키 검증 대신 응답 헤더 확인
