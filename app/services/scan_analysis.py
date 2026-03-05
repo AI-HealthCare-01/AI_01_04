@@ -12,6 +12,7 @@ from app.dtos.scan import ScanResultUpdateRequest
 from app.integrations.ocr.exceptions import (
     OCRAuthError,
     OCRBadRequestError,
+    OCRConfigError,
     OCRError,
     OCRRateLimitError,
     OCRServerError,
@@ -56,35 +57,71 @@ class ScanAnalysisService:
         try:
             raw = await self.ocr_client.analyze_file(file_path=file_path)
             parsed = parse_ocr_result(raw)
+            # OCR 호출은 성공했지만 텍스트를 못 읽은 경우를 명확히 구분한다.
+            if not parsed.get("raw_text"):
+                await self.scan_repo.update(user_id, scan_id, status="failed")
+                raise HTTPException(
+                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail="OCR 텍스트 추출에 실패했습니다. 더 선명한 이미지로 다시 시도해주세요.",
+                )
             return raw, parsed
+        except HTTPException:
+            raise
+        except OCRConfigError as e:
+            await self.scan_repo.update(user_id, scan_id, status="failed")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="OCR 설정이 올바르지 않습니다. 관리자에게 문의해주세요.",
+            ) from e
         except OCRTimeoutError as e:
             await self.scan_repo.update(user_id, scan_id, status="failed")
-            raise HTTPException(status_code=status.HTTP_504_GATEWAY_TIMEOUT, detail=str(e)) from e
+            raise HTTPException(
+                status_code=status.HTTP_504_GATEWAY_TIMEOUT,
+                detail="OCR 처리 시간이 초과되었습니다. 잠시 후 다시 시도해주세요.",
+            ) from e
         except OCRRateLimitError as e:
             await self.scan_repo.update(user_id, scan_id, status="failed")
-            raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail=str(e)) from e
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="OCR 호출 한도를 초과했습니다. 잠시 후 다시 시도해주세요.",
+            ) from e
         except OCRAuthError as e:
             await self.scan_repo.update(user_id, scan_id, status="failed")
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="OCR 인증 실패") from e
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="OCR 인증에 실패했습니다. 관리자에게 문의해주세요.",
+            ) from e
         except OCRBadRequestError as e:
             await self.scan_repo.update(user_id, scan_id, status="failed")
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="OCR 요청 형식이 올바르지 않습니다. 파일 형식/크기를 확인해주세요.",
+            ) from e
         except OCRServerError as e:
             await self.scan_repo.update(user_id, scan_id, status="failed")
-            raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(e)) from e
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail="OCR 서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
+            ) from e
         except OCRError as e:
             await self.scan_repo.update(user_id, scan_id, status="failed")
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)) from e
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="OCR 처리 중 오류가 발생했습니다.",
+            ) from e
 
     async def _handle_ai_postprocess(self, user_id: int, scan_id: int, parsed: dict, raw: dict) -> dict:
         """AI 후처리 및 에러 처리"""
         try:
-            return ai_postprocess(raw_text=parsed.get("raw_text") or "", ocr_raw=raw)
+            ai_result = ai_postprocess(raw_text=parsed.get("raw_text") or "", ocr_raw=raw)
+            if not isinstance(ai_result, dict):
+                raise ValueError("invalid AI response type")
+            return ai_result
         except Exception as e:
             await self.scan_repo.update(user_id, scan_id, status="failed")
             raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"AI postprocess failed: {e}",
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail="AI 후처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
             ) from e
 
     async def start_analysis(self, user, scan_id: int) -> dict:
