@@ -7,6 +7,7 @@ from typing import Any
 from fastapi import HTTPException, UploadFile
 from starlette import status
 
+from app.core import config
 from app.dtos.scan import ScanResultUpdateRequest
 from app.integrations.ocr.exceptions import (
     OCRAuthError,
@@ -25,6 +26,7 @@ from app.models.prescriptions import Prescription
 from app.repositories.scan_repository import ScanRepository
 from app.services.health import HealthService
 from app.services.medication import MedicationService
+from app.services.recommendations import RecommendationService
 from app.utils.datetime import parse_date_yyyy_mm_dd
 from app.utils.files import save_user_upload_file
 
@@ -37,10 +39,12 @@ class ScanAnalysisService:
         self.med_service = MedicationService()
         self.health_service = HealthService()
         self.ocr_client = NaverOCRClient()
+        self.recommendation_service = RecommendationService()
 
     async def upload_file(self, user, file: UploadFile) -> dict:
         try:
-            file_path = await save_user_upload_file(user_id=user.id, upload=file)
+            base_dir = getattr(config, "FILE_STORAGE_DIR", "./artifacts")
+            file_path = await save_user_upload_file(user_id=user.id, upload=file, base_dir=base_dir)
             scan_data = await self.scan_repo.create(user_id=user.id, file_path=file_path)
             return {"scan_id": scan_data["scan_id"], "status": "uploaded"}
         except Exception as e:
@@ -200,6 +204,11 @@ class ScanAnalysisService:
                 created_prescriptions.append(prescription.id)
 
             await self.scan_repo.update(user.id, scan_id, status="saved")
+
+            try:
+                await self.recommendation_service.get_for_scan(user_id=user.id, scan_id=scan_id)
+            except Exception:
+                logger.exception("recommendation generation failed (ignored)")
 
             return {
                 "scan_id": scan_id,
