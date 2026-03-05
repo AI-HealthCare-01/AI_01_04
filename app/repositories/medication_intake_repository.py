@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 from datetime import date, datetime
+from typing import Any, cast
 
 from app.models.prescriptions import MedicationIntakeLog, Prescription
 
@@ -94,3 +95,59 @@ class MedicationIntakeRepository:
             intake_datetime=intake_datetime,
             status=status,
         )
+
+    async def get_or_create_log_for_day(
+        self,
+        user_id: int,
+        prescription_id: int,
+        *,
+        intake_date: date,
+        slot_label: str | None,
+        defaults: dict[str, Any],
+    ) -> MedicationIntakeLog | None:
+        """
+        (prescription_id, intake_date, slot_label) 기준으로 로그를 찾고 없으면 생성.
+        - prescription이 user 소유인지 검증
+        """
+        rx = await self._prescription_model.get_or_none(id=prescription_id, user_id=user_id)
+        if not rx:
+            return None
+
+        obj = await self._model.get_or_none(
+            prescription_id=prescription_id,
+            intake_date=intake_date,
+            slot_label=slot_label,
+        )
+        if obj:
+            return obj
+
+        return await self._model.create(
+            prescription=rx,
+            intake_date=intake_date,
+            slot_label=slot_label,
+            **defaults,
+        )
+
+    async def update_status_for_user(
+        self,
+        user_id: int,
+        log_id: int,
+        *,
+        status: str,
+        intake_datetime: datetime | None,
+    ) -> MedicationIntakeLog | None:
+        """
+        user_id 소유의 log만 업데이트
+        """
+        obj = await self.get_by_id_for_user(user_id=user_id, log_id=log_id)
+        if not obj:
+            return None
+
+        obj.status = status
+
+        # mypy가 intake_datetime을 datetime(non-optional)로 보는 환경이 있어 우회
+        obj_any = cast(Any, obj)
+        obj_any.intake_datetime = intake_datetime
+
+        await obj.save()
+        return obj
