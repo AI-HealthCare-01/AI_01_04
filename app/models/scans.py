@@ -11,6 +11,7 @@ class Scan(models.Model):
         on_delete=fields.CASCADE,
         related_name="scans",
     )
+    user_id: int
 
     status = fields.CharField(max_length=30, default="uploaded")
     analyzed_at = fields.DatetimeField(null=True)
