@@ -18,6 +18,7 @@ TORTOISE_APP_MODELS = [
     "app.models.health",
     "app.models.user_features",  # UserFeatureSnapshot, UserCurrentFeatures
     "app.models.recommendations",  # RecommendationBatch, Recommendation, UserActiveRecommendation, RecommendationFeedback
+    "app.models.scans",  # Scan
 ]
 
 
