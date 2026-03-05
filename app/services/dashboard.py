@@ -26,7 +26,7 @@ class DashboardService:
         - recent_prescription: 최근 처방전 1건
         - remaining_medication_days: 남은 약 일수 (가장 가까운 end_date 기준)
         - today_medication_completed: 오늘 복약 모두 완료 여부
-        - today_health_completed: 오늘 건강관리 완료 여부 (추후 구현)
+        - today_health_completed: 오늘 건강관리 완료 여부 (모든 체크리스트 done 시 True)
         """
         try:
             return await self._get_summary_impl(user)
