@@ -23,7 +23,7 @@ def _calc_rate_from_logs(logs: list[HealthChecklistLog]) -> int:
 class HealthService:
     def __init__(self):
         self.health_repo = HealthRepository()
-
+        
     async def ensure_day_seed(self, *, user_id: int, date: str) -> None:
         await self._seed_day_if_empty(user_id=user_id, date_str=date)
 
