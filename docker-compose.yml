@@ -46,6 +46,7 @@ services:
     env_file: .env
     environment:
       DB_HOST: postgres  # Docker 내부에서는 서비스명으로 접속 (.env의 localhost 덮어씀)
+      DB_PORT: "5432"
     build:
       context: .  # 프로젝트 루트를 빌드 컨텍스트로 지정
       dockerfile: app/Dockerfile  # Dockerfile 위치 지정
@@ -75,6 +76,7 @@ services:
     env_file: .env
     environment:
       DB_HOST: postgres  # Docker 내부에서는 서비스명으로 접속
+      DB_PORT: "5432"
     build:
       context: .  # 프로젝트 루트를 빌드 컨텍스트로 지정
       dockerfile: ai_worker/Dockerfile  # Dockerfile 위치 지정
