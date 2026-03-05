@@ -52,5 +52,4 @@ app.include_router(v1_routers)
 
 # ✅ static 파일 서빙 (프로필 업로드, 스캔 업로드 등)
 # /static/uploads/...  →  {FILE_STORAGE_DIR}/uploads/...
-base_dir = getattr(config, "FILE_STORAGE_DIR", "./artifacts")
-app.mount("/static", StaticFiles(directory=base_dir), name="static")
+app.mount("/static", StaticFiles(directory=config.FILE_STORAGE_DIR), name="static")

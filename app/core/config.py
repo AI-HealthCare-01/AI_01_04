@@ -41,3 +41,15 @@ class Config(BaseSettings):
     NAVER_OCR_API_URL: str = ""
     OPENAI_API_KEY: str = ""
     OPENAI_MODEL: str = "gpt-4o-mini"
+
+
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="allow")
+
+    ENV: Env = Env.LOCAL
+    SECRET_KEY: str = f"default-secret-key{uuid.uuid4().hex}"
+    TIMEZONE: zoneinfo.ZoneInfo = field(default_factory=lambda: zoneinfo.ZoneInfo("Asia/Seoul"))
+    TEMPLATE_DIR: str = os.path.join(Path(__file__).resolve().parent.parent, "templates")
+
+    FILE_STORAGE_DIR: str = "/app/app/templates"
+
+    DB_HOST: str = "localhost"
