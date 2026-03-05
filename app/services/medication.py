@@ -125,7 +125,7 @@ class MedicationService:
             rate = _calc_rate_from_logs(day_logs)
             bucket = "none" if not day_logs else rate_bucket(rate)
 
-            rows.append({"date": ds, "rate": rate, "bucket": bucket})
+            rows.append({"date": ds, "rate": rate, "bucket": bucket, "detail_key": ds})
 
         meta = build_page_meta(total=total, page=page, page_size=size)
         return {"items": rows, "meta": meta}
