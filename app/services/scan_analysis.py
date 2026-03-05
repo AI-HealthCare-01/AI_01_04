@@ -12,6 +12,7 @@ from app.dtos.scan import ScanResultUpdateRequest
 from app.integrations.ocr.exceptions import (
     OCRAuthError,
     OCRBadRequestError,
+    OCRConfigError,
     OCRError,
     OCRRateLimitError,
     OCRServerError,
@@ -56,35 +57,71 @@ class ScanAnalysisService:
         try:
             raw = await self.ocr_client.analyze_file(file_path=file_path)
             parsed = parse_ocr_result(raw)
+            # OCR 호출은 성공했지만 텍스트를 못 읽은 경우를 명확히 구분한다.
+            if not parsed.get("raw_text"):
+                await self.scan_repo.update(user_id, scan_id, status="failed")
+                raise HTTPException(
+                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail="OCR 텍스트 추출에 실패했습니다. 더 선명한 이미지로 다시 시도해주세요.",
+                )
             return raw, parsed
+        except HTTPException:
+            raise
+        except OCRConfigError as e:
+            await self.scan_repo.update(user_id, scan_id, status="failed")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="OCR 설정이 올바르지 않습니다. 관리자에게 문의해주세요.",
+            ) from e
         except OCRTimeoutError as e:
             await self.scan_repo.update(user_id, scan_id, status="failed")
-            raise HTTPException(status_code=status.HTTP_504_GATEWAY_TIMEOUT, detail=str(e)) from e
+            raise HTTPException(
+                status_code=status.HTTP_504_GATEWAY_TIMEOUT,
+                detail="OCR 처리 시간이 초과되었습니다. 잠시 후 다시 시도해주세요.",
+            ) from e
         except OCRRateLimitError as e:
             await self.scan_repo.update(user_id, scan_id, status="failed")
-            raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail=str(e)) from e
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="OCR 호출 한도를 초과했습니다. 잠시 후 다시 시도해주세요.",
+            ) from e
         except OCRAuthError as e:
             await self.scan_repo.update(user_id, scan_id, status="failed")
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="OCR 인증 실패") from e
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="OCR 인증에 실패했습니다. 관리자에게 문의해주세요.",
+            ) from e
         except OCRBadRequestError as e:
             await self.scan_repo.update(user_id, scan_id, status="failed")
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="OCR 요청 형식이 올바르지 않습니다. 파일 형식/크기를 확인해주세요.",
+            ) from e
         except OCRServerError as e:
             await self.scan_repo.update(user_id, scan_id, status="failed")
-            raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(e)) from e
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail="OCR 서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
+            ) from e
         except OCRError as e:
             await self.scan_repo.update(user_id, scan_id, status="failed")
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)) from e
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="OCR 처리 중 오류가 발생했습니다.",
+            ) from e
 
     async def _handle_ai_postprocess(self, user_id: int, scan_id: int, parsed: dict, raw: dict) -> dict:
         """AI 후처리 및 에러 처리"""
         try:
-            return ai_postprocess(raw_text=parsed.get("raw_text") or "", ocr_raw=raw)
+            ai_result = ai_postprocess(raw_text=parsed.get("raw_text") or "", ocr_raw=raw)
+            if not isinstance(ai_result, dict):
+                raise ValueError("invalid AI response type")
+            return ai_result
         except Exception as e:
             await self.scan_repo.update(user_id, scan_id, status="failed")
             raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"AI postprocess failed: {e}",
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail="AI 후처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
             ) from e
 
     async def start_analysis(self, user, scan_id: int) -> dict:
@@ -178,18 +215,32 @@ class ScanAnalysisService:
 
             disease_obj = None
             if diagnosis:
-                disease_obj = await Disease.get_or_none(name=diagnosis)
-                if not disease_obj:
-                    disease_obj = await Disease.create(name=diagnosis)
+                disease_obj, _ = await Disease.get_or_create(name=diagnosis)
 
             created_prescriptions: list[int] = []
+            skipped_duplicates: list[str] = []
             start = parse_date_yyyy_mm_dd(doc_date)
             end = start
 
             for drug_name in drug_names:
-                drug_obj = await Drug.get_or_none(name=drug_name)
-                if not drug_obj:
-                    drug_obj = await Drug.create(name=drug_name)
+                drug_obj, _ = await Drug.get_or_create(name=drug_name)
+
+                # 중복 방지: 같은 사용자/약/기간(+질병) 처방은 생성하지 않음
+                exists_qs = Prescription.filter(
+                    user_id=user.id,
+                    drug_id=drug_obj.id,
+                    start_date=start,
+                    end_date=end,
+                )
+                if disease_obj is not None:
+                    exists_qs = exists_qs.filter(disease_id=disease_obj.id)
+                else:
+                    exists_qs = exists_qs.filter(disease_id__isnull=True)
+
+                already = await exists_qs.first()
+                if already:
+                    skipped_duplicates.append(drug_name)
+                    continue
 
                 prescription = await Prescription.create(
                     user=user,
@@ -215,6 +266,9 @@ class ScanAnalysisService:
                 "saved": True,
                 "seeded_date": doc_date,
                 "created_prescriptions": created_prescriptions,
+                "skipped_duplicates": skipped_duplicates,
+                "created_count": len(created_prescriptions),
+                "skipped_count": len(skipped_duplicates),
             }
         except HTTPException:
             raise
