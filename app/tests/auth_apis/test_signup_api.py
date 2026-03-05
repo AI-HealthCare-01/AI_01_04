@@ -12,7 +12,7 @@ class TestSignupAPI(TestCase):
             "password": "Password123!",
             "name": "테스터",
             "gender": "MALE",
-            "birth_date": "1990-01-01",
+            "birthday": "1990-01-01",
             "phone_number": "01012345678",
         }
 
@@ -27,7 +27,7 @@ class TestSignupAPI(TestCase):
             "password": "password123!",
             "name": "테스터",
             "gender": "MALE",
-            "birth_date": "1990-01-01",
+            "birthday": "1990-01-01",
             "phone_number": "01012345678",
         }
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:

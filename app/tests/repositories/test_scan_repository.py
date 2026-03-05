@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from tortoise.contrib.test import TestCase
 
-from app.repositories.scan_repository import ScanRepository, _SCAN_STORE
+from app.repositories.scan_repository import _SCAN_STORE, ScanRepository
 
 
 class TestScanRepository(TestCase):
