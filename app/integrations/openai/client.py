@@ -4,7 +4,7 @@ import logging
 
 from openai import AsyncOpenAI
 
-from app.core.config import config
+from app.core import config
 
 logger = logging.getLogger(__name__)
 
