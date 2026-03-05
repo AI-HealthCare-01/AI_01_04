@@ -6,6 +6,7 @@ from datetime import datetime
 from fastapi import HTTPException
 
 from app.core import config
+from app.models.health import HealthChecklistLog
 from app.models.users import User
 from app.repositories.medication_intake_repository import MedicationIntakeRepository
 from app.repositories.prescription_repository import PrescriptionRepository
@@ -25,7 +26,7 @@ class DashboardService:
         - recent_prescription: 최근 처방전 1건
         - remaining_medication_days: 남은 약 일수 (가장 가까운 end_date 기준)
         - today_medication_completed: 오늘 복약 모두 완료 여부
-        - today_health_completed: 오늘 건강관리 완료 여부 (추후 구현)
+        - today_health_completed: 오늘 건강관리 완료 여부 (모든 체크리스트 done 시 True)
         """
         try:
             return await self._get_summary_impl(user)
@@ -72,9 +73,13 @@ class DashboardService:
             all_taken = all(log.status == "taken" for log in today_logs)
             today_medication_completed = all_taken
 
+        # 오늘 건강관리 완료 여부: 로그가 존재하고 모두 done인 경우
+        health_logs = await HealthChecklistLog.filter(user_id=user_id, date=today).all()
+        today_health_completed = bool(health_logs) and all(lg.status == "done" for lg in health_logs)
+
         return {
             "recent_prescription": recent_prescription,
             "remaining_medication_days": remaining_medication_days,
             "today_medication_completed": today_medication_completed,
-            "today_health_completed": False,  # 추후 건강관리 기능 연동
+            "today_health_completed": today_health_completed,
         }

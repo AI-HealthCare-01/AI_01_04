@@ -114,6 +114,12 @@ class RecommendationRepository:
             feature_snapshot_id=feature_snapshot_id,
         )
 
+    async def get_active_for_recommendation(
+        self, user_id: int, recommendation_id: int
+    ) -> UserActiveRecommendation | None:
+        """이미 active 할당된 추천인지 확인"""
+        return await self._active_model.get_or_none(user_id=user_id, recommendation_id=recommendation_id)
+
     async def assign_active(self, user_id: int, recommendation_id: int) -> UserActiveRecommendation | None:
         """추천을 사용자에게 활성 할당 (user 소유 추천인지 검증)"""
         rec = await self.get_recommendation_for_user(user_id, recommendation_id)
