@@ -14,5 +14,8 @@ wheels/
 .coverage.*
 .DS_Store
 
+# 업로드 파일 (개인 데이터)
+storage/
+
 # Amazon Q rules (개인 설정)
 .amazonq/
