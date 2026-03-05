@@ -84,9 +84,12 @@ class Recommendation(models.Model):
     embedding_model_version = fields.CharField(max_length=50, null=True)
     expiration_at = fields.DatetimeField(null=True)
     created_at = fields.DatetimeField(auto_now_add=True)
+    scan_id = fields.IntField(null=True, index=True)
 
     class Meta:
         table = "recommendations"
+        # ✅ user_id + scan_id로 빠르게 조회/재사용
+        indexes = (("user_id", "scan_id"),)
 
 
 class UserActiveRecommendation(models.Model):
