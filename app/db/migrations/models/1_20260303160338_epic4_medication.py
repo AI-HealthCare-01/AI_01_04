@@ -6,7 +6,7 @@ RUN_IN_TRANSACTION = True
 async def upgrade(db: BaseDBAsyncClient) -> str:
     return """
         ALTER TABLE "users" ALTER COLUMN "id" TYPE BIGINT USING "id"::BIGINT;
-        ALTER TABLE "users" ADD COLUMN IF NOT EXIST "profile_image_url" VARCHAR(500);
+        ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "profile_image_url" VARCHAR(500);
         ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "last_login" TIMESTAMPTZ;
         ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "is_active" BOOL NOT NULL DEFAULT True;
         ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "birthday" DATE NOT NULL;

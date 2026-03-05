@@ -14,7 +14,7 @@ class TestUserMeApis(TestCase):
             "password": "Password123!",
             "name": "내정보테스터",
             "gender": "FEMALE",
-            "birth_date": "1992-02-02",
+            "birthday": "1992-02-02",
             "phone_number": "01055556666",
         }
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
@@ -38,7 +38,7 @@ class TestUserMeApis(TestCase):
             "password": "Password123!",
             "name": "수정전",
             "gender": "MALE",
-            "birth_date": "1990-10-10",
+            "birthday": "1990-10-10",
             "phone_number": "01077778888",
         }
         update_data = {"name": "수정후"}
