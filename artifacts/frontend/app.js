@@ -254,7 +254,12 @@
       const scanId = safeInt("scanId");
       if (!scanId) return log("입력 오류", { field: "scan_id" });
       try {
-        await request(`/scans/${scanId}/save`, { method: "POST" });
+        const data = await request(`/scans/${scanId}/save`, { method: "POST" });
+        qs("scanCreatedCount").value = String(data.created_count ?? "");
+        qs("scanSkippedCount").value = String(data.skipped_count ?? "");
+        qs("scanSkippedDupes").value = Array.isArray(data.skipped_duplicates)
+          ? data.skipped_duplicates.join(", ")
+          : "";
       } catch (err) {
         log("스캔 결과 저장 실패", { message: err.message });
       }
