@@ -11,11 +11,15 @@ if TYPE_CHECKING:
 
 class Scan(models.Model):
     """
-    처방전 스캔 도메인 모델
+    의료문서 스캔 도메인 모델  # [CHANGED]
 
+    - document_type:
+        - prescription: 처방전
+        - medical_record: 진료기록지
     - status: uploaded → processing → done → updated → saved / failed
     - drugs: OCR 파싱된 약물명 목록 (JSON 배열)
     - ocr_raw: Naver OCR 원본 응답 (JSON)
+    - clinical_note: 진료기록지에서 추출한 진료 내용  # [ADD]
     """
 
     id = fields.IntField(pk=True)
@@ -30,8 +34,12 @@ class Scan(models.Model):
     status = fields.CharField(max_length=30, default="uploaded")
     analyzed_at = fields.DatetimeField(null=True)
 
+    document_type = fields.CharField(max_length=30, default="prescription")  # [ADD]
+
     document_date = fields.CharField(max_length=10, null=True)
     diagnosis = fields.TextField(null=True)
+    clinical_note = fields.TextField(null=True)  # [ADD]
+
     drugs: list[str] = fields.JSONField(default=list)  # type: ignore[assignment]
 
     raw_text = fields.TextField(null=True)
@@ -43,4 +51,8 @@ class Scan(models.Model):
 
     class Meta:
         table = "scans"
-        indexes = (("user_id", "id"), ("user_id", "created_at"))
+        indexes = (
+            ("user_id", "id"),
+            ("user_id", "created_at"),
+            ("user_id", "document_type"),  # [ADD]
+        )

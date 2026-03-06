@@ -1,5 +1,3 @@
-"""Scan 도메인 Repository (DB 구현)."""
-
 from __future__ import annotations
 
 from datetime import datetime
@@ -14,8 +12,10 @@ def _to_dict(scan: Scan) -> dict[str, Any]:
         "user_id": scan.user_id,
         "status": scan.status,
         "analyzed_at": scan.analyzed_at.isoformat() if scan.analyzed_at else None,
+        "document_type": scan.document_type,  # [ADD]
         "document_date": scan.document_date,
         "diagnosis": scan.diagnosis,
+        "clinical_note": scan.clinical_note,  # [ADD]
         "drugs": scan.drugs or [],
         "raw_text": scan.raw_text,
         "ocr_raw": scan.ocr_raw,
@@ -24,8 +24,19 @@ def _to_dict(scan: Scan) -> dict[str, Any]:
 
 
 class ScanRepository:
-    async def create(self, user_id: int, *, file_path: str) -> dict[str, Any]:
-        scan = await Scan.create(user_id=user_id, file_path=file_path, status="uploaded")
+    async def create(
+        self,
+        user_id: int,
+        *,
+        file_path: str,
+        document_type: str = "prescription",  # [ADD]
+    ) -> dict[str, Any]:
+        scan = await Scan.create(
+            user_id=user_id,
+            file_path=file_path,
+            document_type=document_type,  # [ADD]
+            status="uploaded",
+        )
         return _to_dict(scan)
 
     async def get_by_id_for_user(self, user_id: int, scan_id: int) -> dict[str, Any] | None:

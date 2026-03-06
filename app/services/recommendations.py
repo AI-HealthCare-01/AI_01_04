@@ -42,9 +42,187 @@ class RecommendationService:
         self.recommendation_repo = RecommendationRepository()
         self.scan_repo = ScanRepository()
 
+    def _normalize_document_type(self, raw: Any) -> str:  # [ADD]
+        value = str(raw or "prescription").strip().lower()
+        if value in {"prescription", "medical_record"}:
+            return value
+        return "prescription"
+
+    async def _create_recommendation(  # [ADD]
+        self,
+        *,
+        user_id: int,
+        batch_id: int,
+        scan_id: int,
+        recommendation_type: str,
+        source: str,
+        content: str,
+        score: float,
+        rank: int,
+        status_value: str = "active",
+    ) -> Any | None:
+        return await self.recommendation_repo.create_recommendation(
+            user_id=user_id,
+            batch_id=batch_id,
+            scan_id=scan_id,
+            recommendation_type=recommendation_type,
+            source=source,
+            content=content,
+            score=score,
+            rank=rank,
+            status=status_value,
+        )
+
+    async def _build_prescription_recommendations(  # [ADD]
+        self,
+        *,
+        user_id: int,
+        scan_id: int,
+        batch_id: int,
+        diagnosis: str | None,
+        drugs: list[str],
+    ) -> list[Any]:
+        created: list[Any] = []
+
+        # TODO:
+        # - disease_repository.py 연결 시 diagnosis -> 질환 매칭
+        # - 매칭 성공 시 질환별 정교한 recommendation 문구/점수로 확장
+
+        if diagnosis:
+            rec = await self._create_recommendation(
+                user_id=user_id,
+                batch_id=batch_id,
+                scan_id=scan_id,
+                recommendation_type="followup",
+                source="scan.diagnosis",
+                content=f"진단명 '{diagnosis}' 기준으로 생활관리 및 추적 관찰 항목을 확인해보세요.",
+                score=0.9,
+                rank=1,
+            )
+            if rec:
+                created.append(rec)
+
+        for i, drug in enumerate(drugs[:10], start=1):
+            rec = await self._create_recommendation(
+                user_id=user_id,
+                batch_id=batch_id,
+                scan_id=scan_id,
+                recommendation_type="medication",
+                source="scan.drugs",
+                content=f"약물 '{drug}' 복용 관련 주의사항과 복용법을 확인해보세요.",
+                score=0.7,
+                rank=10 + i,
+            )
+            if rec:
+                created.append(rec)
+
+        return created
+
+    async def _build_medical_record_recommendations(  # [ADD]
+        self,
+        *,
+        user_id: int,
+        scan_id: int,
+        batch_id: int,
+        diagnosis: str | None,
+        clinical_note: str | None,
+    ) -> list[Any]:
+        created: list[Any] = []
+
+        # TODO:
+        # - disease_repository.py 연결 시 diagnosis / disease_code 기반 질환 매칭
+        # - user_features snapshot 저장 로직 연결
+        # - 진료기록지 내 symptom severity / symptom code 기반 rule 확장
+
+        if diagnosis:
+            rec = await self._create_recommendation(
+                user_id=user_id,
+                batch_id=batch_id,
+                scan_id=scan_id,
+                recommendation_type="followup",
+                source="scan.medical_record.diagnosis",
+                content=f"진단명 '{diagnosis}' 기준으로 증상 변화와 경과를 관찰하고 필요한 추적 진료 일정을 확인해보세요.",
+                score=0.9,
+                rank=1,
+            )
+            if rec:
+                created.append(rec)
+
+            rec = await self._create_recommendation(
+                user_id=user_id,
+                batch_id=batch_id,
+                scan_id=scan_id,
+                recommendation_type="lifestyle",
+                source="scan.medical_record.diagnosis",
+                content=f"진단명 '{diagnosis}' 관련 일반 건강관리 수칙과 생활습관 가이드를 확인해보세요.",
+                score=0.8,
+                rank=2,
+            )
+            if rec:
+                created.append(rec)
+
+        if clinical_note:
+            rec = await self._create_recommendation(
+                user_id=user_id,
+                batch_id=batch_id,
+                scan_id=scan_id,
+                recommendation_type="lifestyle",
+                source="scan.medical_record.clinical_note",
+                content="진료기록지에 기재된 진료 내용과 생활지도에 맞춰 일상 관리 항목을 꾸준히 실천해보세요.",
+                score=0.75,
+                rank=10,
+            )
+            if rec:
+                created.append(rec)
+
+            rec = await self._create_recommendation(
+                user_id=user_id,
+                batch_id=batch_id,
+                scan_id=scan_id,
+                recommendation_type="warning",
+                source="scan.medical_record.clinical_note",
+                content="진료기록지의 증상/소견 내용을 바탕으로 악화 징후가 있는지 주의 깊게 관찰해보세요.",
+                score=0.7,
+                rank=11,
+            )
+            if rec:
+                created.append(rec)
+
+        return created
+
+    async def _build_fallback_recommendation(  # [ADD]
+        self,
+        *,
+        user_id: int,
+        scan_id: int,
+        batch_id: int,
+        document_type: str,
+    ) -> list[Any]:
+        if document_type == "medical_record":
+            content = (
+                "진료기록지에서 진단명이나 핵심 진료 내용을 충분히 추출하지 못했어요. "
+                "증상 기록을 정리하고 기본적인 건강관리 가이드를 먼저 확인해보세요."
+            )
+            source = "scan.medical_record"
+        else:
+            content = "스캔 결과에서 진단/약물 정보를 찾지 못했어요. 텍스트 보정 또는 수동 입력 후 다시 시도해 주세요."
+            source = "scan"
+
+        rec = await self._create_recommendation(
+            user_id=user_id,
+            batch_id=batch_id,
+            scan_id=scan_id,
+            recommendation_type="lifestyle",
+            source=source,
+            content=content,
+            score=0.1,
+            rank=999,
+        )
+        return [rec] if rec else []
+
     async def get_for_scan(self, user_id: int, scan_id: int) -> dict:
         """
-        scan 기반 추천 조회/생성 (옵션 A)
+        scan 기반 추천 조회/생성
         - Recommendation.scan_id 컬럼이 있어야 함
         - 이미 생성된 추천이 있으면 재사용
         """
@@ -52,70 +230,62 @@ class RecommendationService:
         if not scan:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="scan not found")
 
-        # 1) 이미 scan_id로 생성된 rec가 있으면 재사용
         existing = await self.recommendation_repo.list_by_user_scan(user_id=user_id, scan_id=scan_id)
         if existing:
             return {"scan_id": scan_id, "items": [_rec_to_response_dict(r) for r in existing]}
 
+        document_type = self._normalize_document_type(scan.get("document_type"))  # [ADD]
         diagnosis = scan.get("diagnosis")
+
+        clinical_note_raw = scan.get("clinical_note")  # [ADD]
+        clinical_note = (
+            clinical_note_raw if isinstance(clinical_note_raw, str) and clinical_note_raw.strip() else None
+        )  # [ADD]
+
         drugs_raw = scan.get("drugs") or []
         drugs: list[str] = drugs_raw if isinstance(drugs_raw, list) else []
 
-        # 2) 배치 생성
+        # TODO:
+        # - user_features.py 연결 시 recommendation 생성 시점의 상태 snapshot 저장
+        # - 질환/증상/복약/건강관리 이력을 함께 반영하는 확장 로직 추가
+
         batch = await self.recommendation_repo.create_batch(
             user_id=user_id,
-            retrieval_strategy="scan-mvp",
+            retrieval_strategy=f"scan-{document_type}-mvp",  # [CHANGED]
         )
 
         created: list[Any] = []
 
-        # 3) 진단 기반 추천
-        if diagnosis:
-            rec = await self.recommendation_repo.create_recommendation(
-                user_id=user_id,
-                batch_id=batch.id,
-                scan_id=scan_id,  # ✅ 옵션 A 핵심
-                recommendation_type="followup",
-                source="scan.diagnosis",
-                content=f"진단명 '{diagnosis}' 기준으로 생활관리/추적 관찰 항목을 확인해보세요.",
-                score=0.9,
-                rank=1,
-                status="active",
+        if document_type == "medical_record":  # [ADD]
+            created.extend(
+                await self._build_medical_record_recommendations(
+                    user_id=user_id,
+                    scan_id=scan_id,
+                    batch_id=batch.id,
+                    diagnosis=diagnosis,
+                    clinical_note=clinical_note,
+                )
             )
-            if rec:
-                created.append(rec)
-
-        # 4) 약물 기반 추천
-        for i, drug in enumerate(drugs[:10], start=1):
-            rec = await self.recommendation_repo.create_recommendation(
-                user_id=user_id,
-                batch_id=batch.id,
-                scan_id=scan_id,
-                recommendation_type="medication",
-                source="scan.drugs",
-                content=f"약물 '{drug}' 복용 관련 주의사항/복용법을 확인해보세요.",
-                score=0.7,
-                rank=10 + i,
-                status="active",
+        else:
+            created.extend(
+                await self._build_prescription_recommendations(
+                    user_id=user_id,
+                    scan_id=scan_id,
+                    batch_id=batch.id,
+                    diagnosis=diagnosis,
+                    drugs=drugs,
+                )
             )
-            if rec:
-                created.append(rec)
 
-        # 5) fallback
         if not created:
-            rec = await self.recommendation_repo.create_recommendation(
-                user_id=user_id,
-                batch_id=batch.id,
-                scan_id=scan_id,
-                recommendation_type="lifestyle",
-                source="scan",
-                content="스캔 결과에서 진단/약물 정보를 찾지 못했어요. 텍스트 보정 또는 수동 입력 후 다시 시도해 주세요.",
-                score=0.1,
-                rank=999,
-                status="active",
+            created.extend(
+                await self._build_fallback_recommendation(
+                    user_id=user_id,
+                    scan_id=scan_id,
+                    batch_id=batch.id,
+                    document_type=document_type,
+                )
             )
-            if rec:
-                created.append(rec)
 
         return {"scan_id": scan_id, "items": [_rec_to_response_dict(r) for r in created]}
 
@@ -182,7 +352,6 @@ class RecommendationService:
         try:
             recs = await self.recommendation_repo.list_by_user_scan(user_id=user_id, scan_id=scan_id)
             if not recs:
-                # 없으면 생성부터
                 generated = await self.get_for_scan(user_id=user_id, scan_id=scan_id)
                 ids = [it["id"] for it in (generated.get("items") or [])]
             else:
