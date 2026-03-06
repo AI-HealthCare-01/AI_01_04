@@ -193,7 +193,9 @@ class ScanAnalysisService:
             logger.exception("update_result failed")
             raise HTTPException(status_code=500, detail=str(e)) from e
 
-    async def _create_prescriptions(self, user, doc_date: str, diagnosis: str | None, drug_names: list[str]) -> list[int]:
+    async def _create_prescriptions(
+        self, user, doc_date: str, diagnosis: str | None, drug_names: list[str]
+    ) -> list[int]:
         """처방전 생성 (중복 방지 포함)"""
         disease_obj = None
         if diagnosis:
@@ -206,18 +208,26 @@ class ScanAnalysisService:
         end = start
 
         for drug_name in drug_names:
-            drug_obj = await Drug.get_or_create(name=drug_name)
-            if isinstance(drug_obj, tuple):
-                drug_obj = drug_obj[0]
+            drug_obj, _ = await Drug.get_or_create(name=drug_name)
 
             exists_qs = Prescription.filter(user_id=user.id, drug_id=drug_obj.id, start_date=start, end_date=end)
-            exists_qs = exists_qs.filter(disease_id=disease_obj.id) if disease_obj else exists_qs.filter(disease_id__isnull=True)
+            exists_qs = (
+                exists_qs.filter(disease_id=disease_obj.id)
+                if disease_obj
+                else exists_qs.filter(disease_id__isnull=True)
+            )
             if await exists_qs.first():
                 continue
 
             prescription = await Prescription.create(
-                user=user, disease=disease_obj, drug=drug_obj,
-                start_date=start, end_date=end, dose_count=1, dose_amount="1", dose_unit="정",
+                user=user,
+                disease=disease_obj,
+                drug=drug_obj,
+                start_date=start,
+                end_date=end,
+                dose_count=1,
+                dose_amount="1",
+                dose_unit="정",
             )
             created.append(prescription.id)
 
