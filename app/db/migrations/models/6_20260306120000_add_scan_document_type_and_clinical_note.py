@@ -26,3 +26,6 @@ async def downgrade(db: BaseDBAsyncClient) -> str:
         ALTER TABLE "scans"
         DROP COLUMN IF EXISTS "document_type";
     """
+
+
+MODELS_STATE = "eJyrrgUAAXUA+Q=="
