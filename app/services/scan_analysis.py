@@ -195,7 +195,7 @@ class ScanAnalysisService:
 
     async def _create_prescriptions(
         self, user, doc_date: str, diagnosis: str | None, drug_names: list[str]
-    ) -> list[int]:
+    ) -> tuple[list[int], int, list[str]]:
         """처방전 생성 (중복 방지 포함)"""
         disease_obj = None
         if diagnosis:
@@ -204,6 +204,8 @@ class ScanAnalysisService:
                 disease_obj = await Disease.create(name=diagnosis)
 
         created: list[int] = []
+        skipped = 0
+        skipped_duplicates: list[str] = []
         start = parse_date_yyyy_mm_dd(doc_date)
         end = start
 
@@ -217,6 +219,8 @@ class ScanAnalysisService:
                 else exists_qs.filter(disease_id__isnull=True)
             )
             if await exists_qs.first():
+                skipped += 1
+                skipped_duplicates.append(drug_name)
                 continue
 
             prescription = await Prescription.create(
@@ -231,7 +235,7 @@ class ScanAnalysisService:
             )
             created.append(prescription.id)
 
-        return created
+        return created, skipped, skipped_duplicates
 
     async def save_result(self, user, scan_id: int) -> dict:
         try:
@@ -251,7 +255,7 @@ class ScanAnalysisService:
 
             drug_names_raw: Any = cur.get("drugs", [])
             drug_names: list[str] = drug_names_raw if isinstance(drug_names_raw, list) else []
-            created_prescriptions = await self._create_prescriptions(user, doc_date, cur.get("diagnosis"), drug_names)
+            created_prescriptions, skipped_count, skipped_duplicates = await self._create_prescriptions(user, doc_date, cur.get("diagnosis"), drug_names)
 
             await self.scan_repo.update(user.id, scan_id, status="saved")
 
@@ -265,6 +269,8 @@ class ScanAnalysisService:
                 "saved": True,
                 "seeded_date": doc_date,
                 "created_prescriptions": created_prescriptions,
+                "skipped_count": skipped_count,
+                "skipped_duplicates": skipped_duplicates,
             }
         except HTTPException:
             raise
