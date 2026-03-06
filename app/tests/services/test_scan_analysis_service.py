@@ -198,10 +198,10 @@ class TestScanAnalysisService(TestCase):
             second = await service.save_result(user, scan_id=scan["scan_id"])
 
         assert first["saved"] is True
-        assert first["created_count"] == 2
+        assert len(first["created_prescriptions"]) == 2
         assert first["skipped_count"] == 0
 
         assert second["saved"] is True
-        assert second["created_count"] == 0
+        assert len(second["created_prescriptions"]) == 0
         assert second["skipped_count"] == 2
         assert set(second["skipped_duplicates"]) == {"아스피린", "타이레놀"}

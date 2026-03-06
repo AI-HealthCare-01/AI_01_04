@@ -6,7 +6,7 @@ import csv
 import os
 from pathlib import Path
 
-import asyncpg
+import asyncpg  # type: ignore[import-untyped]
 
 
 def _env(name: str, default: str) -> str:
