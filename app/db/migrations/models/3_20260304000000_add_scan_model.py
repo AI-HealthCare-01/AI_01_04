@@ -5,25 +5,15 @@ RUN_IN_TRANSACTION = True
 
 async def upgrade(db: BaseDBAsyncClient) -> str:
     return """
-        CREATE TABLE IF NOT EXISTS "scans" (
-            "id" SERIAL NOT NULL PRIMARY KEY,
-            "status" VARCHAR(20) NOT NULL DEFAULT 'uploaded',
-            "file_path" VARCHAR(500) NOT NULL,
-            "analyzed_at" TIMESTAMPTZ,
-            "document_date" VARCHAR(20),
-            "diagnosis" VARCHAR(200),
-            "drugs" JSONB NOT NULL DEFAULT '[]',
-            "raw_text" TEXT,
-            "ocr_raw" JSONB,
-            "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            "user_id" BIGINT NOT NULL REFERENCES "users" ("id") ON DELETE CASCADE
-        );
+        -- no-op:
+        -- scans 테이블 생성은 3_20260304173000_add_scans.py를 단일 소스로 사용한다.
+        -- 동일 번호 체인 병합 흔적으로 인한 중복 DDL 적용을 방지한다.
     """
 
 
 async def downgrade(db: BaseDBAsyncClient) -> str:
     return """
-        DROP TABLE IF EXISTS "scans";
+        -- no-op
     """
 
 
