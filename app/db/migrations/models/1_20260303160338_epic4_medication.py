@@ -9,10 +9,23 @@ async def upgrade(db: BaseDBAsyncClient) -> str:
         ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "profile_image_url" VARCHAR(500);
         ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "last_login" TIMESTAMPTZ;
         ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "is_active" BOOL NOT NULL DEFAULT True;
-        ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "birthday" DATE NOT NULL;
+        ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "birthday" DATE;
+        UPDATE "users"
+        SET "birthday" = COALESCE("birth_date", DATE '1970-01-01')
+        WHERE "birthday" IS NULL;
+        ALTER TABLE "users" ALTER COLUMN "birthday" SET NOT NULL;
         ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP;
         ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "is_admin" BOOL NOT NULL DEFAULT False;
-        ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "hashed_password" VARCHAR(128) NOT NULL;
+        ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "hashed_password" VARCHAR(128);
+        UPDATE "users" AS u
+        SET "hashed_password" = LEFT(uc."password_hash", 128)
+        FROM "user_credentials" AS uc
+        WHERE uc."user_id" = u."id"
+          AND (u."hashed_password" IS NULL OR u."hashed_password" = '');
+        UPDATE "users"
+        SET "hashed_password" = 'migrated_placeholder'
+        WHERE "hashed_password" IS NULL;
+        ALTER TABLE "users" ALTER COLUMN "hashed_password" SET NOT NULL;
         ALTER TABLE "users" DROP COLUMN IF EXISTS "birth_date";
         ALTER TABLE "users" DROP COLUMN IF EXISTS "nickname";
         ALTER TABLE "users" DROP COLUMN IF EXISTS "role";
