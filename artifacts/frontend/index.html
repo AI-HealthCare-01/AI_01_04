@@ -88,20 +88,44 @@
       <article class="card">
         <h2>OCR 스캔</h2>
         <div class="row"><label>업로드 파일</label><input id="scanFile" type="file" /></div>
+
+        <!-- [ADD] 문서 유형 선택 -->
+        <div class="row">
+          <label>document_type</label>
+          <select id="scanDocumentType">
+            <option value="prescription">처방전</option>
+            <option value="medical_record">진료기록지</option>
+          </select>
+        </div>
+
         <div class="actions"><button id="scanUploadBtn" type="button">파일 업로드</button></div>
+
         <div class="row"><label>scan_id</label><input id="scanId" type="number" min="1" /></div>
+
+        <!-- [ADD] 현재 문서 유형 표시 -->
+        <div class="row"><label>loaded_type</label><input id="scanLoadedType" type="text" readonly /></div>
+
         <div class="actions">
           <button id="scanAnalyzeBtn" type="button">분석 시작</button>
           <button id="scanGetBtn" type="button">결과 조회</button>
           <button id="scanSaveBtn" type="button">결과 저장</button>
         </div>
+
         <h3>저장 결과</h3>
         <div class="row"><label>created_count</label><input id="scanCreatedCount" type="text" readonly /></div>
         <div class="row"><label>skipped_count</label><input id="scanSkippedCount" type="text" readonly /></div>
         <div class="row"><label>skipped_duplicates</label><input id="scanSkippedDupes" type="text" readonly /></div>
+
         <h3>결과 수동 수정</h3>
         <div class="row"><label>document_date</label><input id="scanDocDate" type="date" /></div>
         <div class="row"><label>diagnosis</label><input id="scanDiagnosis" type="text" /></div>
+
+        <!-- [ADD] 진료기록지용 진료 내용 -->
+        <div class="row">
+          <label>clinical_note</label>
+          <textarea id="scanClinicalNote" rows="4" placeholder="진료 내용 / 생활지도 / 임상 소견"></textarea>
+        </div>
+
         <div class="row"><label>drugs(csv)</label><input id="scanDrugs" type="text" placeholder="타이레놀,판콜" /></div>
         <div class="actions"><button id="scanPatchBtn" type="button">결과 수정</button></div>
       </article>
