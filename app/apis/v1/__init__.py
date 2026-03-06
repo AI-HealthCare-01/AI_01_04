@@ -20,6 +20,8 @@ from app.apis.v1.recommendation_router import recommendation_router
 from app.apis.v1.scan_router import scan_router
 from app.apis.v1.user_routers import user_router
 
+from app.apis.v1.drugs_router import drug_router
+
 v1_routers = APIRouter(prefix="/api/v1")
 v1_routers.include_router(auth_router)
 v1_routers.include_router(user_router)
@@ -28,3 +30,4 @@ v1_routers.include_router(medication_router)
 v1_routers.include_router(health_router)
 v1_routers.include_router(scan_router)
 v1_routers.include_router(recommendation_router)
+v1_routers.include_router(drug_router)
