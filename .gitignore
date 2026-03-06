@@ -19,4 +19,4 @@ storage/
 artifacts/uploads/
 
 # Amazon Q rules (개인 설정)
-.amazonq/artifacts/
+.amazonq/
