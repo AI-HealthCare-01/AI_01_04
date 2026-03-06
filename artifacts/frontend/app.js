@@ -110,6 +110,7 @@
           phone_number: read("signupPhone"),
         };
         await jsonRequest("/auth/signup", "POST", payload);
+        log("회원가입 성공", { created: true }); // [ADD]
       } catch (err) {
         log("회원가입 실패", { message: err.message });
       }
@@ -122,11 +123,15 @@
           password: read("loginPassword"),
         };
         const data = await jsonRequest("/auth/login", "POST", payload);
-        if (data && data.access_token) {
-          state.accessToken = data.access_token;
-          qs("accessToken").value = data.access_token;
-          localStorage.setItem("frontend_access_token", data.access_token);
+
+        const token = data?.access_token || data?.accessToken; // [CHANGED]
+        if (token) {
+          state.accessToken = token;
+          qs("accessToken").value = token;
+          localStorage.setItem("frontend_access_token", token);
           log("로그인 성공", { access_token_saved: true });
+        } else {
+          log("로그인 응답에 토큰이 없음", data); // [ADD]
         }
       } catch (err) {
         log("로그인 실패", { message: err.message });
@@ -136,10 +141,14 @@
     qs("refreshBtn").addEventListener("click", async () => {
       try {
         const data = await request("/auth/token/refresh", { method: "GET" });
-        if (data && data.access_token) {
-          state.accessToken = data.access_token;
-          qs("accessToken").value = data.access_token;
-          localStorage.setItem("frontend_access_token", data.access_token);
+        const token = data?.access_token || data?.accessToken; // [CHANGED]
+        if (token) {
+          state.accessToken = token;
+          qs("accessToken").value = token;
+          localStorage.setItem("frontend_access_token", token);
+          log("토큰 갱신 성공", { refreshed: true }); // [ADD]
+        } else {
+          log("토큰 갱신 응답에 토큰이 없음", data); // [ADD]
         }
       } catch (err) {
         log("토큰 갱신 실패", { message: err.message });
@@ -203,10 +212,17 @@
           log("업로드 실패", { reason: "파일을 선택하세요." });
           return;
         }
+
+        const documentType = read("scanDocumentType") || "prescription"; // [ADD]
+
         const fd = new FormData();
         fd.append("file", file);
+        fd.append("document_type", documentType); // [ADD]
+
         const data = await request("/scans/upload", { method: "POST", body: fd });
+
         if (data && data.scan_id) qs("scanId").value = String(data.scan_id);
+        qs("scanLoadedType").value = data?.document_type || documentType; // [ADD]
       } catch (err) {
         log("스캔 업로드 실패", { message: err.message });
       }
@@ -216,7 +232,10 @@
       const scanId = safeInt("scanId");
       if (!scanId) return log("입력 오류", { field: "scan_id" });
       try {
-        await request(`/scans/${scanId}/analyze`, { method: "POST" });
+        const data = await request(`/scans/${scanId}/analyze`, { method: "POST" }); // [CHANGED]
+        if (data?.document_type) {
+          qs("scanLoadedType").value = data.document_type; // [ADD]
+        }
       } catch (err) {
         log("스캔 분석 실패", { message: err.message });
       }
@@ -227,8 +246,10 @@
       if (!scanId) return log("입력 오류", { field: "scan_id" });
       try {
         const data = await request(`/scans/${scanId}`, { method: "GET" });
+        qs("scanLoadedType").value = data.document_type || ""; // [ADD]
         qs("scanDocDate").value = data.document_date || "";
         qs("scanDiagnosis").value = data.diagnosis || "";
+        qs("scanClinicalNote").value = data.clinical_note || ""; // [ADD]
         qs("scanDrugs").value = Array.isArray(data.drugs) ? data.drugs.join(",") : "";
       } catch (err) {
         log("스캔 결과 조회 실패", { message: err.message });
@@ -242,6 +263,7 @@
         const payload = {
           document_date: read("scanDocDate") || null,
           diagnosis: read("scanDiagnosis") || null,
+          clinical_note: read("scanClinicalNote") || null, // [ADD]
           drugs: parseCsv(read("scanDrugs")),
         };
         await jsonRequest(`/scans/${scanId}/result`, "PATCH", payload);
@@ -260,6 +282,9 @@
         qs("scanSkippedDupes").value = Array.isArray(data.skipped_duplicates)
           ? data.skipped_duplicates.join(", ")
           : "";
+        if (data?.document_type) {
+          qs("scanLoadedType").value = data.document_type; // [ADD]
+        }
       } catch (err) {
         log("스캔 결과 저장 실패", { message: err.message });
       }

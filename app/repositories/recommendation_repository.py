@@ -153,12 +153,6 @@ class RecommendationRepository:
         for rec in recs:
             await self._active_model.create(user_id=user_id, recommendation=rec)
 
-    async def list_by_scan_for_user(self, user_id: int, scan_id: int) -> list[Recommendation]:
-        """
-        같은 scan_id로 생성된 추천이 이미 있으면 재사용하기 위한 조회
-        """
-        return await self._rec_model.filter(user_id=user_id, scan_id=scan_id).order_by("rank", "id").all()
-
     async def list_by_user_scan(self, user_id: int, scan_id: int) -> list[Recommendation]:
         return (
             await self._rec_model.filter(user_id=user_id, scan_id=scan_id)

@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, File, Path, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, Path, UploadFile, status  # [CHANGED]
 from fastapi.responses import ORJSONResponse as Response
 
 from app.dependencies.security import get_request_user
@@ -26,14 +26,22 @@ async def upload_scan(
     user: Annotated[User, Depends(get_request_user)],
     scan_service: Annotated[ScanAnalysisService, Depends(ScanAnalysisService)],
     file: UploadFile = File(...),  # noqa: B008
+    document_type: Annotated[str, Form()] = "prescription",  # [ADD]
 ) -> Response:
     """
-    처방전 파일 업로드
+    의료문서 파일 업로드  # [CHANGED]
+    - document_type:
+        - prescription
+        - medical_record
     - jpg/png/pdf
     - 10MB 이하
     """
 
-    result = await scan_service.upload_file(user=user, file=file)
+    result = await scan_service.upload_file(  # [CHANGED]
+        user=user,
+        file=file,
+        document_type=document_type,
+    )
 
     return Response(
         ScanUploadResponse.model_validate(result).model_dump(),
@@ -119,7 +127,7 @@ async def save_scan_result(
     scan_id: Annotated[int, Path(..., ge=1)],
 ) -> Response:
     """
-    OCR 결과 저장 → 처방/복약 시스템에 반영
+    OCR 결과 저장 → 처방/복약 시스템 또는 진료기록 기반 추천에 반영  # [CHANGED]
     """
 
     result = await scan_service.save_result(user=user, scan_id=scan_id)
