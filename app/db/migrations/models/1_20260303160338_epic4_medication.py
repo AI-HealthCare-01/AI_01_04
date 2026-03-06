@@ -33,9 +33,13 @@ async def upgrade(db: BaseDBAsyncClient) -> str:
         ALTER TABLE "users" ALTER COLUMN "name" TYPE VARCHAR(20) USING "name"::VARCHAR(20);
         ALTER TABLE "user_credentials" ALTER COLUMN "user_id" TYPE BIGINT USING "user_id"::BIGINT;
         ALTER TABLE "user_auth_providers" ALTER COLUMN "user_id" TYPE BIGINT USING "user_id"::BIGINT;
-        ALTER TABLE "medication_intake_logs" ADD "intake_date" DATE NOT NULL;
-        ALTER TABLE "medication_intake_logs" ADD "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP;
-        ALTER TABLE "medication_intake_logs" ADD "slot_label" VARCHAR(30);
+        ALTER TABLE "medication_intake_logs" ADD COLUMN IF NOT EXISTS "intake_date" DATE;
+        UPDATE "medication_intake_logs"
+        SET "intake_date" = COALESCE("intake_date", ("intake_datetime" AT TIME ZONE 'Asia/Seoul')::DATE)
+        WHERE "intake_date" IS NULL;
+        ALTER TABLE "medication_intake_logs" ALTER COLUMN "intake_date" SET NOT NULL;
+        ALTER TABLE "medication_intake_logs" ADD COLUMN IF NOT EXISTS "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP;
+        ALTER TABLE "medication_intake_logs" ADD COLUMN IF NOT EXISTS "slot_label" VARCHAR(30);
         ALTER TABLE "medication_intake_logs" ALTER COLUMN "intake_datetime" DROP NOT NULL;
         ALTER TABLE "prescriptions" ALTER COLUMN "user_id" TYPE BIGINT USING "user_id"::BIGINT;
         ALTER TABLE "chatbot_sessions" ALTER COLUMN "user_id" TYPE BIGINT USING "user_id"::BIGINT;
