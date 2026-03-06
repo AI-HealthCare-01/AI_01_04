@@ -31,3 +31,6 @@ class ScanSaveResponse(BaseModel):
     saved: bool
     seeded_date: str | None = None
     created_prescriptions: list[int] | None = None
+    skipped_duplicates: list[str] | None = None
+    created_count: int | None = None
+    skipped_count: int | None = None
