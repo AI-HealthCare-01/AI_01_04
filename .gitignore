@@ -18,4 +18,4 @@ wheels/
 storage/
 
 # Amazon Q rules (개인 설정)
-.amazonq/
+.amazonq/artifacts/
