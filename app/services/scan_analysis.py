@@ -193,6 +193,50 @@ class ScanAnalysisService:
             logger.exception("update_result failed")
             raise HTTPException(status_code=500, detail=str(e)) from e
 
+    async def _create_prescriptions(
+        self, user, doc_date: str, diagnosis: str | None, drug_names: list[str]
+    ) -> tuple[list[int], int, list[str]]:
+        """처방전 생성 (중복 방지 포함)"""
+        disease_obj = None
+        if diagnosis:
+            disease_obj = await Disease.get_or_none(name=diagnosis)
+            if not disease_obj:
+                disease_obj = await Disease.create(name=diagnosis)
+
+        created: list[int] = []
+        skipped = 0
+        skipped_duplicates: list[str] = []
+        start = parse_date_yyyy_mm_dd(doc_date)
+        end = start
+
+        for drug_name in drug_names:
+            drug_obj, _ = await Drug.get_or_create(name=drug_name)
+
+            exists_qs = Prescription.filter(user_id=user.id, drug_id=drug_obj.id, start_date=start, end_date=end)
+            exists_qs = (
+                exists_qs.filter(disease_id=disease_obj.id)
+                if disease_obj
+                else exists_qs.filter(disease_id__isnull=True)
+            )
+            if await exists_qs.first():
+                skipped += 1
+                skipped_duplicates.append(drug_name)
+                continue
+
+            prescription = await Prescription.create(
+                user=user,
+                disease=disease_obj,
+                drug=drug_obj,
+                start_date=start,
+                end_date=end,
+                dose_count=1,
+                dose_amount="1",
+                dose_unit="정",
+            )
+            created.append(prescription.id)
+
+        return created, skipped, skipped_duplicates
+
     async def save_result(self, user, scan_id: int) -> dict:
         try:
             cur = await self.scan_repo.get_by_id_for_user(user.id, scan_id)
@@ -209,50 +253,9 @@ class ScanAnalysisService:
             await self.med_service.ensure_day_seed(user_id=user.id, date=doc_date)
             await self.health_service.ensure_day_seed(user_id=user.id, date=doc_date)
 
-            diagnosis = cur.get("diagnosis")
             drug_names_raw: Any = cur.get("drugs", [])
             drug_names: list[str] = drug_names_raw if isinstance(drug_names_raw, list) else []
-
-            disease_obj = None
-            if diagnosis:
-                disease_obj, _ = await Disease.get_or_create(name=diagnosis)
-
-            created_prescriptions: list[int] = []
-            skipped_duplicates: list[str] = []
-            start = parse_date_yyyy_mm_dd(doc_date)
-            end = start
-
-            for drug_name in drug_names:
-                drug_obj, _ = await Drug.get_or_create(name=drug_name)
-
-                # 중복 방지: 같은 사용자/약/기간(+질병) 처방은 생성하지 않음
-                exists_qs = Prescription.filter(
-                    user_id=user.id,
-                    drug_id=drug_obj.id,
-                    start_date=start,
-                    end_date=end,
-                )
-                if disease_obj is not None:
-                    exists_qs = exists_qs.filter(disease_id=disease_obj.id)
-                else:
-                    exists_qs = exists_qs.filter(disease_id__isnull=True)
-
-                already = await exists_qs.first()
-                if already:
-                    skipped_duplicates.append(drug_name)
-                    continue
-
-                prescription = await Prescription.create(
-                    user=user,
-                    disease=disease_obj,
-                    drug=drug_obj,
-                    start_date=start,
-                    end_date=end,
-                    dose_count=1,
-                    dose_amount="1",
-                    dose_unit="정",
-                )
-                created_prescriptions.append(prescription.id)
+            created_prescriptions, skipped_count, skipped_duplicates = await self._create_prescriptions(user, doc_date, cur.get("diagnosis"), drug_names)
 
             await self.scan_repo.update(user.id, scan_id, status="saved")
 
@@ -266,9 +269,8 @@ class ScanAnalysisService:
                 "saved": True,
                 "seeded_date": doc_date,
                 "created_prescriptions": created_prescriptions,
+                "skipped_count": skipped_count,
                 "skipped_duplicates": skipped_duplicates,
-                "created_count": len(created_prescriptions),
-                "skipped_count": len(skipped_duplicates),
             }
         except HTTPException:
             raise

@@ -176,3 +176,32 @@ class TestScanAnalysisService(TestCase):
         ):
             result = await service.save_result(user, scan_id=scan["scan_id"])
         assert result["saved"] is True
+
+    async def test_save_result_idempotent_duplicate_skip(self):
+        user = await _make_user("scan_idempotent@example.com")
+        service = ScanAnalysisService()
+        scan = await service.scan_repo.create(user_id=user.id, file_path="storage/1/test.jpg")
+        await service.scan_repo.update(
+            user.id,
+            scan["scan_id"],
+            status="done",
+            document_date="2024-01-01",
+            diagnosis="고혈압",
+            drugs=["아스피린", "타이레놀"],
+        )
+
+        with (
+            patch.object(service.med_service, "ensure_day_seed", new=AsyncMock(), create=True),
+            patch.object(service.health_service, "ensure_day_seed", new=AsyncMock(), create=True),
+        ):
+            first = await service.save_result(user, scan_id=scan["scan_id"])
+            second = await service.save_result(user, scan_id=scan["scan_id"])
+
+        assert first["saved"] is True
+        assert len(first["created_prescriptions"]) == 2
+        assert first["skipped_count"] == 0
+
+        assert second["saved"] is True
+        assert len(second["created_prescriptions"]) == 0
+        assert second["skipped_count"] == 2
+        assert set(second["skipped_duplicates"]) == {"아스피린", "타이레놀"}

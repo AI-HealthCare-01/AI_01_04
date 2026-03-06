@@ -6,6 +6,7 @@ from app.apis.v1.auth_routers import auth_router
 
 # 추가 부분
 from app.apis.v1.dashboard_router import dashboard_router
+from app.apis.v1.drugs_router import drug_router
 
 # 관리 이력/상세/수정
 from app.apis.v1.health_router import health_router
@@ -28,3 +29,4 @@ v1_routers.include_router(medication_router)
 v1_routers.include_router(health_router)
 v1_routers.include_router(scan_router)
 v1_routers.include_router(recommendation_router)
+v1_routers.include_router(drug_router)
