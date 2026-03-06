@@ -27,8 +27,6 @@ class UserManageService:
             data.phone_number = normalized_phone_number
 
         update_data = data.model_dump(exclude_none=True)
-        if "birthday" in update_data:
-            update_data["birth_date"] = update_data.pop("birthday")
 
         async with in_transaction():
             await self.repo.update_instance(user=user, data=update_data)
