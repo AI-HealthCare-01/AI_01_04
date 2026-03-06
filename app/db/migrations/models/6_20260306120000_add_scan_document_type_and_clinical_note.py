@@ -28,4 +28,4 @@ async def downgrade(db: BaseDBAsyncClient) -> str:
     """
 
 
-MODELS_STATE = "eJyrrgUAAXUA+Q=="
+MODELS_STATE = "eJyrViouSSxJVbJSUCrISUxOzcjPSUktUqoFAGfCCH8="
