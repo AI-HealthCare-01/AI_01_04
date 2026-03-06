@@ -16,6 +16,7 @@ wheels/
 
 # 업로드 파일 (개인 데이터)
 storage/
+artifacts/uploads/
 
 # Amazon Q rules (개인 설정)
 .amazonq/
