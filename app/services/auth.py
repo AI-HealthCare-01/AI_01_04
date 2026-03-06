@@ -32,7 +32,7 @@ class AuthService:
                 email=data.email,
                 name=data.name,
                 phone_number=normalized_phone_number,
-                birth_date=data.birthday,
+                birthday=data.birthday,
                 gender=data.gender,
             )
             await self.credential_repo.create_for_user(

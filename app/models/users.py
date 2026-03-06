@@ -22,13 +22,12 @@ class User(models.Model):
 
     email = fields.CharField(max_length=40, unique=True)
     name = fields.CharField(max_length=100)
-    nickname = fields.CharField(max_length=50, null=True)
     phone_number = fields.CharField(max_length=11)
-    birth_date = fields.DateField(null=True)
+    birthday = fields.DateField()
     gender = fields.CharEnumField(enum_type=Gender, null=True)
-    role = fields.CharEnumField(enum_type=UserRole, default=UserRole.USER)
 
     is_active = fields.BooleanField(default=True)
+    is_admin = fields.BooleanField(default=False)
     profile_image_url = fields.CharField(max_length=500, null=True)
     last_login = fields.DatetimeField(null=True)
     created_at = fields.DatetimeField(auto_now_add=True)

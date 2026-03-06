@@ -6,15 +6,14 @@ from typing import Any
 from pydantic import EmailStr
 
 from app.core import config
-from app.models.users import Gender, User, UserRole
+from app.models.users import Gender, User
 
 ALLOWED_UPDATE_FIELDS = [
     "name",
     "email",
-    "nickname",
     "phone_number",
     "gender",
-    "birth_date",
+    "birthday",
     "profile_image_url",
 ]
 
@@ -44,19 +43,15 @@ class UserRepository:
         email: str | EmailStr,
         name: str,
         phone_number: str,
-        birth_date: date | None = None,
+        birthday: date,
         gender: Gender | None = None,
-        nickname: str | None = None,
-        role: UserRole = UserRole.USER,
     ) -> User:
         return await self._model.create(
             email=email,
             name=name,
-            nickname=nickname,
             phone_number=phone_number,
-            birth_date=birth_date,
+            birthday=birthday,
             gender=gender,
-            role=role,
         )
 
     async def update_instance(self, user: User, data: dict[str, Any]) -> None:
