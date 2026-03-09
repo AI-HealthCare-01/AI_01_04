@@ -44,6 +44,7 @@ class UserRepository:
         name: str,
         phone_number: str,
         birthday: date,
+        hashed_password: str = "",
         gender: Gender | None = None,
     ) -> User:
         return await self._model.create(
@@ -51,6 +52,7 @@ class UserRepository:
             name=name,
             phone_number=phone_number,
             birthday=birthday,
+            hashed_password=hashed_password,
             gender=gender,
         )
 

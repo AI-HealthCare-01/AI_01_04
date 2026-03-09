@@ -26,6 +26,7 @@ class AuthService:
 
         normalized_phone_number = normalize_phone_number(data.phone_number)
         await self.check_phone_number_exists(normalized_phone_number)
+        password_hash = hash_password(data.password)
 
         async with in_transaction():
             user = await self.user_repo.create_user(
@@ -33,11 +34,12 @@ class AuthService:
                 name=data.name,
                 phone_number=normalized_phone_number,
                 birthday=data.birthday,
+                hashed_password=password_hash,
                 gender=data.gender,
             )
             await self.credential_repo.create_for_user(
                 user=user,
-                password_hash=hash_password(data.password),
+                password_hash=password_hash,
             )
             return user
 
