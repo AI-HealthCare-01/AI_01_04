@@ -77,7 +77,11 @@ class TestAuthService(TestCase):
         from app.models.user_credentials import UserCredential
 
         user = await User.create(
-            email="inactive@example.com", name="테스터", phone_number="01033334444", is_active=False, birthday="1990-01-01"
+            email="inactive@example.com",
+            name="테스터",
+            phone_number="01033334444",
+            is_active=False,
+            birthday="1990-01-01",
         )
         await UserCredential.create(user=user, password_hash=hash_password("Password123!"))
         service = AuthService()

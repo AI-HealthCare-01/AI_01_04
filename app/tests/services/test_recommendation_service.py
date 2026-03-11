@@ -34,7 +34,9 @@ class TestRecommendationService(TestCase):
     async def test_update_success(self):
         from app.dtos.recommendations import RecommendationUpdateRequest
 
-        user = await User.create(email="rec_upd@example.com", name="Test", phone_number="01011112222", birthday="1990-01-01")
+        user = await User.create(
+            email="rec_upd@example.com", name="Test", phone_number="01011112222", birthday="1990-01-01"
+        )
         batch = await RecommendationBatch.create(user=user)
         rec = await Recommendation.create(user=user, batch=batch, content="원본", recommendation_type="health")
 
@@ -48,7 +50,9 @@ class TestRecommendationService(TestCase):
 
         from app.dtos.recommendations import RecommendationUpdateRequest
 
-        user = await User.create(email="rec_upd2@example.com", name="Test", phone_number="01011112222", birthday="1990-01-01")
+        user = await User.create(
+            email="rec_upd2@example.com", name="Test", phone_number="01011112222", birthday="1990-01-01"
+        )
         service = RecommendationService()
 
         with self.assertRaises(HTTPException) as ctx:
@@ -56,7 +60,9 @@ class TestRecommendationService(TestCase):
         assert ctx.exception.status_code == 404
 
     async def test_delete_success(self):
-        user = await User.create(email="rec_del@example.com", name="Test", phone_number="01011112222", birthday="1990-01-01")
+        user = await User.create(
+            email="rec_del@example.com", name="Test", phone_number="01011112222", birthday="1990-01-01"
+        )
         batch = await RecommendationBatch.create(user=user)
         rec = await Recommendation.create(user=user, batch=batch, content="삭제대상", recommendation_type="health")
 
@@ -69,7 +75,9 @@ class TestRecommendationService(TestCase):
     async def test_delete_not_found(self):
         from fastapi import HTTPException
 
-        user = await User.create(email="rec_del2@example.com", name="Test", phone_number="01011112222", birthday="1990-01-01")
+        user = await User.create(
+            email="rec_del2@example.com", name="Test", phone_number="01011112222", birthday="1990-01-01"
+        )
         service = RecommendationService()
 
         with self.assertRaises(HTTPException) as ctx:
@@ -77,7 +85,9 @@ class TestRecommendationService(TestCase):
         assert ctx.exception.status_code == 404
 
     async def test_add_feedback_success(self):
-        user = await User.create(email="rec_fb@example.com", name="Test", phone_number="01011112222", birthday="1990-01-01")
+        user = await User.create(
+            email="rec_fb@example.com", name="Test", phone_number="01011112222", birthday="1990-01-01"
+        )
         batch = await RecommendationBatch.create(user=user)
         rec = await Recommendation.create(user=user, batch=batch, content="피드백대상", recommendation_type="health")
 
@@ -90,7 +100,9 @@ class TestRecommendationService(TestCase):
     async def test_add_feedback_not_found(self):
         from fastapi import HTTPException
 
-        user = await User.create(email="rec_fb2@example.com", name="Test", phone_number="01011112222", birthday="1990-01-01")
+        user = await User.create(
+            email="rec_fb2@example.com", name="Test", phone_number="01011112222", birthday="1990-01-01"
+        )
         service = RecommendationService()
 
         with self.assertRaises(HTTPException) as ctx:
@@ -98,7 +110,9 @@ class TestRecommendationService(TestCase):
         assert ctx.exception.status_code == 404
 
     async def test_list_active_success(self):
-        user = await User.create(email="rec_active@example.com", name="Test", phone_number="01011112222", birthday="1990-01-01")
+        user = await User.create(
+            email="rec_active@example.com", name="Test", phone_number="01011112222", birthday="1990-01-01"
+        )
         batch = await RecommendationBatch.create(user=user)
         rec = await Recommendation.create(user=user, batch=batch, content="활성추천", recommendation_type="health")
         from app.models.recommendations import UserActiveRecommendation
