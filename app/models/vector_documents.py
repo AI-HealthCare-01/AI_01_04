@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 from tortoise import fields, models
+
 from app.models.fields import VectorField
 
 
