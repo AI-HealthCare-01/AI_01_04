@@ -85,3 +85,49 @@ class DiseaseRepository:
             OperationalError: DB 연결 오류 시.
         """
         return await self._guideline_model.filter(disease_id=disease_id).order_by("category")
+
+    async def get_by_icd_code(self, icd_code: str) -> Disease | None:
+        """
+        ICD/KCD 코드로 질환을 조회한다.
+
+        Args:
+            icd_code (str):
+                질병 코드
+
+        Returns:
+            Disease | None:
+                조회된 질환 객체
+        """
+        return await self._model.get_or_none(icd_code=icd_code)
+
+    async def get_by_name(self, name: str) -> Disease | None:
+        """
+        질환명 정확 일치로 조회한다.
+
+        Args:
+            name (str):
+                질환명
+
+        Returns:
+            Disease | None:
+                조회된 질환 객체
+        """
+        return await self._model.get_or_none(name=name)
+
+    async def list_by_name_contains(self, keyword: str, limit: int = 10) -> list[Disease]:
+        """
+        질환명 부분 일치로 질환 목록을 조회한다.
+
+        Args:
+            keyword (str):
+                검색 키워드
+            limit (int):
+                최대 조회 개수
+
+        Returns:
+            list[Disease]:
+                부분 일치 질환 목록
+        """
+        if not keyword.strip():
+            return []
+        return await self._model.filter(name__icontains=keyword.strip()).limit(limit)
