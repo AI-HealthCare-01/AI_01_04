@@ -16,6 +16,15 @@ logger = logging.getLogger(__name__)
 
 
 def _normalize_rec_type(raw: Any) -> RecommendationType:
+    """
+    raw 추천 타입 문자열을 RecommendationType으로 정규화.
+
+    Args:
+        raw (Any): 정규화할 원본 값.
+
+    Returns:
+        RecommendationType: 정규화된 추천 타입.
+    """
     s = str(raw or "").lower()
     if s in {"lifestyle", "medication", "warning", "followup"}:
         return cast(RecommendationType, s)
@@ -29,6 +38,15 @@ def _normalize_rec_type(raw: Any) -> RecommendationType:
 
 
 def _rec_to_response_dict(rec: Any) -> dict:
+    """
+    Recommendation 인스턴스를 API 응답 딕셔너리로 변환.
+
+    Args:
+        rec (Any): Recommendation ORM 인스턴스.
+
+    Returns:
+        dict: id, recommendation_type, content, score, is_selected, rank 포함 딕셔너리.
+    """
     return {
         "id": rec.id,
         "recommendation_type": _normalize_rec_type(getattr(rec, "recommendation_type", None)),
@@ -40,18 +58,33 @@ def _rec_to_response_dict(rec: Any) -> dict:
 
 
 class RecommendationService:
+    """
+    추천 서비스.
+
+    스캔 기반 추천 생성/조회/저장 및 피드백 관리를 담당.
+    """
+
     def __init__(self):
         self.recommendation_repo = RecommendationRepository()
         self.scan_repo = ScanRepository()
         self.vector_doc_repo = VectorDocumentRepository()
 
-    def _normalize_document_type(self, raw: Any) -> str:  # [ADD]
+    def _normalize_document_type(self, raw: Any) -> str:
+        """
+        문서 타입 문자열을 유효한 값으로 정규화.
+
+        Args:
+            raw (Any): 정규화할 원본 값.
+
+        Returns:
+            str: prescription 또는 medical_record.
+        """
         value = str(raw or "prescription").strip().lower()
         if value in {"prescription", "medical_record"}:
             return value
         return "prescription"
 
-    async def _create_recommendation(  # [ADD]
+    async def _create_recommendation(
         self,
         *,
         user_id: int,
@@ -64,6 +97,23 @@ class RecommendationService:
         rank: int,
         status_value: str = "active",
     ) -> Any | None:
+        """
+        단일 추천 레코드 생성.
+
+        Args:
+            user_id (int): 사용자 ID.
+            batch_id (int): 추천 배치 ID.
+            scan_id (int): 스캔 ID.
+            recommendation_type (str): 추천 타입.
+            source (str): 추천 출처.
+            content (str): 추천 콘텐츠.
+            score (float): 추천 점수.
+            rank (int): 순위.
+            status_value (str): 상태값. 기본값 active.
+
+        Returns:
+            Any | None: 생성된 Recommendation 인스턴스 또는 None.
+        """
         return await self.recommendation_repo.create_recommendation(
             user_id=user_id,
             batch_id=batch_id,
@@ -76,7 +126,7 @@ class RecommendationService:
             status=status_value,
         )
 
-    async def _build_prescription_recommendations(  # [ADD]
+    async def _build_prescription_recommendations(
         self,
         *,
         user_id: int,
@@ -85,6 +135,19 @@ class RecommendationService:
         diagnosis: str | None,
         drugs: list[str],
     ) -> list[Any]:
+        """
+        처방전 기반 추천 목록 생성.
+
+        Args:
+            user_id (int): 사용자 ID.
+            scan_id (int): 스캔 ID.
+            batch_id (int): 추천 배치 ID.
+            diagnosis (str | None): 진단명.
+            drugs (list[str]): 약물명 목록.
+
+        Returns:
+            list[Any]: 생성된 Recommendation 인스턴스 목록.
+        """
         created: list[Any] = []
 
         # TODO:
@@ -146,7 +209,7 @@ class RecommendationService:
 
         return created
 
-    async def _build_medical_record_recommendations(  # [ADD]
+    async def _build_medical_record_recommendations(
         self,
         *,
         user_id: int,
@@ -155,6 +218,19 @@ class RecommendationService:
         diagnosis: str | None,
         clinical_note: str | None,
     ) -> list[Any]:
+        """
+        진료기록지 기반 추천 목록 생성.
+
+        Args:
+            user_id (int): 사용자 ID.
+            scan_id (int): 스캔 ID.
+            batch_id (int): 추천 배치 ID.
+            diagnosis (str | None): 진단명.
+            clinical_note (str | None): 진료 내용.
+
+        Returns:
+            list[Any]: 생성된 Recommendation 인스턴스 목록.
+        """
         created: list[Any] = []
 
         # TODO:
@@ -218,7 +294,7 @@ class RecommendationService:
 
         return created
 
-    async def _build_fallback_recommendation(  # [ADD]
+    async def _build_fallback_recommendation(
         self,
         *,
         user_id: int,
@@ -226,6 +302,18 @@ class RecommendationService:
         batch_id: int,
         document_type: str,
     ) -> list[Any]:
+        """
+        추천 생성 실패 시 폴백 추천 생성.
+
+        Args:
+            user_id (int): 사용자 ID.
+            scan_id (int): 스캔 ID.
+            batch_id (int): 추천 배치 ID.
+            document_type (str): 문서 타입.
+
+        Returns:
+            list[Any]: 폴백 Recommendation 인스턴스 목록.
+        """
         if document_type == "medical_record":
             content = (
                 "진료기록지에서 진단명이나 핵심 진료 내용을 충분히 추출하지 못했어요. "
@@ -250,9 +338,19 @@ class RecommendationService:
 
     async def get_for_scan(self, user_id: int, scan_id: int) -> dict:
         """
-        scan 기반 추천 조회/생성
-        - Recommendation.scan_id 컬럼이 있어야 함
-        - 이미 생성된 추천이 있으면 재사용
+        스캔 기반 추천 조회/생성.
+
+        이미 생성된 추천이 있으면 재사용, 없으면 새로 생성.
+
+        Args:
+            user_id (int): 사용자 ID.
+            scan_id (int): 스캔 ID.
+
+        Returns:
+            dict: scan_id와 items(추천 목록) 포함 딕셔너리.
+
+        Raises:
+            HTTPException: 스캔 미존재 시 404.
         """
         scan = await self.scan_repo.get_by_id_for_user(user_id, scan_id)
         if not scan:
@@ -318,6 +416,20 @@ class RecommendationService:
         return {"scan_id": scan_id, "items": [_rec_to_response_dict(r) for r in created]}
 
     async def list_by_user(self, user_id: int, limit: int = 50, offset: int = 0) -> list[dict]:
+        """
+        사용자의 추천 목록 조회.
+
+        Args:
+            user_id (int): 사용자 ID.
+            limit (int): 최대 반환 개수. 기본값 50.
+            offset (int): 오프셋. 기본값 0.
+
+        Returns:
+            list[dict]: 추천 응답 딕셔너리 목록.
+
+        Raises:
+            HTTPException: 조회 실패 시 500.
+        """
         try:
             recs = await self.recommendation_repo.list_by_user(user_id, limit=limit, offset=offset)
             return [_rec_to_response_dict(r) for r in recs]
@@ -326,6 +438,18 @@ class RecommendationService:
             raise HTTPException(status_code=500, detail=str(e)) from e
 
     async def list_active(self, user_id: int) -> list[dict]:
+        """
+        사용자의 활성 추천 목록 조회.
+
+        Args:
+            user_id (int): 사용자 ID.
+
+        Returns:
+            list[dict]: 활성 추천 응답 딕셔너리 목록.
+
+        Raises:
+            HTTPException: 조회 실패 시 500.
+        """
         try:
             active_recs = await self.recommendation_repo.list_active_for_user(user_id)
             return [_rec_to_response_dict(ar.recommendation) for ar in active_recs]
@@ -334,6 +458,20 @@ class RecommendationService:
             raise HTTPException(status_code=500, detail=str(e)) from e
 
     async def update(self, user_id: int, recommendation_id: int, data: RecommendationUpdateRequest) -> dict:
+        """
+        추천 콘텐츠/선택 여부 수정.
+
+        Args:
+            user_id (int): 사용자 ID.
+            recommendation_id (int): 수정할 추천 ID.
+            data (RecommendationUpdateRequest): 수정할 필드.
+
+        Returns:
+            dict: 수정된 추천 응답 딕셔너리.
+
+        Raises:
+            HTTPException: 추천 미존재 시 404, 실패 시 500.
+        """
         try:
             rec = await self.recommendation_repo.get_recommendation_for_user(user_id, recommendation_id)
             if not rec:
@@ -358,6 +496,16 @@ class RecommendationService:
             raise HTTPException(status_code=500, detail=str(e)) from e
 
     async def delete(self, user_id: int, recommendation_id: int) -> None:
+        """
+        추천 비활성화 (status=revoked).
+
+        Args:
+            user_id (int): 사용자 ID.
+            recommendation_id (int): 비활성화할 추천 ID.
+
+        Raises:
+            HTTPException: 추천 미존재 시 404, 실패 시 500.
+        """
         try:
             rec = await self.recommendation_repo.get_recommendation_for_user(user_id, recommendation_id)
             if not rec:
@@ -373,9 +521,19 @@ class RecommendationService:
 
     async def save_for_scan(self, user_id: int, scan_id: int) -> dict:
         """
-        scan 기반 추천을 active로 반영
-        - scan_id로 이미 생성된 Recommendation을 가져와서
-          is_selected=True 우선, 없으면 전체 반영
+        스캔 기반 추천을 활성으로 반영.
+
+        is_selected=True인 추천 우선, 없으면 전체 반영.
+
+        Args:
+            user_id (int): 사용자 ID.
+            scan_id (int): 스캔 ID.
+
+        Returns:
+            dict: scan_id, saved, saved_count 포함 딕셔너리.
+
+        Raises:
+            HTTPException: 실패 시 500.
         """
         try:
             recs = await self.recommendation_repo.list_by_user_scan(user_id=user_id, scan_id=scan_id)
@@ -399,6 +557,20 @@ class RecommendationService:
             raise HTTPException(status_code=500, detail=str(e)) from e
 
     async def add_feedback(self, user_id: int, recommendation_id: int, feedback_type: str) -> dict:
+        """
+        추천에 피드백 추가.
+
+        Args:
+            user_id (int): 사용자 ID.
+            recommendation_id (int): 피드백할 추천 ID.
+            feedback_type (str): 피드백 타입 (like, dislike, click 등).
+
+        Returns:
+            dict: recommendation_id, feedback_type, created_at 포함 딕셔너리.
+
+        Raises:
+            HTTPException: 추천 미존재 시 404, 실패 시 500.
+        """
         try:
             fb = await self.recommendation_repo.add_feedback(user_id, recommendation_id, feedback_type=feedback_type)
             if not fb:

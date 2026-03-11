@@ -16,7 +16,10 @@ async def _make_template(label: str = "물 마시기") -> HealthChecklistTemplat
 
 
 class TestHealthService(TestCase):
+    """건강관리 서비스 테스트."""
+
     async def test_list_history_empty(self):
+        """체크리스트 없을 때 이력 조회 시 날짜 수만큼 items 반환 확인."""
         user = await _make_user("health_hist@example.com")
         service = HealthService()
         result = await service.list_history(user.id, "2024-01-01", "2024-01-03")
@@ -24,6 +27,7 @@ class TestHealthService(TestCase):
         assert len(result["items"]) == 3
 
     async def test_list_history_invalid_date(self):
+        """종료일이 시작일보다 빠를 때 400 발생 확인."""
         from fastapi import HTTPException
 
         user = await _make_user("health_inv@example.com")
@@ -33,6 +37,7 @@ class TestHealthService(TestCase):
         assert ctx.exception.status_code == 400
 
     async def test_get_day_detail_no_templates(self):
+        """템플릿 없을 때 일자 상세 조회 시 빈 items 반환 확인."""
         user = await _make_user("health_notempl@example.com")
         service = HealthService()
         result = await service.get_day_detail(user.id, "2024-01-01")
@@ -41,6 +46,7 @@ class TestHealthService(TestCase):
         assert result["bucket"] == "none"
 
     async def test_get_day_detail_with_template(self):
+        """템플릿 있을 때 일자 상세 조회 시 skipped 상태로 시딩 확인."""
         user = await _make_user("health_templ@example.com")
         await _make_template("스트레칭")
         service = HealthService()
@@ -50,6 +56,7 @@ class TestHealthService(TestCase):
         assert result["items"][0]["status"] == "skipped"
 
     async def test_get_day_detail_invalid_date(self):
+        """잘못된 날짜 형식 시 400 발생 확인."""
         from fastapi import HTTPException
 
         user = await _make_user("health_invdate@example.com")
@@ -59,6 +66,7 @@ class TestHealthService(TestCase):
         assert ctx.exception.status_code == 400
 
     async def test_update_log_done(self):
+        """로그 상태 done 업데이트 성공 확인."""
         from app.dtos.health import HealthLogUpdateRequest
 
         user = await _make_user("health_upd@example.com")
@@ -71,6 +79,7 @@ class TestHealthService(TestCase):
         assert result["day"]["items"][0]["status"] == "done"
 
     async def test_update_log_not_found(self):
+        """존재하지 않는 로그 업데이트 시 404 발생 확인."""
         from fastapi import HTTPException
 
         from app.dtos.health import HealthLogUpdateRequest
