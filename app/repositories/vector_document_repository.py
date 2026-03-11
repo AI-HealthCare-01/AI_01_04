@@ -64,27 +64,30 @@ class VectorDocumentRepository:
         top_k: int = 5,
     ) -> list[VectorDocument]:
         """코사인 유사도 기반 유사 문서 검색 (pgvector)"""
-        from tortoise import connections
+        from tortoise import connections    # `connections`는 Tortoise ORM의 DB 연결 관리자. Tortoise ORM이 지원하지 않는 pgvector 연산자 (<=>)를 쓰려면 raw SQL이 필요해서 직업 연결을 가져온.
 
         conn = connections.get("default")
-        vector_str = "[" + ",".join(str(v) for v in embedding) + "]"
-        where = "WHERE reference_type = $2" if reference_type else ""
-        params: list = [vector_str, top_k]
-        if reference_type:
-            params = [vector_str, reference_type, top_k]
-            where = "WHERE reference_type = $2"
-            limit_param = "$3"
-        else:
-            limit_param = "$2"
-
-        sql = f"""
-            SELECT id, reference_type, reference_id, content, embedding, created_at
+        vector_str = "[" + ",".join(str(v) for v in embedding) + "]"    # pgvector가 인식하는 벡터 문자열 포맷으로 변환. [0.12, 0.87, ...] 형태의 문자열이 되어야 함. $1::vector로 캐스팅할 때 이 포맷이 필요
+        
+        if reference_type:  # 버그의 핵심. 기존 코드는 where / limit_param 변수를 f-string으로 조합했는데, $2/ $3 번호가 경우에 따라 달라지니까 SQL을 아예 분리하는게 명확함
+            sql = """
+            SELECT id , reference_type, reference_id, content, embedding, created_at
             FROM vector_documents
-            {where}
+            WHERE reference_type = $2
             ORDER BY embedding::vector <=> $1::vector
-            LIMIT {limit_param}
-        """  # noqa: S608
-        rows = await conn.execute_query_dict(sql, params)
+            LIMIT $3
+            """  # noqa: S608
+            params = [vector_str, reference_type, top_k] # reference_type이 있을 때: $1=vector, $2=reference_type, $3=top_k순서로 매핑
+        else:
+            sql = """
+            SELECT id , reference_type, reference_id, content, embedding, created_at
+            FROM vector_documents
+            ORDER BY embedding::vector <=> $1::vector
+            LIMIT $2
+            """  # noqa: S608
+            params = [vector_str, top_k] # reference_type이 없을 때: $1=vector, $2=top_k. 파라미터가 하나 줄어서 번호도 달라짐
+        rows = await conn.execute_query_dict(sql, params)   # execute_query_dict()는 결과를 list[dict] 형태로 반환. 이후 루프에서 VectorDocument 객체로 반환
+
         docs = []
         for row in rows:
             doc = VectorDocument(

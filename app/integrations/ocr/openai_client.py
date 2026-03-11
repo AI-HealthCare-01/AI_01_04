@@ -12,7 +12,7 @@ PRESCRIPTION_SYSTEM_PROMPT = """
 반드시 JSON만 반환한다.
 키는 정확히 document_date, diagnosis, clinical_note, drugs, raw_text, ocr_raw.
 - document_date: YYYY-MM-DD 또는 null
-- diagnosis: 문자열 또는 null
+- diagnosis: 진단명, 질병명, 또는 질병분류기호(KCD 코드, 예: I219, J00 등)가 있으면 문자열로, 없으면 null
 - clinical_note: null
 - drugs: 문자열 배열 (없으면 [])
 - raw_text: 입력 원문 그대로
@@ -64,7 +64,7 @@ def ai_postprocess(
             {"role": "system", "content": system_prompt},  # [CHANGED]
             {
                 "role": "user",
-                "content": f"다음 데이터를 스키마에 맞춰 정규화:\n{json.dumps(user_payload, ensure_ascii=False)}",
+                "content": f"다음 데이터를 스키마에 맞춰 정규화하여 json으로 반환:\n{json.dumps(user_payload, ensure_ascii=False)}",
             },
         ],
         text={"format": {"type": "json_object"}},

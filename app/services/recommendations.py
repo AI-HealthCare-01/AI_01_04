@@ -9,6 +9,8 @@ from starlette import status
 from app.dtos.recommendations import RecommendationType, RecommendationUpdateRequest
 from app.repositories.recommendation_repository import RecommendationRepository
 from app.repositories.scan_repository import ScanRepository
+from app.repositories.vector_document_repository import VectorDocumentRepository
+from app.services.embedding import encode
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +43,7 @@ class RecommendationService:
     def __init__(self):
         self.recommendation_repo = RecommendationRepository()
         self.scan_repo = ScanRepository()
+        self.vector_doc_repo = VectorDocumentRepository()
 
     def _normalize_document_type(self, raw: Any) -> str:  # [ADD]
         value = str(raw or "prescription").strip().lower()
@@ -89,18 +92,41 @@ class RecommendationService:
         # - 매칭 성공 시 질환별 정교한 recommendation 문구/점수로 확장
 
         if diagnosis:
-            rec = await self._create_recommendation(
-                user_id=user_id,
-                batch_id=batch_id,
-                scan_id=scan_id,
-                recommendation_type="followup",
-                source="scan.diagnosis",
-                content=f"진단명 '{diagnosis}' 기준으로 생활관리 및 추적 관찰 항목을 확인해보세요.",
-                score=0.9,
-                rank=1,
+            query = diagnosis + " " + " ".join(drugs[:5])    # 진단명 + 약물명을 합쳐서 검색 쿼리 생성. 더 많은 정보를 담을수록 유사도 검색 품질이 올라감
+            vector = encode(query)    # 텍스트를 1536차원 벡터로 변환
+            similar_docs = await self.vector_doc_repo.search_similar(
+                vector,
+                reference_type="disease_guideline",
+                top_k=3,
             )
-            if rec:
-                created.append(rec)
+
+            if similar_docs:
+                for i, doc in enumerate(similar_docs, start=1):
+                    rec = await self._create_recommendation(
+                        user_id=user_id,
+                        batch_id=batch_id,
+                        scan_id=scan_id,
+                        recommendation_type="followup",
+                        source="vector.disease_guideline",
+                        content=doc.content,
+                        score=0.9,
+                        rank=i,
+                    )
+                    if rec:
+                        created.append(rec)
+            else:
+                rec = await self._create_recommendation(
+                    user_id=user_id,
+                    batch_id=batch_id,
+                    scan_id=scan_id,
+                    recommendation_type="followup",
+                    source="scan.diagnosis",
+                    content=f"진단명 '{diagnosis}' 기준으로 생활관리 및 추적 관찰 항목을 확인해보세요",
+                    score=0.9,
+                    rank=1,
+                )
+                if rec:
+                    created.append(rec)
 
         for i, drug in enumerate(drugs[:10], start=1):
             rec = await self._create_recommendation(
