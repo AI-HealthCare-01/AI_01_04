@@ -1,9 +1,6 @@
-"""
-복약 관리 서비스
+"""복약 관리 서비스.
 
-- 일자별 복약 로그 시드(seed) 및 조회
-- 복약 슬롯(1일 횟수 기준) 생성 및 달성률 계산
-- 복약 로그 상태 업데이트 담당
+일자별 복약 로그 시드(seed) 및 조회, 복약 슬롯 생성, 달성률 계산, 로그 상태 업데이트를 담당한다.
 """
 
 from __future__ import annotations
@@ -33,7 +30,14 @@ AllowedStatus = Literal["taken", "skipped", "delayed"]
 
 
 def _calc_rate_from_logs(logs: list[MedicationIntakeLog]) -> int:
-    """복약 로그에서 taken 비율(%) 계산"""
+    """복약 로그에서 taken 비율(%)을 계산한다.
+
+    Args:
+        logs (list[MedicationIntakeLog]): 계산할 로그 목록.
+
+    Returns:
+        int: taken 비율 (0~100).
+    """
     if not logs:
         return 0
     taken = sum(1 for lg in logs if lg.status == "taken")
@@ -41,7 +45,14 @@ def _calc_rate_from_logs(logs: list[MedicationIntakeLog]) -> int:
 
 
 def _slots_by_dose_count(dose_count: int | None) -> list[str]:
-    """일일 복용 횟수에 따른 복약 슬롯 목록 반환 (아침/점심/저녁/자기전)"""
+    """일일 복용 횟수에 따른 복약 슬롯 목록을 반환한다 (아침/점심/저녁/자기전).
+
+    Args:
+        dose_count (int | None): 1일 복용 횟수. None이면 1회로 처리.
+
+    Returns:
+        list[str]: 복약 슬롯 레이블 목록.
+    """
     if dose_count is None:
         return ["아침"]
     if dose_count >= 4:
@@ -54,7 +65,14 @@ def _slots_by_dose_count(dose_count: int | None) -> list[str]:
 
 
 def _make_label(log: MedicationIntakeLog) -> str:
-    """복약 로그의 표시 레이블 반환 (슬롯명 > 약품명 > 기본값 순)"""
+    """복약 로그의 표시 레이블을 반환한다 (슬롯명 > 약품명 > 기본값 순).
+
+    Args:
+        log (MedicationIntakeLog): 레이블을 추출할 복약 로그 객체.
+
+    Returns:
+        str: 표시할 레이블 문자열.
+    """
     slot = getattr(log, "slot_label", None)
     if slot:
         return str(slot)
@@ -84,15 +102,23 @@ class MedicationService:
         self.medication_repo = MedicationIntakeRepository()
 
     async def ensure_day_seed(self, *, user_id: int, date: str) -> None:
-        """외부 서비스에서 호출하는 시드 진입점"""
+        """외부 서비스에서 호출하는 시드 진입점.
+
+        Args:
+            user_id (int): 시드를 생성할 사용자 ID.
+            date (str): 시드를 생성할 날짜 (YYYY-MM-DD).
+        """
         await self._seed_day_if_empty(user_id=user_id, date_str=date)
 
     async def _seed_day_if_empty(self, *, user_id: int, date_str: str) -> None:
-        """
-        해당 날짜에 복약 로그가 없으면 유효한 처방전 기준으로 skipped 상태로 생성
+        """해당 날짜에 복약 로그가 없으면 유효한 처방전 기준으로 skipped 상태로 생성한다.
 
-        - 이미 로그가 있으면 아무것도 하지 않음 (멱등성 보장)
-        - 유효한 처방전: start_date <= 날짜 <= end_date
+        이미 로그가 있으면 아무것도 하지 않아 멱등성을 보장한다.
+        유효한 처방전: start_date <= 날짜 <= end_date.
+
+        Args:
+            user_id (int): 시드를 생성할 사용자 ID.
+            date_str (str): 시드를 생성할 날짜 (YYYY-MM-DD).
         """
         d = parse_date_yyyy_mm_dd(date_str)
 
@@ -135,7 +161,22 @@ class MedicationService:
         size: int = 14,
         sort: SortOrder = "desc",
     ) -> dict:
-        """기간별 복약 이력 조회 (날짜별 달성률 포함)"""
+        """기간별 복약 이력을 조회한다 (날짜별 달성률 포함).
+
+        Args:
+            user_id (int): 조회할 사용자 ID.
+            date_from (str | None): 조회 시작일 (YYYY-MM-DD). None이면 30일 전.
+            date_to (str | None): 조회 종료일 (YYYY-MM-DD). None이면 오늘.
+            page (int): 페이지 번호 (1-based). 기본값 1.
+            size (int): 페이지당 항목 수. 기본값 14.
+            sort (SortOrder): 정렬 방향 (asc/desc). 기본값 desc.
+
+        Returns:
+            dict: items와 meta가 담긴 딕셔너리.
+
+        Raises:
+            HTTPException: 날짜 형식 오류 또는 종료일이 시작일보다 앞설 시 400.
+        """
         try:
             start, end = normalize_from_to(date_from, date_to)
         except DateTimeError as e:
@@ -168,7 +209,18 @@ class MedicationService:
         return {"items": rows, "meta": meta}
 
     async def get_day_detail(self, user_id: int, date: str) -> dict:
-        """특정 날짜의 복약 슬롯 상세 조회 (없으면 시드 후 반환)"""
+        """특정 날짜의 복약 슬롯 상세를 조회한다 (없으면 시드 후 반환).
+
+        Args:
+            user_id (int): 조회할 사용자 ID.
+            date (str): 조회할 날짜 (YYYY-MM-DD).
+
+        Returns:
+            dict: date, rate, bucket, items가 담긴 딕셔너리.
+
+        Raises:
+            HTTPException: 날짜 형식 오류 시 400.
+        """
         try:
             dt = parse_date_yyyy_mm_dd(date)
         except DateTimeError as e:
@@ -203,7 +255,19 @@ class MedicationService:
         return {"date": date, "rate": rate, "bucket": bucket, "items": items}
 
     async def update_log(self, user_id: int, log_id: int, data: MedicationLogUpdateRequest) -> dict:
-        """복약 로그 상태 업데이트 (taken/skipped/delayed)"""
+        """복약 로그 상태를 업데이트한다 (taken/skipped/delayed).
+
+        Args:
+            user_id (int): 소유자 사용자 ID.
+            log_id (int): 업데이트할 로그 ID.
+            data (MedicationLogUpdateRequest): 새 상태가 담긴 요청 데이터.
+
+        Returns:
+            dict: log_id, updated, day가 담긴 딕셔너리.
+
+        Raises:
+            HTTPException: 로그가 없거나 소유자가 다를 시 404, 예기치 않은 오류 시 500.
+        """
         try:
             log = await self.medication_repo.get_by_id_for_user(user_id, log_id)
             if not log:
