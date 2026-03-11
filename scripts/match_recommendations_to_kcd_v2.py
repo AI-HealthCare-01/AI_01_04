@@ -3,21 +3,19 @@ from __future__ import annotations
 import csv
 import json
 import re
-from difflib import SequenceMatcher
+from difflib import get_close_matches
 from pathlib import Path
-from typing import Any
-
 
 INPUT_PATH = Path("recommendation_seed.cleaned.json")
 KCD_PATH = Path("../data/disease_codes.csv")
 OUTPUT_PATH = Path("init-db/03-seed-recommendations.json")
 UNMATCHED_PATH = Path("init-db/03-unmatched-disease-names.json")
-DEBUG_CANDIDATES_PATH = Path("init-db/03-unmatched-candidates.json")
 
 
 NON_DISEASE_KEYWORDS = [
     "검사",
     "수술",
+    "치료",
     "시술",
     "마취",
     "이식",
@@ -32,13 +30,16 @@ NON_DISEASE_KEYWORDS = [
     "건강문제",
     "건강노화",
     "건강기능식품",
-    "심폐소생술",
+    "운동",
+    "음주",
     "손씻기",
+    "수혈",
+    "심폐소생술",
     "장루 관리",
     "국가건강정보포털",
 ]
 
-TITLE_NORMALIZATION_RULES: list[tuple[str, str]] = [
+TITLE_NORMALIZATION_RULES = [
     (r"^고혈압 환자의 식이요법$", "고혈압"),
     (r"^고혈압 환자의 운동요법$", "고혈압"),
     (r"^당뇨환자의 식이요법$", "당뇨병"),
@@ -61,113 +62,103 @@ TITLE_NORMALIZATION_RULES: list[tuple[str, str]] = [
     (r"^안외상\(각막찰과상\)$", "각막찰과상"),
     (r"^안외상\(각막화상\)$", "각막화상"),
     (r"^안외상\(안와골절\)$", "안와골절"),
+    (r"^얼굴마비\(말초성 마비\)$", "말초성 안면마비"),
+    (r"^얼굴마비\(중추성 마비\)$", "중추성 안면마비"),
     (r"^오십견\(동결견, 유착관절낭염\)$", "오십견"),
     (r"^조갑감입\(파고드는 발톱_감입발톱\)$", "감입발톱"),
     (r"^수근굴\(수근관\) 증후군$", "수근관증후군"),
     (r"^굴절이상\(근시, 원시, 난시\)$", "굴절이상"),
-    (r"^당뇨망막병증$", "당뇨병성망막병증"),
-    (r"^당뇨병성 족부병증$", "당뇨병성족부병증"),
-    (r"^비부비동염$", "부비동염"),
-    (r"^연조직염\(봉와직염\)$", "연조직염"),
-    (r"^수두증\(소아\)$", "수두증"),
-    (r"^수족구병\(손발입병\)$", "수족구병"),
-    (r"^중증열성혈소판감소증후군\(SFTS\)$", "중증열성혈소판감소증후군"),
 ]
 
-ALIAS_MAP: dict[str, str] = {
-    "간경변증": "간경변증",
+ALIAS_MAP = {
+    "간경변증": "간경화",
     "감기": "급성비인두염",
     "고혈압심장질환": "고혈압성심장질환",
     "고혈압성 콩팥병": "고혈압성신장병",
     "대사이상지방간질환": "지방간",
     "골관절염": "관절증",
     "급성 바이러스 위장관염": "바이러스장염",
-    "급성 세균성 장염": "세균성 장염",
+    "급성 세균성 장염": "세균성장염",
     "급성부고환염": "부고환염",
     "급성신손상(소아)": "급성신손상",
-    "기저귀피부염": "기저귀피부염",
-    "남성형 탈모": "안드로젠탈모증",
+    "기저귀피부염": "기저귀[냅킨]피부염",
+    "낙상": "낙상",
+    "남성형 탈모": "탈모증",
     "노인 보행장애": "보행장애",
     "노인 삼킴장애": "삼킴장애",
     "당뇨망막병증": "당뇨병성망막병증",
     "당뇨병성 족부병증": "당뇨병성족부병증",
-    "대장게실증": "게실증",
-    "대장용종": "결장폴립",
+    "대장게실증": "(소)(대)장의 게실증",
+    "대장용종": "결장의 폴립",
     "독성 간 손상": "독성간질환",
     "만성콩팥병": "만성신장병",
-    "부신부전증": "부신기능저하증",
-    "감염심내막염": "감염성 심내막염",
-    "비정상 자궁출혈": "이상자궁출혈",
+    "말라리아": "말라리아",
+    "발기부전": "기질적 원인에 의한 발기부전",
+    "백내장": "백내장",
+    "부정맥": "부정맥",
+    "비부비동염": "부비동염(만성)",
+    "빈혈": "빈혈",
+    "사마귀": "사마귀",
+    "설사": "감염성 (신생아의) 설사 NOS",
+    "성매개감염병": "상세불명의 성매개질환",
+    "소아발진": "발진",
+    "습진": "습진",
+    "식중독": "식중독",
+    "신생아 황달": "상세불명의 신생아황달",
+    "어지럼": "어지럼증",
+    "열상": "열상",
+    "염좌": "염좌",
+    "요로감염": "부위가 명시되지 않은 요로감염",
+    "요실금": "요실금",
+    "우울감": "우울증 NOS",
+    "위식도역류질환": "위-식도역류병",
+    "위염": "상세불명의 위염",
     "유선염": "유방염",
-    "입덧": "임신중 구토",
+    "유행각결막염": "유행성 각막결막염",
+    "입덧": "임신중 과다구토",
+    "자궁근종": "자궁평활근종",
+    "장결핵": "장(대, 소)의 결핵",
     "전립선비대증": "전립선의 비대",
+    "족저근막염": "족저근막염",
+    "중이염": "상세불명의 중이염",
     "뇌수막염": "수막염",
     "뇌졸중": "뇌경색",
-    "어지럼": "어지럼증 및 어지럼",
-    "신생아 황달": "신생아황달",
-    "성매개감염병": "상세불명의 성매개질환",
-    "중이염": "상세불명의 중이염",
-    "발기부전": "기질적 원인에 의한 발기부전",
+    "복통": "복통",
+    "복부 팽만": "복부의 가스팽만",
+    "구역질과 구토": "구역 및 구토",
+    "알레르기": "알레르기",
+    "구내염": "구내염 NOS",
+    "생리통": "월경통",
+    "비정상 자궁출혈": "기타 이상 자궁 및 질 출혈",
+    "조산": "조기진통",
+    "조기난소부전": "원발성 난소부전",
+    "부신부전증": "부신기능저하증",
+    "갈색세포종": "갈색세포종",
+    "객혈": "객혈",
+    "갑상선기능저하증": "갑상선기능저하증",
+    "갑상선기능항진증": "갑상선기능항진증",
+    "갑상선염": "갑상선염",
+    "간흡충증": "간흡충증",
+    "감염심내막염": "감염성 심내막염",
     "A형간염": "급성 A형간염",
     "B형간염": "급성 B형간염",
     "C형간염": "급성 C형간염",
+    "골다공증": "상세불명의 골다공증",
     "급성 간부전": "급성 및 아급성 간부전",
     "비브리오 패혈증": "비브리오균에 의한 패혈증",
-    "구내염": "구내염 NOS",
-    "부종": "상세불명의 부종",
-    "노인 부종": "상세불명의 부종",
+    "중증열성혈소판감소증후군(SFTS)": "중증열성혈소판감소증후군 [SFTS]",
     "노인 어지럼증": "어지럼증 및 어지럼",
-    "설사": "감염성 (신생아의) 설사 NOS",
-    "기저귀피부염": "기저귀[냅킨]피부염",
-    "비부비동염": "부비동염(만성)",
-    "대장게실증": "(소)(대)장의 게실증",
-    "요로감염": "부위가 명시되지 않은 요로감염",
-    "골다공증": "상세불명의 골다공증",
-    "빈혈": "상세불명의 빈혈",
-    "갈색세포종": "갈색세포종",
+    "부종": "상세불명의 부종",
 }
 
 
-BAD_CANDIDATE_PATTERNS = [
-    r"F44\.0-F44\.6",
-    r"에 분류된 장애의 복합",
-    r"NOS,? 상세불명 외에 너무 긴 설명형 후보",  # 실제 비교에는 안 씀, 문서용
-]
-
-BAD_CANDIDATE_KEYWORDS = [
-    "에 분류된 장애의 복합",
-]
-
-BRACKET_DROP_WORDS = [
-    "급성",
-    "만성",
-    "상세불명",
-    "상세불명의",
-    "기타",
-    "NOS",
-    "소아",
-    "성인",
-    "바이러스성",
-    "감염성",
-    "양성",
-    "급성기",
-    "만성기",
-]
-
-
-def load_json(path: Path) -> Any:
+def load_json(path: Path):
     with path.open("r", encoding="utf-8") as f:
         return json.load(f)
 
 
-def save_json(path: Path, data: Any) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-
-
-def load_kcd_csv(path: Path) -> list[dict[str, str]]:
-    rows: list[dict[str, str]] = []
+def load_kcd_csv(path: Path):
+    rows = []
     with path.open("r", encoding="utf-8-sig", newline="") as f:
         reader = csv.DictReader(f)
         for row in reader:
@@ -182,37 +173,54 @@ def normalize_name(text: str) -> str:
     text = text.replace("·", "")
     text = text.replace("_", "")
     text = text.replace("-", "")
-    text = text.replace(",", "")
-    text = text.replace(":", "")
-    text = text.replace("!", "")
-    text = text.replace("?", "")
     return text
-
-
-def clean_kcd_name_for_compare(name: str) -> str:
-    s = name.strip()
-
-    s = re.sub(r"\[[^\]]*\]", "", s)
-    s = re.sub(r"\([^\)]*\)", "", s)
-    s = re.sub(r"\bNOS\b", "", s, flags=re.IGNORECASE)
-    s = s.replace("상세불명의", "")
-    s = s.replace("상세불명", "")
-    s = s.replace("기타", "")
-    s = s.replace("급성", "")
-    s = s.replace("만성", "")
-    s = s.replace("바이러스성", "")
-    s = s.replace("감염성", "")
-    s = re.sub(r"\s+", " ", s).strip()
-
-    return s
-
-
-def similarity(a: str, b: str) -> float:
-    return SequenceMatcher(None, normalize_name(a), normalize_name(b)).ratio()
 
 
 def is_non_disease_title(name: str) -> bool:
     return any(kw in name for kw in NON_DISEASE_KEYWORDS)
+
+
+def apply_title_rules(name: str) -> str | None:
+    for pattern, replacement in TITLE_NORMALIZATION_RULES:
+        if re.match(pattern, name):
+            return replacement
+    return None
+
+
+def simplify_parenthesized_name(name: str) -> str | None:
+    match = re.match(r"^(.*?)\((.*?)\)$", name)
+    if not match:
+        return None
+
+    outer = match.group(1).strip()
+    inner = match.group(2).strip()
+
+    if inner in ALIAS_MAP:
+        return ALIAS_MAP[inner]
+
+    inner_first = re.split(r"[,_/]", inner)[0].strip()
+    if inner_first:
+        return inner_first
+
+    if outer:
+        return outer
+
+    return None
+
+
+def simplify_phrase_pattern(name: str) -> str | None:
+    match = re.match(r"^(.*?) 환자의 .*요법$", name)
+    if match:
+        return match.group(1).strip()
+    return None
+
+
+def should_drop_title(name: str) -> bool:
+    if re.search(r"(방법|관리|예방|수칙|요령|알려드리겠습니다)", name):
+        return True
+    if re.search(r"(검사|수술|시술|이식|마취)$", name):
+        return True
+    return False
 
 
 def simplify_disease_name(name: str) -> str | None:
@@ -220,154 +228,145 @@ def simplify_disease_name(name: str) -> str | None:
     if not name:
         return None
 
-    for pattern, replacement in TITLE_NORMALIZATION_RULES:
-        if re.match(pattern, name):
-            return replacement
+    title_rule = apply_title_rules(name)
+    if title_rule:
+        return title_rule
 
     if name in ALIAS_MAP:
         return ALIAS_MAP[name]
 
-    if re.search(r"(방법|관리|예방|수칙|요령|알려드리겠습니다)", name):
-        return None
-
     if is_non_disease_title(name):
+        title_rule = apply_title_rules(name)
+        if title_rule:
+            return title_rule
+
+    parenthesized = simplify_parenthesized_name(name)
+    if parenthesized:
+        return parenthesized
+
+    phrase_based = simplify_phrase_pattern(name)
+    if phrase_based:
+        return phrase_based
+
+    if should_drop_title(name):
         return None
 
-    m = re.match(r"^(.*?)\((.*?)\)$", name)
-    if m:
-        outer = m.group(1).strip()
-        inner = m.group(2).strip()
-
-        if inner in ALIAS_MAP:
-            return ALIAS_MAP[inner]
-
-        inner_first = re.split(r"[,_/]", inner)[0].strip()
-        if inner_first and inner_first not in BRACKET_DROP_WORDS:
-            return inner_first
-
-        if outer:
-            return outer
-
-    m2 = re.match(r"^(.*?) 환자의 .*요법$", name)
-    if m2:
-        return m2.group(1).strip()
-
-    if re.search(r"(검사|수술|시술|이식|마취)$", name):
-        return None
+    if name in ALIAS_MAP:
+        return ALIAS_MAP[name]
 
     return name
 
 
-def is_bad_candidate(name: str) -> bool:
-    if any(word in name for word in BAD_CANDIDATE_KEYWORDS):
-        return True
-    return False
+def build_disease_index(diseases: list[dict]):
+    exact_map: dict[str, str] = {}
+    normalized_map: dict[str, str] = {}
+    normalized_names: list[str] = []
 
+    for d in diseases:
+        code = str(d.get("상병기호", "")).strip()
+        name = str(d.get("한글명", "")).strip()
 
-def build_disease_index(diseases: list[dict[str, str]]) -> list[dict[str, str]]:
-    indexed: list[dict[str, str]] = []
-
-    for row in diseases:
-        code = str(row.get("상병기호", "")).strip()
-        name = str(row.get("한글명", "")).strip()
         if not code or not name:
             continue
 
-        compare_name = clean_kcd_name_for_compare(name)
+        exact_map[name] = code
 
-        indexed.append(
-            {
-                "code": code,
-                "name": name,
-                "compare_name": compare_name,
-                "norm_name": normalize_name(name),
-                "norm_compare_name": normalize_name(compare_name),
-            }
-        )
+        norm_name = normalize_name(name)
+        normalized_map[norm_name] = code
+        normalized_names.append(norm_name)
 
-    return indexed
+    return exact_map, normalized_map, normalized_names
 
 
-def find_best_candidates(name: str, disease_index: list[dict[str, str]], top_n: int = 5) -> list[dict[str, Any]]:
-    results: list[dict[str, Any]] = []
-    target = simplify_disease_name(name)
-    if not target:
-        return results
+def try_exact_or_normalized_match(
+    name: str,
+    exact_map: dict[str, str],
+    normalized_map: dict[str, str],
+) -> str | None:
+    if name in exact_map:
+        return exact_map[name]
 
-    target_norm = normalize_name(target)
+    norm_name = normalize_name(name)
+    if norm_name in normalized_map:
+        return normalized_map[norm_name]
 
-    for item in disease_index:
-        if is_bad_candidate(item["name"]):
-            continue
-
-        score1 = similarity(target, item["name"])
-        score2 = similarity(target, item["compare_name"])
-        score3 = SequenceMatcher(None, target_norm, item["norm_name"]).ratio()
-        score4 = SequenceMatcher(None, target_norm, item["norm_compare_name"]).ratio()
-        final_score = max(score1, score2, score3, score4)
-
-        if target_norm and target_norm in item["norm_name"]:
-            final_score = max(final_score, 0.93)
-        if target_norm and target_norm in item["norm_compare_name"]:
-            final_score = max(final_score, 0.95)
-
-        results.append(
-            {
-                "candidate_name": item["name"],
-                "candidate_code": item["code"],
-                "score": round(final_score, 4),
-            }
-        )
-
-    results.sort(key=lambda x: (-x["score"], x["candidate_name"]))
-    deduped: list[dict[str, Any]] = []
-    seen: set[tuple[str, str]] = set()
-
-    for r in results:
-        key = (r["candidate_code"], r["candidate_name"])
-        if key in seen:
-            continue
-        seen.add(key)
-        deduped.append(r)
-        if len(deduped) >= top_n:
-            break
-
-    return deduped
+    return None
 
 
-def choose_code(name: str, disease_index: list[dict[str, str]]) -> tuple[str | None, list[dict[str, Any]]]:
-    target = simplify_disease_name(name)
-    if not target:
-        return None, []
+def try_simplified_match(
+    name: str,
+    exact_map: dict[str, str],
+    normalized_map: dict[str, str],
+) -> tuple[str | None, str]:
+    simplified = simplify_disease_name(name)
+    if not simplified:
+        return None, name
 
-    if target in ALIAS_MAP:
-        target = ALIAS_MAP[target]
-
-    candidates = find_best_candidates(target, disease_index, top_n=5)
-    if not candidates:
-        return None, []
-
-    best = candidates[0]
-
-    # 매우 신뢰 높은 경우 자동 매칭
-    if best["score"] >= 0.97:
-        return best["candidate_code"], candidates
-
-    # 상위 후보가 충분히 납득되는 경우
-    if best["score"] >= 0.93:
-        return best["candidate_code"], candidates
-
-    return None, candidates
+    code = try_exact_or_normalized_match(simplified, exact_map, normalized_map)
+    return code, simplified
 
 
-def main() -> None:
+def try_parenthesis_front_match(
+    name: str,
+    exact_map: dict[str, str],
+    normalized_map: dict[str, str],
+) -> str | None:
+    simple_name = name.split("(")[0].strip()
+    return try_exact_or_normalized_match(simple_name, exact_map, normalized_map)
+
+
+def try_fuzzy_match(
+    name: str,
+    normalized_map: dict[str, str],
+    normalized_names: list[str],
+) -> str | None:
+    norm_name = normalize_name(name)
+    simple_name = name.split("(")[0].strip()
+    norm_simple_name = normalize_name(simple_name)
+
+    match = get_close_matches(norm_name, normalized_names, n=1, cutoff=0.82)
+    if match:
+        return normalized_map[match[0]]
+
+    match2 = get_close_matches(norm_simple_name, normalized_names, n=1, cutoff=0.82)
+    if match2:
+        return normalized_map[match2[0]]
+
+    return None
+
+
+def match_disease(
+    name: str,
+    exact_map: dict[str, str],
+    normalized_map: dict[str, str],
+    normalized_names: list[str],
+) -> str | None:
+    if not name:
+        return None
+
+    code = try_exact_or_normalized_match(name, exact_map, normalized_map)
+    if code:
+        return code
+
+    simplified_code, simplified_name = try_simplified_match(name, exact_map, normalized_map)
+    if simplified_code:
+        return simplified_code
+
+    code = try_parenthesis_front_match(simplified_name, exact_map, normalized_map)
+    if code:
+        return code
+
+    return try_fuzzy_match(simplified_name, normalized_map, normalized_names)
+
+
+def main():
     seeds = load_json(INPUT_PATH)
     diseases = load_kcd_csv(KCD_PATH)
-    disease_index = build_disease_index(diseases)
 
-    matched_rows: list[dict[str, Any]] = []
-    unmatched: dict[str, Any] = {}
-    debug_candidates: dict[str, Any] = {}
+    exact_map, normalized_map, normalized_names = build_disease_index(diseases)
+
+    results = []
+    misses = {}
 
     for row in seeds:
         disease_name = str(row.get("disease_name", "")).strip()
@@ -377,31 +376,33 @@ def main() -> None:
         if not disease_name or not category or not content:
             continue
 
-        simplified = simplify_disease_name(disease_name)
-        if not simplified:
-            unmatched[disease_name] = {
+        simplified_name = simplify_disease_name(disease_name)
+
+        if not simplified_name:
+            misses[disease_name] = {
                 "reason": "non_disease_title",
                 "normalized_name": None,
             }
             continue
 
-        code, candidates = choose_code(simplified, disease_index)
+        code = match_disease(
+            simplified_name,
+            exact_map,
+            normalized_map,
+            normalized_names,
+        )
 
         if not code:
-            unmatched[disease_name] = {
+            misses[disease_name] = {
                 "reason": "no_match",
-                "normalized_name": simplified,
-            }
-            debug_candidates[disease_name] = {
-                "manual_alias": ALIAS_MAP.get(disease_name),
-                "candidates": candidates,
+                "normalized_name": simplified_name,
             }
             continue
 
-        matched_rows.append(
+        results.append(
             {
                 "disease_code": code,
-                "disease_name": simplified,
+                "disease_name": simplified_name,
                 "original_disease_name": disease_name,
                 "category": category,
                 "content": content,
@@ -409,17 +410,18 @@ def main() -> None:
             }
         )
 
-    save_json(OUTPUT_PATH, matched_rows)
-    save_json(UNMATCHED_PATH, unmatched)
-    save_json(DEBUG_CANDIDATES_PATH, debug_candidates)
+    with OUTPUT_PATH.open("w", encoding="utf-8") as f:
+        json.dump(results, f, ensure_ascii=False, indent=2)
+
+    with UNMATCHED_PATH.open("w", encoding="utf-8") as f:
+        json.dump(misses, f, ensure_ascii=False, indent=2)
 
     print("=== recommendation seed + 상병코드 매칭 완료 ===")
     print(f"입력 seed 수: {len(seeds)}")
-    print(f"매칭 성공 수: {len(matched_rows)}")
-    print(f"매칭 실패 질환명 수: {len(unmatched)}")
+    print(f"매칭 성공 수: {len(results)}")
+    print(f"매칭 실패 질환명 수: {len(misses)}")
     print(f"저장 파일: {OUTPUT_PATH}")
     print(f"실패 목록 파일: {UNMATCHED_PATH}")
-    print(f"후보 디버그 파일: {DEBUG_CANDIDATES_PATH}")
 
 
 if __name__ == "__main__":

@@ -4,7 +4,6 @@ import json
 from pathlib import Path
 from typing import Any
 
-
 INPUT_PATH = Path("init-db/03-unmatched-disease-names.json")
 OUTPUT_PATH = Path("init-db/03-unmatched-classified.json")
 
