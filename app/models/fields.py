@@ -10,7 +10,7 @@ class VectorField(TextField):
     CI 환경에서는 TEXT로 동작하며, raw SQL에서 ``::vector`` 캐스팅으로 벡터 연산 처리.
     """
 
-    SQL_TYPE = "vector(1536)"
+    SQL_TYPE = "TEXT"
 
     def to_db_value(self, value: list[float] | None, instance) -> str | None:
         if value is None:
@@ -27,4 +27,4 @@ class VectorField(TextField):
         return json.loads(value)
 
     def get_db_field_types(self) -> dict:
-        return {"": "vector(1536)", "postgres": "vector(1536)"}
+        return {"": "TEXT"}
