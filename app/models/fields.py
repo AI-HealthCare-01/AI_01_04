@@ -21,4 +21,4 @@ class VectorField(TextField):
         return json.loads(value)
 
     def get_db_field_types(self) -> dict:
-        return {"": "vector(1536)", "postgres": "vector(1536)"}
+        return {"": "TEXT", "postgres": "vector(1536)"}
