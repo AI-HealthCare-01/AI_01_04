@@ -11,7 +11,7 @@ from app.services.medication import MedicationService, _calc_rate_from_logs, _sl
 
 
 async def _make_user(email: str) -> User:
-    return await User.create(email=email, name="테스터", phone_number="01011112222")
+    return await User.create(email=email, name="테스터", phone_number="01011112222", birthday="1990-01-01")
 
 
 async def _make_prescription(user: User, dose_count: int = 1) -> Prescription:
