@@ -17,6 +17,7 @@ class VectorField(TextField):
         if isinstance(value, list):
             return value
         import json
+
         return json.loads(value)
 
     def get_db_field_types(self) -> dict:
