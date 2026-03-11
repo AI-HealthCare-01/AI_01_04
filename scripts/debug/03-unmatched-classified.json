@@ -1,0 +1,1305 @@
+{
+  "drop_non_disease": [
+    {
+      "disease_name": "각막이식",
+      "reason": "non_disease_title",
+      "normalized_name": null
+    },
+    {
+      "disease_name": "간기능검사",
+      "reason": "non_disease_title",
+      "normalized_name": null
+    },
+    {
+      "disease_name": "간이식수술",
+      "reason": "non_disease_title",
+      "normalized_name": null
+    },
+    {
+      "disease_name": "건강기능식품",
+      "reason": "non_disease_title",
+      "normalized_name": null
+    },
+    {
+      "disease_name": "건강노화",
+      "reason": "non_disease_title",
+      "normalized_name": null
+    },
+    {
+      "disease_name": "건강하게 염분 섭취하는 방법! 알...",
+      "reason": "non_disease_title",
+      "normalized_name": null
+    },
+    {
+      "disease_name": "건강하게 탄수화물 먹는 방법! 알...",
+      "reason": "non_disease_title",
+      "normalized_name": null
+    },
+    {
+      "disease_name": "겨울철 대설대비 건강수칙",
+      "reason": "non_disease_title",
+      "normalized_name": null
+    },
+    {
+      "disease_name": "겨울철 저체온증 예방요령",
+      "reason": "non_disease_title",
+      "normalized_name": null
+    },
+    {
+      "disease_name": "겨울철 한파대비 건강수칙",
+      "reason": "non_disease_title",
+      "normalized_name": null
+    },
+    {
+      "disease_name": "골수검사",
+      "reason": "non_disease_title",
+      "normalized_name": null
+    },
+    {
+      "disease_name": "구강병 예방 및 관리방법! 알려드...",
+      "reason": "non_disease_title",
+      "normalized_name": null
+    },
+    {
+      "disease_name": "근관치료",
+      "reason": "non_disease_title",
+      "normalized_name": null
+    },
+    {
+      "disease_name": "근시교정수술",
+      "reason": "non_disease_title",
+      "normalized_name": null
+    },
+    {
+      "disease_name": "근전도 신경전도검사",
+      "reason": "non_disease_title",
+      "normalized_name": null
+    },
+    {
+      "disease_name": "기관지 내시경 검사",
+      "reason": "non_disease_title",
+      "normalized_name": null
+    },
+    {
+      "disease_name": "뇌졸중 환자의 재활",
+      "reason": "non_disease_title",
+      "normalized_name": null
+    },
+    {
+      "disease_name": "다중이용시설에서의 건강문제(실내공...",
+      "reason": "non_disease_title",
+      "normalized_name": null
+    },
+    {
+      "disease_name": "담배 끊는 방법! 알려드리겠습니다...",
+      "reason": "non_disease_title",
+      "normalized_name": null
+    },
+    {
+      "disease_name": "대변 및 잠혈검사",
+      "reason": "non_disease_title",
+      "normalized_name": null
+    },
+    {
+      "disease_name": "대변 및 잠혈검사(기생충 검사)",
+      "reason": "no_match",
+      "normalized_name": "기생충 검사"
+    },
+    {
+      "disease_name": "대장내시경검사",
+      "reason": "non_disease_title",
+      "normalized_name": null
+    },
+    {
+      "disease_name": "방광경 검사",
+      "reason": "non_disease_title",
+      "normalized_name": null
+    },
+    {
+      "disease_name": "방사선치료",
+      "reason": "non_disease_title",
+      "normalized_name": null
+    },
+    {
+      "disease_name": "병리조직검사",
+      "reason": "non_disease_title",
+      "normalized_name": null
+    },
+    {
+      "disease_name": "복부 수술 후 장유착",
+      "reason": "non_disease_title",
+      "normalized_name": null
+    },
+    {
+      "disease_name": "부위마취",
+      "reason": "non_disease_title",
+      "normalized_name": null
+    },
+    {
+      "disease_name": "상처관리와 흉터예방",
+      "reason": "non_disease_title",
+      "normalized_name": null
+    },
+    {
+      "disease_name": "소변검사",
+      "reason": "non_disease_title",
+      "normalized_name": null
+    },
+    {
+      "disease_name": "신장 이식",
+      "reason": "non_disease_title",
+      "normalized_name": null
+    },
+    {
+      "disease_name": "신체활동! 알려드리겠습니다!",
+      "reason": "non_disease_title",
+      "normalized_name": null
+    },
+    {
+      "disease_name": "심전도검사",
+      "reason": "non_disease_title",
+      "normalized_name": null
+    },
+    {
+      "disease_name": "심초음파검사",
+      "reason": "non_disease_title",
+      "normalized_name": null
+    },
+    {
+      "disease_name": "심폐소생술",
+      "reason": "non_disease_title",
+      "normalized_name": null
+    },
+    {
+      "disease_name": "심폐소생술(이물질에 의한 기도폐쇄...",
+      "reason": "non_disease_title",
+      "normalized_name": null
+    },
+    {
+      "disease_name": "양수 검사",
+      "reason": "non_disease_title",
+      "normalized_name": null
+    },
+    {
+      "disease_name": "위험음주! 알려드리겠습니다!",
+      "reason": "non_disease_title",
+      "normalized_name": null
+    },
+    {
+      "disease_name": "융모막 융모 검사",
+      "reason": "non_disease_title",
+      "normalized_name": null
+    },
+    {
+      "disease_name": "응고검사(출혈질환의 검사)",
+      "reason": "no_match",
+      "normalized_name": "출혈질환의 검사"
+    },
+    {
+      "disease_name": "인지기능저하예방법",
+      "reason": "non_disease_title",
+      "normalized_name": null
+    },
+    {
+      "disease_name": "임상 화학 검사",
+      "reason": "non_disease_title",
+      "normalized_name": null
+    },
+    {
+      "disease_name": "자가치아이식",
+      "reason": "non_disease_title",
+      "normalized_name": null
+    },
+    {
+      "disease_name": "장루 및 장루 관리",
+      "reason": "non_disease_title",
+      "normalized_name": null
+    },
+    {
+      "disease_name": "전신마취",
+      "reason": "non_disease_title",
+      "normalized_name": null
+    },
+    {
+      "disease_name": "전신질환과 치주치료",
+      "reason": "non_disease_title",
+      "normalized_name": null
+    },
+    {
+      "disease_name": "정관수술",
+      "reason": "non_disease_title",
+      "normalized_name": null
+    },
+    {
+      "disease_name": "정상임신관리(임신 전 관리)",
+      "reason": "non_disease_title",
+      "normalized_name": null
+    },
+    {
+      "disease_name": "정상임신관리(임신의 진단과 관리)",
+      "reason": "non_disease_title",
+      "normalized_name": null
+    },
+    {
+      "disease_name": "조혈모세포이식",
+      "reason": "non_disease_title",
+      "normalized_name": null
+    },
+    {
+      "disease_name": "중환자실 치료",
+      "reason": "non_disease_title",
+      "normalized_name": null
+    },
+    {
+      "disease_name": "질병관리청-국가건강정보포털",
+      "reason": "non_disease_title",
+      "normalized_name": null
+    }
+  ],
+  "topic_only": [
+    {
+      "disease_name": "간접흡연",
+      "reason": "no_match",
+      "normalized_name": "간접흡연"
+    },
+    {
+      "disease_name": "건강한 체중조절을 위한 식사",
+      "reason": "no_match",
+      "normalized_name": "건강한 체중조절을 위한 식사"
+    },
+    {
+      "disease_name": "고위험 임산부",
+      "reason": "no_match",
+      "normalized_name": "고위험 임산부"
+    },
+    {
+      "disease_name": "공기 오염",
+      "reason": "no_match",
+      "normalized_name": "공기 오염"
+    },
+    {
+      "disease_name": "기후변화에 의한 폭염",
+      "reason": "no_match",
+      "normalized_name": "기후변화에 의한 폭염"
+    },
+    {
+      "disease_name": "노인 운동",
+      "reason": "no_match",
+      "normalized_name": "노인 운동"
+    },
+    {
+      "disease_name": "무릎관절염, 올바로 운동하기",
+      "reason": "no_match",
+      "normalized_name": "무릎관절염, 올바로 운동하기"
+    },
+    {
+      "disease_name": "생활 속의 다중화학물질과민증",
+      "reason": "no_match",
+      "normalized_name": "생활 속의 다중화학물질과민증"
+    },
+    {
+      "disease_name": "생활 속의 수은(Hg)",
+      "reason": "no_match",
+      "normalized_name": "Hg"
+    },
+    {
+      "disease_name": "성공적인 모유 수유",
+      "reason": "no_match",
+      "normalized_name": "성공적인 모유 수유"
+    },
+    {
+      "disease_name": "손씻기",
+      "reason": "no_match",
+      "normalized_name": "손씻기"
+    },
+    {
+      "disease_name": "식이영양",
+      "reason": "no_match",
+      "normalized_name": "식이영양"
+    },
+    {
+      "disease_name": "식이영양(소아/청소년)",
+      "reason": "no_match",
+      "normalized_name": "식이영양"
+    },
+    {
+      "disease_name": "식이영양(영유아)",
+      "reason": "no_match",
+      "normalized_name": "영유아"
+    },
+    {
+      "disease_name": "식이영양(임산부)",
+      "reason": "no_match",
+      "normalized_name": "임산부"
+    },
+    {
+      "disease_name": "운동",
+      "reason": "no_match",
+      "normalized_name": "운동"
+    },
+    {
+      "disease_name": "음주",
+      "reason": "no_match",
+      "normalized_name": "음주"
+    }
+  ],
+  "need_manual_review_symptom": [
+    {
+      "disease_name": "귀의 통증 및 분비물",
+      "reason": "no_match",
+      "normalized_name": "귀의 통증 및 분비물"
+    },
+    {
+      "disease_name": "노인 어지럼증",
+      "reason": "no_match",
+      "normalized_name": "어지럼증"
+    },
+    {
+      "disease_name": "노인 호흡곤란",
+      "reason": "no_match",
+      "normalized_name": "노인 호흡곤란"
+    },
+    {
+      "disease_name": "복통",
+      "reason": "no_match",
+      "normalized_name": "복통"
+    },
+    {
+      "disease_name": "소변이상(농뇨)",
+      "reason": "no_match",
+      "normalized_name": "농뇨"
+    },
+    {
+      "disease_name": "소변이상(혈뇨)",
+      "reason": "no_match",
+      "normalized_name": "혈뇨"
+    },
+    {
+      "disease_name": "소아 청소년의 혈변 및 흑혈변",
+      "reason": "no_match",
+      "normalized_name": "소아 청소년의 혈변 및 흑혈변"
+    },
+    {
+      "disease_name": "안면홍조",
+      "reason": "no_match",
+      "normalized_name": "안면홍조"
+    },
+    {
+      "disease_name": "유방종괴",
+      "reason": "no_match",
+      "normalized_name": "유방종괴"
+    },
+    {
+      "disease_name": "입덧",
+      "reason": "no_match",
+      "normalized_name": "임신중 구토"
+    }
+  ],
+  "need_manual_review": [
+    {
+      "disease_name": "가려움증",
+      "reason": "no_match",
+      "normalized_name": "가려움증"
+    },
+    {
+      "disease_name": "가정 내 아동안전",
+      "reason": "no_match",
+      "normalized_name": "가정 내 아동안전"
+    },
+    {
+      "disease_name": "가철성 보철",
+      "reason": "no_match",
+      "normalized_name": "가철성 보철"
+    },
+    {
+      "disease_name": "각막혼탁 및 반흔",
+      "reason": "no_match",
+      "normalized_name": "각막혼탁 및 반흔"
+    },
+    {
+      "disease_name": "간의 양성종양(간낭종)",
+      "reason": "no_match",
+      "normalized_name": "간낭종"
+    },
+    {
+      "disease_name": "간의 양성종양(간선종)",
+      "reason": "no_match",
+      "normalized_name": "간선종"
+    },
+    {
+      "disease_name": "간의 양성종양(간혈관종)",
+      "reason": "no_match",
+      "normalized_name": "간혈관종"
+    },
+    {
+      "disease_name": "간의 양성종양(국소결절증식증)",
+      "reason": "no_match",
+      "normalized_name": "국소결절증식증"
+    },
+    {
+      "disease_name": "간의 양성종양(담관낭선종)",
+      "reason": "no_match",
+      "normalized_name": "담관낭선종"
+    },
+    {
+      "disease_name": "갈색세포종",
+      "reason": "no_match",
+      "normalized_name": "갈색세포종"
+    },
+    {
+      "disease_name": "감기",
+      "reason": "no_match",
+      "normalized_name": "급성비인두염"
+    },
+    {
+      "disease_name": "거부반응과 면역억제제",
+      "reason": "no_match",
+      "normalized_name": "거부반응과 면역억제제"
+    },
+    {
+      "disease_name": "건막염(감염성 건막염)",
+      "reason": "no_match",
+      "normalized_name": "감염성 건막염"
+    },
+    {
+      "disease_name": "고관절 전치환술",
+      "reason": "no_match",
+      "normalized_name": "고관절 전치환술"
+    },
+    {
+      "disease_name": "고칼슘혈증",
+      "reason": "no_match",
+      "normalized_name": "고칼슘혈증"
+    },
+    {
+      "disease_name": "고혈당",
+      "reason": "no_match",
+      "normalized_name": "고혈당"
+    },
+    {
+      "disease_name": "고혈압심장질환",
+      "reason": "no_match",
+      "normalized_name": "고혈압성심장질환"
+    },
+    {
+      "disease_name": "골감소증",
+      "reason": "no_match",
+      "normalized_name": "골감소증"
+    },
+    {
+      "disease_name": "골관절염",
+      "reason": "no_match",
+      "normalized_name": "관절증"
+    },
+    {
+      "disease_name": "과민성장증후군",
+      "reason": "no_match",
+      "normalized_name": "과민성장증후군"
+    },
+    {
+      "disease_name": "구취",
+      "reason": "no_match",
+      "normalized_name": "구취"
+    },
+    {
+      "disease_name": "굳은살과 티눈",
+      "reason": "no_match",
+      "normalized_name": "굳은살과 티눈"
+    },
+    {
+      "disease_name": "굴절이상(근시, 원시, 난시)",
+      "reason": "no_match",
+      "normalized_name": "굴절이상"
+    },
+    {
+      "disease_name": "귀의 형태 이상",
+      "reason": "no_match",
+      "normalized_name": "귀의 형태 이상"
+    },
+    {
+      "disease_name": "귀의 형태 이상(기타)",
+      "reason": "no_match",
+      "normalized_name": "귀의 형태 이상"
+    },
+    {
+      "disease_name": "귀의 형태 이상(돌출귀)",
+      "reason": "no_match",
+      "normalized_name": "돌출귀"
+    },
+    {
+      "disease_name": "귀의 형태 이상(소이증)",
+      "reason": "no_match",
+      "normalized_name": "소이증"
+    },
+    {
+      "disease_name": "근 손실",
+      "reason": "no_match",
+      "normalized_name": "근 손실"
+    },
+    {
+      "disease_name": "급성 간부전",
+      "reason": "no_match",
+      "normalized_name": "급성 간부전"
+    },
+    {
+      "disease_name": "급성신손상(소아)",
+      "reason": "no_match",
+      "normalized_name": "급성신손상"
+    },
+    {
+      "disease_name": "급성호흡기바이러스감염증",
+      "reason": "no_match",
+      "normalized_name": "급성호흡기바이러스감염증"
+    },
+    {
+      "disease_name": "기관절개술",
+      "reason": "no_match",
+      "normalized_name": "기관절개술"
+    },
+    {
+      "disease_name": "낙상",
+      "reason": "no_match",
+      "normalized_name": "낙상"
+    },
+    {
+      "disease_name": "남성갱년기",
+      "reason": "no_match",
+      "normalized_name": "남성갱년기"
+    },
+    {
+      "disease_name": "내시경적 역행성 담췌관조영술",
+      "reason": "no_match",
+      "normalized_name": "내시경적 역행성 담췌관조영술"
+    },
+    {
+      "disease_name": "노인 보행장애",
+      "reason": "no_match",
+      "normalized_name": "보행장애"
+    },
+    {
+      "disease_name": "노인 삼킴장애",
+      "reason": "no_match",
+      "normalized_name": "삼킴장애"
+    },
+    {
+      "disease_name": "노인 약물복용",
+      "reason": "no_match",
+      "normalized_name": "노인 약물복용"
+    },
+    {
+      "disease_name": "노인 요실금",
+      "reason": "no_match",
+      "normalized_name": "요실금"
+    },
+    {
+      "disease_name": "노인기능평가",
+      "reason": "no_match",
+      "normalized_name": "노인기능평가"
+    },
+    {
+      "disease_name": "노인의 영양",
+      "reason": "no_match",
+      "normalized_name": "노인의 영양"
+    },
+    {
+      "disease_name": "뇌동맥류",
+      "reason": "no_match",
+      "normalized_name": "뇌동맥류"
+    },
+    {
+      "disease_name": "뇌사자 장기기증",
+      "reason": "no_match",
+      "normalized_name": "뇌사자 장기기증"
+    },
+    {
+      "disease_name": "뇌수막염",
+      "reason": "no_match",
+      "normalized_name": "수막염"
+    },
+    {
+      "disease_name": "뇌졸중",
+      "reason": "no_match",
+      "normalized_name": "뇌경색"
+    },
+    {
+      "disease_name": "눈꺼풀속말림과 겉말림",
+      "reason": "no_match",
+      "normalized_name": "눈꺼풀속말림과 겉말림"
+    },
+    {
+      "disease_name": "늘어지는 영아증후군",
+      "reason": "no_match",
+      "normalized_name": "늘어지는 영아증후군"
+    },
+    {
+      "disease_name": "다래끼와 콩다래끼",
+      "reason": "no_match",
+      "normalized_name": "다래끼와 콩다래끼"
+    },
+    {
+      "disease_name": "다제내성균감염증",
+      "reason": "no_match",
+      "normalized_name": "다제내성균감염증"
+    },
+    {
+      "disease_name": "담낭 용종",
+      "reason": "no_match",
+      "normalized_name": "담낭 용종"
+    },
+    {
+      "disease_name": "당뇨병성 족부병증",
+      "reason": "no_match",
+      "normalized_name": "당뇨병성족부병증"
+    },
+    {
+      "disease_name": "대동맥 박리",
+      "reason": "no_match",
+      "normalized_name": "대동맥 박리"
+    },
+    {
+      "disease_name": "대동맥류",
+      "reason": "no_match",
+      "normalized_name": "대동맥류"
+    },
+    {
+      "disease_name": "대변 이상",
+      "reason": "no_match",
+      "normalized_name": "대변 이상"
+    },
+    {
+      "disease_name": "대사이상지방간질환",
+      "reason": "no_match",
+      "normalized_name": "지방간"
+    },
+    {
+      "disease_name": "대사증후군",
+      "reason": "no_match",
+      "normalized_name": "대사증후군"
+    },
+    {
+      "disease_name": "대장용종",
+      "reason": "no_match",
+      "normalized_name": "결장폴립"
+    },
+    {
+      "disease_name": "대퇴골두 무혈성 괴사",
+      "reason": "no_match",
+      "normalized_name": "대퇴골두 무혈성 괴사"
+    },
+    {
+      "disease_name": "뎅기열, 치쿤구니야열",
+      "reason": "no_match",
+      "normalized_name": "뎅기열, 치쿤구니야열"
+    },
+    {
+      "disease_name": "독극물 섭취",
+      "reason": "no_match",
+      "normalized_name": "독극물 섭취"
+    },
+    {
+      "disease_name": "동맥관 개존증",
+      "reason": "no_match",
+      "normalized_name": "동맥관 개존증"
+    },
+    {
+      "disease_name": "동물 및 곤충에 의한 응급상황",
+      "reason": "no_match",
+      "normalized_name": "동물 및 곤충에 의한 응급상황"
+    },
+    {
+      "disease_name": "드림렌즈의 효과와 부작용",
+      "reason": "no_match",
+      "normalized_name": "드림렌즈의 효과와 부작용"
+    },
+    {
+      "disease_name": "레진치료(치아 레진치료)",
+      "reason": "no_match",
+      "normalized_name": "치아 레진치료"
+    },
+    {
+      "disease_name": "렙토스피라증",
+      "reason": "no_match",
+      "normalized_name": "렙토스피라증"
+    },
+    {
+      "disease_name": "만성피로증후군",
+      "reason": "no_match",
+      "normalized_name": "만성피로증후군"
+    },
+    {
+      "disease_name": "말더듬",
+      "reason": "no_match",
+      "normalized_name": "말더듬"
+    },
+    {
+      "disease_name": "말라리아",
+      "reason": "no_match",
+      "normalized_name": "말라리아"
+    },
+    {
+      "disease_name": "모반(점)",
+      "reason": "no_match",
+      "normalized_name": "점"
+    },
+    {
+      "disease_name": "모호한 외부생식기 및 성 발달 이...",
+      "reason": "no_match",
+      "normalized_name": "모호한 외부생식기 및 성 발달 이..."
+    },
+    {
+      "disease_name": "무릎 관절 주위의 골절",
+      "reason": "no_match",
+      "normalized_name": "무릎 관절 주위의 골절"
+    },
+    {
+      "disease_name": "무월경",
+      "reason": "no_match",
+      "normalized_name": "무월경"
+    },
+    {
+      "disease_name": "물에 빠짐",
+      "reason": "no_match",
+      "normalized_name": "물에 빠짐"
+    },
+    {
+      "disease_name": "미숙아",
+      "reason": "no_match",
+      "normalized_name": "미숙아"
+    },
+    {
+      "disease_name": "바이러스성출혈열",
+      "reason": "no_match",
+      "normalized_name": "바이러스성출혈열"
+    },
+    {
+      "disease_name": "발치",
+      "reason": "no_match",
+      "normalized_name": "발치"
+    },
+    {
+      "disease_name": "백내장",
+      "reason": "no_match",
+      "normalized_name": "백내장"
+    },
+    {
+      "disease_name": "변실금",
+      "reason": "no_match",
+      "normalized_name": "변실금"
+    },
+    {
+      "disease_name": "보툴리눔독소증",
+      "reason": "no_match",
+      "normalized_name": "보툴리눔독소증"
+    },
+    {
+      "disease_name": "복막투석",
+      "reason": "no_match",
+      "normalized_name": "복막투석"
+    },
+    {
+      "disease_name": "복부 팽만",
+      "reason": "no_match",
+      "normalized_name": "복부팽만"
+    },
+    {
+      "disease_name": "부신부전증",
+      "reason": "no_match",
+      "normalized_name": "부신기능저하증"
+    },
+    {
+      "disease_name": "부정맥",
+      "reason": "no_match",
+      "normalized_name": "부정맥"
+    },
+    {
+      "disease_name": "불규칙한 월경주기와 월경전증후군",
+      "reason": "no_match",
+      "normalized_name": "불규칙한 월경주기와 월경전증후군"
+    },
+    {
+      "disease_name": "불명열",
+      "reason": "no_match",
+      "normalized_name": "불명열"
+    },
+    {
+      "disease_name": "비뇨기계 외상",
+      "reason": "no_match",
+      "normalized_name": "비뇨기계 외상"
+    },
+    {
+      "disease_name": "비문증(날파리증)",
+      "reason": "no_match",
+      "normalized_name": "날파리증"
+    },
+    {
+      "disease_name": "비정상 자궁출혈",
+      "reason": "no_match",
+      "normalized_name": "이상자궁출혈"
+    },
+    {
+      "disease_name": "사람 브루셀라증",
+      "reason": "no_match",
+      "normalized_name": "사람 브루셀라증"
+    },
+    {
+      "disease_name": "사람면역결핍바이러스",
+      "reason": "no_match",
+      "normalized_name": "사람면역결핍바이러스"
+    },
+    {
+      "disease_name": "사랑니",
+      "reason": "no_match",
+      "normalized_name": "사랑니"
+    },
+    {
+      "disease_name": "사마귀",
+      "reason": "no_match",
+      "normalized_name": "사마귀"
+    },
+    {
+      "disease_name": "사시",
+      "reason": "no_match",
+      "normalized_name": "사시"
+    },
+    {
+      "disease_name": "상부위장관 촬영",
+      "reason": "no_match",
+      "normalized_name": "상부위장관 촬영"
+    },
+    {
+      "disease_name": "생리통",
+      "reason": "no_match",
+      "normalized_name": "월경통"
+    },
+    {
+      "disease_name": "석면과 건강장해",
+      "reason": "no_match",
+      "normalized_name": "석면과 건강장해"
+    },
+    {
+      "disease_name": "선천갑상샘저하증",
+      "reason": "no_match",
+      "normalized_name": "선천갑상샘저하증"
+    },
+    {
+      "disease_name": "성대결절",
+      "reason": "no_match",
+      "normalized_name": "성대결절"
+    },
+    {
+      "disease_name": "성장 장애",
+      "reason": "no_match",
+      "normalized_name": "성장 장애"
+    },
+    {
+      "disease_name": "성조숙증",
+      "reason": "no_match",
+      "normalized_name": "성조숙증"
+    },
+    {
+      "disease_name": "성폭력",
+      "reason": "no_match",
+      "normalized_name": "성폭력"
+    },
+    {
+      "disease_name": "세기관지염",
+      "reason": "no_match",
+      "normalized_name": "세기관지염"
+    },
+    {
+      "disease_name": "소아발진",
+      "reason": "no_match",
+      "normalized_name": "발진"
+    },
+    {
+      "disease_name": "소아의 대소변 가리기",
+      "reason": "no_match",
+      "normalized_name": "소아의 대소변 가리기"
+    },
+    {
+      "disease_name": "소아청소년기고혈압",
+      "reason": "no_match",
+      "normalized_name": "소아청소년기고혈압"
+    },
+    {
+      "disease_name": "수근굴(수근관) 증후군",
+      "reason": "no_match",
+      "normalized_name": "수근관증후군"
+    },
+    {
+      "disease_name": "수두와 대상포진",
+      "reason": "no_match",
+      "normalized_name": "수두와 대상포진"
+    },
+    {
+      "disease_name": "수면무호흡증",
+      "reason": "no_match",
+      "normalized_name": "수면무호흡증"
+    },
+    {
+      "disease_name": "수혈",
+      "reason": "no_match",
+      "normalized_name": "수혈"
+    },
+    {
+      "disease_name": "스포츠 손상과 안전",
+      "reason": "no_match",
+      "normalized_name": "스포츠 손상과 안전"
+    },
+    {
+      "disease_name": "스포츠 손상과 안전(견관절(어깨 ...",
+      "reason": "no_match",
+      "normalized_name": "스포츠 손상과 안전(견관절(어깨 ..."
+    },
+    {
+      "disease_name": "스포츠 손상과 안전(슬관절(무릎 ...",
+      "reason": "no_match",
+      "normalized_name": "스포츠 손상과 안전(슬관절(무릎 ..."
+    },
+    {
+      "disease_name": "스포츠 손상과 안전(족관절(발목 ...",
+      "reason": "no_match",
+      "normalized_name": "스포츠 손상과 안전(족관절(발목 ..."
+    },
+    {
+      "disease_name": "슬관절 전치환술",
+      "reason": "no_match",
+      "normalized_name": "슬관절 전치환술"
+    },
+    {
+      "disease_name": "시린이(치아지각과민)",
+      "reason": "no_match",
+      "normalized_name": "치아지각과민"
+    },
+    {
+      "disease_name": "식중독",
+      "reason": "no_match",
+      "normalized_name": "식중독"
+    },
+    {
+      "disease_name": "신증후군출혈열(한타바이러스감염증)",
+      "reason": "no_match",
+      "normalized_name": "한타바이러스감염증"
+    },
+    {
+      "disease_name": "심낭염",
+      "reason": "no_match",
+      "normalized_name": "심낭염"
+    },
+    {
+      "disease_name": "심낭염(급성 심낭염)",
+      "reason": "no_match",
+      "normalized_name": "급성 심낭염"
+    },
+    {
+      "disease_name": "심잡음",
+      "reason": "no_match",
+      "normalized_name": "심잡음"
+    },
+    {
+      "disease_name": "심장 판막 질환",
+      "reason": "no_match",
+      "normalized_name": "심장 판막 질환"
+    },
+    {
+      "disease_name": "심장박동조율기",
+      "reason": "no_match",
+      "normalized_name": "심장박동조율기"
+    },
+    {
+      "disease_name": "아동학대",
+      "reason": "no_match",
+      "normalized_name": "아동학대"
+    },
+    {
+      "disease_name": "아말감 및 인레이(아말감)",
+      "reason": "no_match",
+      "normalized_name": "아말감"
+    },
+    {
+      "disease_name": "안외상(각막화상)",
+      "reason": "no_match",
+      "normalized_name": "각막화상"
+    },
+    {
+      "disease_name": "안외상(안와골절)",
+      "reason": "no_match",
+      "normalized_name": "안와골절"
+    },
+    {
+      "disease_name": "안외상(외상성 망막박리)",
+      "reason": "no_match",
+      "normalized_name": "외상성 망막박리"
+    },
+    {
+      "disease_name": "알레르기",
+      "reason": "no_match",
+      "normalized_name": "알레르기"
+    },
+    {
+      "disease_name": "알레르기결막염",
+      "reason": "no_match",
+      "normalized_name": "알레르기결막염"
+    },
+    {
+      "disease_name": "액취증",
+      "reason": "no_match",
+      "normalized_name": "액취증"
+    },
+    {
+      "disease_name": "야뇨증(소아)",
+      "reason": "no_match",
+      "normalized_name": "야뇨증"
+    },
+    {
+      "disease_name": "야토병",
+      "reason": "no_match",
+      "normalized_name": "야토병"
+    },
+    {
+      "disease_name": "양전자방출단층촬영술",
+      "reason": "no_match",
+      "normalized_name": "양전자방출단층촬영술"
+    },
+    {
+      "disease_name": "얼굴떨림(얼굴연축_반얼굴연축)",
+      "reason": "no_match",
+      "normalized_name": "얼굴연축"
+    },
+    {
+      "disease_name": "얼굴마비(말초성 마비)",
+      "reason": "no_match",
+      "normalized_name": "말초성 안면마비"
+    },
+    {
+      "disease_name": "얼굴마비(중추성 마비)",
+      "reason": "no_match",
+      "normalized_name": "중추성 안면마비"
+    },
+    {
+      "disease_name": "여성형유방",
+      "reason": "no_match",
+      "normalized_name": "여성형유방"
+    },
+    {
+      "disease_name": "염좌",
+      "reason": "no_match",
+      "normalized_name": "염좌"
+    },
+    {
+      "disease_name": "영양제",
+      "reason": "no_match",
+      "normalized_name": "영양제"
+    },
+    {
+      "disease_name": "오십견(동결견, 유착관절낭염)",
+      "reason": "no_match",
+      "normalized_name": "오십견"
+    },
+    {
+      "disease_name": "완전도재관",
+      "reason": "no_match",
+      "normalized_name": "완전도재관"
+    },
+    {
+      "disease_name": "왜소음경(소아)",
+      "reason": "no_match",
+      "normalized_name": "왜소음경"
+    },
+    {
+      "disease_name": "외상성 고막 천공",
+      "reason": "no_match",
+      "normalized_name": "외상성 고막 천공"
+    },
+    {
+      "disease_name": "외상성 척수손상",
+      "reason": "no_match",
+      "normalized_name": "외상성 척수손상"
+    },
+    {
+      "disease_name": "외이도염(알레르기외이도염)",
+      "reason": "no_match",
+      "normalized_name": "외이도염"
+    },
+    {
+      "disease_name": "요로전환술(방광창냄술)",
+      "reason": "no_match",
+      "normalized_name": "방광창냄술"
+    },
+    {
+      "disease_name": "요로전환술(정위성 인공방광 대치술...",
+      "reason": "no_match",
+      "normalized_name": "요로전환술(정위성 인공방광 대치술..."
+    },
+    {
+      "disease_name": "요로전환술(콩팥창냄술)",
+      "reason": "no_match",
+      "normalized_name": "콩팥창냄술"
+    },
+    {
+      "disease_name": "요로전환술(회장도관술)",
+      "reason": "no_match",
+      "normalized_name": "회장도관술"
+    },
+    {
+      "disease_name": "요실금",
+      "reason": "no_match",
+      "normalized_name": "요실금"
+    },
+    {
+      "disease_name": "원형탈모",
+      "reason": "no_match",
+      "normalized_name": "원형탈모"
+    },
+    {
+      "disease_name": "위내시경",
+      "reason": "no_match",
+      "normalized_name": "위내시경"
+    },
+    {
+      "disease_name": "유두분비",
+      "reason": "no_match",
+      "normalized_name": "유두분비"
+    },
+    {
+      "disease_name": "유루증",
+      "reason": "no_match",
+      "normalized_name": "유루증"
+    },
+    {
+      "disease_name": "유선염",
+      "reason": "no_match",
+      "normalized_name": "유방염"
+    },
+    {
+      "disease_name": "유행각결막염",
+      "reason": "no_match",
+      "normalized_name": "각결막염"
+    },
+    {
+      "disease_name": "음낭수종",
+      "reason": "no_match",
+      "normalized_name": "음낭수종"
+    },
+    {
+      "disease_name": "이 사면발이 감염증",
+      "reason": "no_match",
+      "normalized_name": "이 사면발이 감염증"
+    },
+    {
+      "disease_name": "이상지질혈증 식사요법",
+      "reason": "no_match",
+      "normalized_name": "이상지질혈증 식사요법"
+    },
+    {
+      "disease_name": "이유기보충식(이유식)",
+      "reason": "no_match",
+      "normalized_name": "이유식"
+    },
+    {
+      "disease_name": "인두편도염",
+      "reason": "no_match",
+      "normalized_name": "인두편도염"
+    },
+    {
+      "disease_name": "일과성 허혈 발작",
+      "reason": "no_match",
+      "normalized_name": "일과성 허혈 발작"
+    },
+    {
+      "disease_name": "일자목(거북목)증후군",
+      "reason": "no_match",
+      "normalized_name": "일자목(거북목)증후군"
+    },
+    {
+      "disease_name": "입냄새",
+      "reason": "no_match",
+      "normalized_name": "입냄새"
+    },
+    {
+      "disease_name": "잇몸병(치주질환)",
+      "reason": "no_match",
+      "normalized_name": "치주질환"
+    },
+    {
+      "disease_name": "자궁경부암 백신",
+      "reason": "no_match",
+      "normalized_name": "자궁경부암 백신"
+    },
+    {
+      "disease_name": "자연분만과정",
+      "reason": "no_match",
+      "normalized_name": "자연분만과정"
+    },
+    {
+      "disease_name": "잠복고환",
+      "reason": "no_match",
+      "normalized_name": "잠복고환"
+    },
+    {
+      "disease_name": "장결핵",
+      "reason": "no_match",
+      "normalized_name": "장결핵"
+    },
+    {
+      "disease_name": "저시력",
+      "reason": "no_match",
+      "normalized_name": "저시력"
+    },
+    {
+      "disease_name": "저신장",
+      "reason": "no_match",
+      "normalized_name": "저신장"
+    },
+    {
+      "disease_name": "전해질 이상",
+      "reason": "no_match",
+      "normalized_name": "전해질 이상"
+    },
+    {
+      "disease_name": "정상 월경의 이해",
+      "reason": "no_match",
+      "normalized_name": "정상 월경의 이해"
+    },
+    {
+      "disease_name": "정상노화의 이해",
+      "reason": "no_match",
+      "normalized_name": "정상노화의 이해"
+    },
+    {
+      "disease_name": "정상소아의 성장",
+      "reason": "no_match",
+      "normalized_name": "정상소아의 성장"
+    },
+    {
+      "disease_name": "정상소아의 성장(발달)",
+      "reason": "no_match",
+      "normalized_name": "발달"
+    },
+    {
+      "disease_name": "제왕절개술",
+      "reason": "no_match",
+      "normalized_name": "제왕절개술"
+    },
+    {
+      "disease_name": "조갑감입(파고드는 발톱_감입발톱)",
+      "reason": "no_match",
+      "normalized_name": "감입발톱"
+    },
+    {
+      "disease_name": "조기난소부전",
+      "reason": "no_match",
+      "normalized_name": "난소기능부전"
+    },
+    {
+      "disease_name": "조산",
+      "reason": "no_match",
+      "normalized_name": "조기진통"
+    },
+    {
+      "disease_name": "족저근막염",
+      "reason": "no_match",
+      "normalized_name": "족저근막염"
+    }
+  ]
+}
