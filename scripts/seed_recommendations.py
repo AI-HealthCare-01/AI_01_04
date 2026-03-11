@@ -1,6 +1,7 @@
 import json
-from tortoise import Tortoise
+
 from app.models.recommendations import Recommendation
+
 
 async def seed():
     with open("init-db/03-seed-recommendations.json") as f:
@@ -14,6 +15,8 @@ async def seed():
             source=item["source"],
         )
 
+
 if __name__ == "__main__":
     import asyncio
+
     asyncio.run(seed())
