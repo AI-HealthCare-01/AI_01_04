@@ -1,3 +1,7 @@
+"""
+약품 라우터: 약품명 키워드 검색
+"""
+
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query, status

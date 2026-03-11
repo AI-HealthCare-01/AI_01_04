@@ -1,3 +1,10 @@
+"""
+사용자 모델 (ERD: users)
+
+- 이메일/전화번호 유니크 제약
+- 비밀번호는 user_credentials 테이블에 분리 저장
+"""
+
 from __future__ import annotations
 
 from enum import StrEnum

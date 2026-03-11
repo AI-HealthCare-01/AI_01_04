@@ -1,3 +1,7 @@
+"""
+사용자 라우터: 프로필 조회/수정, 이미지 업로드, 회원탈퇴
+"""
+
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, File, UploadFile, status

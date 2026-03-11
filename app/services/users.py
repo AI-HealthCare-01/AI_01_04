@@ -1,3 +1,9 @@
+"""
+사용자 관리 서비스
+
+- 프로필 수정, 프로필 이미지 업로드, 회원 탈퇴(비활성화) 담당
+"""
+
 from __future__ import annotations
 
 from fastapi import UploadFile
@@ -18,6 +24,12 @@ class UserManageService:
         self.auth_service = AuthService()
 
     async def update_user(self, user: User, data: UserUpdateRequest) -> User:
+        """
+        사용자 정보 수정
+
+        - 이메일/전화번호 변경 시 중복 검증 선행
+        - 전화번호는 정규화 후 저장
+        """
         if data.email:
             await self.auth_service.check_email_exists(data.email)
 
@@ -35,6 +47,12 @@ class UserManageService:
         return user
 
     async def upload_profile_image(self, user: User, file: UploadFile) -> str:
+        """
+        프로필 이미지 업로드
+
+        - 확장자/용량 검증 후 저장
+        - 저장 경로를 /static/ URL로 변환하여 반환
+        """
         if not file.filename:
             raise ValueError("filename is missing")  # 또는 HTTPException(400)로 처리해도 OK
 
@@ -54,5 +72,6 @@ class UserManageService:
         return url
 
     async def deactivate_user(self, user: User) -> None:
+        """회원 탈퇴 (비활성화 처리, 실제 삭제 없음)"""
         async with in_transaction():
             await self.repo.deactivate_user(user_id=user.id)

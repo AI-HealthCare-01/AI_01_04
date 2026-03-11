@@ -1,3 +1,7 @@
+"""
+스캔 라우터: 의료문서 업로드, OCR 분석, 결과 조회/수정/저장
+"""
+
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, File, Form, Path, UploadFile, status  # [CHANGED]
