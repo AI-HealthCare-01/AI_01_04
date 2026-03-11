@@ -14,6 +14,7 @@ class TestRecommendationRepository(TestCase):
             email="test@example.com",
             name="Test User",
             phone_number="01012345678",
+            birthday="1990-01-01",
         )
         batch = await RecommendationBatch.create(user=user)
         rec = await Recommendation.create(
