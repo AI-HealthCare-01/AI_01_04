@@ -26,7 +26,7 @@ FAKE_AI_RESULT = {
 
 
 async def _make_user(email: str = "scan_svc@example.com") -> User:
-    return await User.create(email=email, name="스캔테스터", phone_number="01011112222")
+    return await User.create(email=email, name="스캔테스터", phone_number="01011112222", birthday="1990-01-01")
 
 
 class TestScanAnalysisService(TestCase):
