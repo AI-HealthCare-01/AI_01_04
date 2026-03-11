@@ -11,12 +11,18 @@ DEFAULT_MAX_BYTES = 10 * 1024 * 1024  # 10MB
 
 
 class FileValidationError(ValueError):
-    """파일 검증 실패(확장자/용량/파일명 등)"""
+    """파일 검증 실패 (확장자/용량/파일명 등)."""
 
 
 def sanitize_filename(filename: str) -> str:
     """
     OS/경로 주입 방지 + 이상문자 제거.
+
+    Args:
+        filename (str): 원본 파일명.
+
+    Returns:
+        str: 안전하게 정제된 파일명.
     """
     filename = filename.strip()
     filename = filename.replace("\\", "/").split("/")[-1]  # 경로 제거
@@ -27,10 +33,29 @@ def sanitize_filename(filename: str) -> str:
 
 
 def get_extension(filename: str) -> str:
+    """
+    파일명에서 확장자를 소문자로 추출.
+
+    Args:
+        filename (str): 파일명.
+
+    Returns:
+        str: 소문자 확장자 (e.g. ``.pdf``).
+    """
     return Path(filename).suffix.lower()
 
 
 def validate_extension(filename: str, allowed: set[str] | None = None) -> None:
+    """
+    파일 확장자 화이트리스트 검증.
+
+    Args:
+        filename (str): 검증할 파일명.
+        allowed (set[str] | None): 허용 확장자 세트. None이면 DEFAULT_ALLOWED_EXTENSIONS 사용.
+
+    Raises:
+        FileValidationError: 허용되지 않는 확장자인 경우.
+    """
     allowed = allowed or DEFAULT_ALLOWED_EXTENSIONS
     ext = get_extension(filename)
     if ext not in allowed:
@@ -39,8 +64,19 @@ def validate_extension(filename: str, allowed: set[str] | None = None) -> None:
 
 async def validate_size(upload: UploadFile, max_bytes: int = DEFAULT_MAX_BYTES) -> int:
     """
-    UploadFile의 사이즈를 측정. (stream을 끝까지 읽지 않고 file 객체 seek/tell 사용)
-    - UploadFile.file 은 SpooledTemporaryFile이라 seek/tell 가능
+    UploadFile의 사이즈를 측정.
+
+    seek/tell을 사용하여 스트림을 끝까지 읽지 않고 파일 크기 확인.
+
+    Args:
+        upload (UploadFile): 검증할 업로드 파일.
+        max_bytes (int): 허용 최대 바이트. 기본값 10MB.
+
+    Returns:
+        int: 파일 크기 (바이트).
+
+    Raises:
+        FileValidationError: 파일 크기가 max_bytes를 초과하는 경우.
     """
     f = upload.file
     try:
@@ -69,6 +105,15 @@ async def validate_size(upload: UploadFile, max_bytes: int = DEFAULT_MAX_BYTES) 
 
 
 def ensure_dir(path: str | Path) -> Path:
+    """
+    디렉토리가 없으면 생성.
+
+    Args:
+        path (str | Path): 생성할 디렉토리 경로.
+
+    Returns:
+        Path: 생성된 Path 객체.
+    """
     p = Path(path)
     p.mkdir(parents=True, exist_ok=True)
     return p
@@ -80,9 +125,17 @@ def build_storage_path(
     original_filename: str,
 ) -> Path:
     """
-    저장 경로 예시:
-    {base_dir}/uploads/{user_id}/2026-02-26/{uuid}_{sanitized_name}.pdf
-    날짜 폴더는 필요하면 서비스에서 추가해도 됨.
+    업로드 파일 저장 경로 생성.
+
+    예시: ``{base_dir}/uploads/{user_id}/{uuid}_{sanitized_name}.pdf``
+
+    Args:
+        base_dir (str | Path): 저장소 루트 디렉토리.
+        user_id (int): 사용자 ID.
+        original_filename (str): 원본 파일명.
+
+    Returns:
+        Path: 생성된 저장 경로.
     """
     safe_name = sanitize_filename(original_filename)
     ext = get_extension(safe_name)
@@ -98,6 +151,13 @@ def build_storage_path(
 async def save_upload_file(upload: UploadFile, dest: Path) -> Path:
     """
     UploadFile 내용을 dest로 저장.
+
+    Args:
+        upload (UploadFile): 저장할 업로드 파일.
+        dest (Path): 대상 저장 경로.
+
+    Returns:
+        Path: 저장된 파일 경로.
     """
     dest.parent.mkdir(parents=True, exist_ok=True)
 
@@ -120,7 +180,17 @@ async def save_user_upload_file(
 ) -> str:
     """
     업로드 파일 검증 + 저장까지 한 번에 처리.
-    반환: 저장된 file_path (str)
+
+    Args:
+        user_id (int): 사용자 ID.
+        upload (UploadFile): 업로드할 파일.
+        base_dir (str | Path): 저장소 루트 디렉토리. 기본값 ``storage``.
+
+    Returns:
+        str: 저장된 file_path.
+
+    Raises:
+        FileValidationError: 파일명 누락, 확장자 불허용, 용량 초과 시.
     """
 
     if not upload.filename:

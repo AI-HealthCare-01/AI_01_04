@@ -13,17 +13,25 @@ from tortoise import fields, models
 
 
 class UserRole(StrEnum):
+    """사용자 역할 열거형."""
+
     USER = "USER"
     ADMIN = "ADMIN"
 
 
 class Gender(StrEnum):
+    """성별 열거형."""
+
     MALE = "MALE"
     FEMALE = "FEMALE"
 
 
 class User(models.Model):
-    """사용자 모델 (ERD: users)"""
+    """
+    사용자 모델 (ERD: users).
+
+    이메일/전화번호 유니크 제약, 비밀번호는 user_credentials 테이블에 분리 저장.
+    """
 
     id = fields.IntField(pk=True)
 

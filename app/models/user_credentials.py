@@ -20,9 +20,9 @@ from app.models.users import User
 
 class UserCredential(models.Model):
     """
-    사용자 비밀번호 정보 (ERD: user_credentials)
+    사용자 비밀번호 정보 (ERD: user_credentials).
 
-    users 테이블과 1:1 관계
+    users 테이블과 1:1 관계. OAuth 사용자는 비밀번호가 없을 수 있어 분리 저장.
     """
 
     user: OneToOneRelation[User] = fields.OneToOneField(

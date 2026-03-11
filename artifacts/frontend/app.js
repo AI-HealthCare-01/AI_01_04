@@ -28,7 +28,7 @@
     return `${state.baseUrl}${path}`;
   }
 
-  async function request(path, options) {
+  async function request(path, options, _retry) {
     const url = endpoint(path);
     const init = options || {};
     const headers = Object.assign({}, authHeaders(), init.headers || {});
@@ -46,6 +46,22 @@
       body = { raw: text };
     }
     log(`응답 ${resp.status} ${url}`, body);
+    if (resp.status === 401 && !_retry) {
+      try {
+        const refreshed = await fetch(endpoint("/auth/token/refresh"), { method: "GET", credentials: "include" });
+        const refreshBody = await refreshed.json();
+        const token = refreshBody?.access_token || refreshBody?.accessToken;
+        if (token) {
+          state.accessToken = token;
+          qs("accessToken").value = token;
+          localStorage.setItem("frontend_access_token", token);
+          log("토큰 자동 갱신 성공", { refreshed: true });
+          return request(path, options, true);
+        }
+      } catch (_) {
+        log("토큰 자동 갱신 실패", null);
+      }
+    }
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     return body;
   }
