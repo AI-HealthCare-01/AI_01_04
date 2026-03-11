@@ -78,8 +78,11 @@ jobs:
       - name: Init PostgreSQL (pgvector extension)
         run: |
           sudo apt-get update && sudo apt-get install -y postgresql-client
-          PGPASSWORD=postgres psql -h localhost -U postgres -d test -c "CREATE EXTENSION IF NOT EXISTS vector;"
-
+          # postgres DB에 먼저 붙어서 test DB가 없으면 생성
+          PGPASSWORD=postgres psql -h localhost -p 5432 -U postgres -d postgres -c "CREATE DATABASE test;"
+          # test DB에 vector 확장 설치
+          PGPASSWORD=postgres psql -h localhost -p 5432 -U postgres -d test -c "CREATE EXTENSION IF NOT EXISTS vector;"
+          
       - name: Check if tests exist
         id: check_tests
         # tests 폴더나 test_*.py 파일이 있는지 확인
