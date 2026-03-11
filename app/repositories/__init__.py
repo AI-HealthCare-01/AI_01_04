@@ -12,7 +12,7 @@ from app.repositories.prescription_repository import PrescriptionRepository
 from app.repositories.recommendation_repository import RecommendationRepository
 from app.repositories.user_credential_repository import UserCredentialRepository
 from app.repositories.user_repository import UserRepository
-from app.repositories.vector_document_repository import VectorDocumentRepository
+
 
 __all__ = [
     "UserRepository",

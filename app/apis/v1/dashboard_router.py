@@ -21,15 +21,25 @@ async def get_dashboard_summary(
     dashboard_service: Annotated[DashboardService, Depends(DashboardService)],
 ) -> Response:
     """
-    사용자 대시보드 요약 정보 조회
+    사용자 대시보드 요약 정보를 조회한다.
 
     포함 정보:
-    - 최근 처방
+    - 최근 처방전
     - 남은 약 일수
-    - 오늘 복약 여부
-    - 오늘 건강관리 여부
-    """
+    - 오늘 복약 완료 여부
+    - 오늘 건강관리 완료 여부
+    - 현재 활성 추천 목록
 
+    Args:
+        user (User):
+            인증된 사용자 객체
+        dashboard_service (DashboardService):
+            대시보드 서비스 객체
+
+    Returns:
+        Response:
+            대시보드 요약 응답
+    """
     summary = await dashboard_service.get_summary(user)
 
     return Response(
