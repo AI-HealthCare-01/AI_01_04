@@ -92,8 +92,10 @@ class RecommendationService:
         # - 매칭 성공 시 질환별 정교한 recommendation 문구/점수로 확장
 
         if diagnosis:
-            query = diagnosis + " " + " ".join(drugs[:5])    # 진단명 + 약물명을 합쳐서 검색 쿼리 생성. 더 많은 정보를 담을수록 유사도 검색 품질이 올라감
-            vector = encode(query)    # 텍스트를 1536차원 벡터로 변환
+            query = (
+                diagnosis + " " + " ".join(drugs[:5])
+            )  # 진단명 + 약물명을 합쳐서 검색 쿼리 생성. 더 많은 정보를 담을수록 유사도 검색 품질이 올라감
+            vector = encode(query)  # 텍스트를 1536차원 벡터로 변환
             similar_docs = await self.vector_doc_repo.search_similar(
                 vector,
                 reference_type="disease_guideline",

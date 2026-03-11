@@ -14,6 +14,7 @@ GUIDELINES = [
     {"disease": "고지혈증", "content": "고지혈증은 포화지방 섭취를 줄이고 오메가3가 풍부한 식품을 섭취하세요"},
 ]
 
+
 async def main() -> None:
     cfg = Config()
     await Tortoise.init(
@@ -34,6 +35,7 @@ async def main() -> None:
         print(f"저장 완료: {item['disease']}")
 
     await Tortoise.close_connections()
+
 
 if __name__ == "__main__":
     asyncio.run(main())
