@@ -12,7 +12,7 @@ from app.services.dashboard import DashboardService
 
 
 async def _make_user(email: str) -> User:
-    return await User.create(email=email, name="테스터", phone_number="01011112222")
+    return await User.create(email=email, name="테스터", phone_number="01011112222", birthday="1990-01-01")
 
 
 class TestDashboardService(TestCase):

@@ -8,7 +8,7 @@ from app.services.users import UserManageService
 
 
 async def _make_user(email: str, phone: str = "01011112222") -> User:
-    return await User.create(email=email, name="테스터", phone_number=phone)
+    return await User.create(email=email, name="테스터", phone_number=phone, birthday="1990-01-01")
 
 
 class TestUserManageService(TestCase):

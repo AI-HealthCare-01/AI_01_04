@@ -65,7 +65,7 @@ class TestAuthService(TestCase):
         from fastapi import HTTPException
 
         # credential 없이 user만 생성
-        await User.create(email="nocred@example.com", name="테스터", phone_number="01022223333")
+        await User.create(email="nocred@example.com", name="테스터", phone_number="01022223333", birthday="1990-01-01")
         service = AuthService()
         with self.assertRaises(HTTPException) as ctx:
             await service.authenticate(LoginRequest(email="nocred@example.com", password="Password123!"))
@@ -77,7 +77,7 @@ class TestAuthService(TestCase):
         from app.models.user_credentials import UserCredential
 
         user = await User.create(
-            email="inactive@example.com", name="테스터", phone_number="01033334444", is_active=False
+            email="inactive@example.com", name="테스터", phone_number="01033334444", is_active=False, birthday="1990-01-01"
         )
         await UserCredential.create(user=user, password_hash=hash_password("Password123!"))
         service = AuthService()
