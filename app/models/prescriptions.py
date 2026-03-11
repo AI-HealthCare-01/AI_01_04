@@ -1,3 +1,11 @@
+"""
+처방전/복약 기록 모델 (ERD: prescriptions, medication_intake_logs)
+
+- Prescription: 사용자 처방전 (drug, disease FK)
+- PrescriptionMemo: 복약 메모 (효과/부작용)
+- MedicationIntakeLog: 일자별 복약 슬롯 로그 (taken/skipped/delayed)
+"""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

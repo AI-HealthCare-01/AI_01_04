@@ -1,3 +1,11 @@
+"""
+스캔 분석 서비스
+
+- 파일 업로드, OCR 분석, AI 후처리, 처방전/진료기록지 저장 담당
+- document_type: prescription(처방전) / medical_record(진료기록지)
+- 상태 흐름: uploaded → processing → done → updated → saved / failed
+"""
+
 from __future__ import annotations
 
 import logging
@@ -42,7 +50,8 @@ class ScanAnalysisService:
         self.ocr_client = NaverOCRClient()
         self.recommendation_service = RecommendationService()
 
-    def _normalize_document_type(self, document_type: str | None) -> str:  # [ADD]
+    def _normalize_document_type(self, document_type: str | None) -> str:
+        """입력값을 prescription / medical_record 중 하나로 정규화. 유효하지 않으면 400 예외 발생"""
         value = (document_type or "prescription").strip().lower()
         if value not in {"prescription", "medical_record"}:
             raise HTTPException(
@@ -55,8 +64,14 @@ class ScanAnalysisService:
         self,
         user,
         file: UploadFile,
-        document_type: str = "prescription",  # [ADD]
+        document_type: str = "prescription",
     ) -> dict:
+        """
+        의료문서 파일 업로드
+
+        - 확장자/용량 검증 후 저장
+        - uploaded 상태로 스캔 레코드 생성
+        """
         try:
             normalized_document_type = self._normalize_document_type(document_type)  # [ADD]
 
@@ -164,6 +179,12 @@ class ScanAnalysisService:
             ) from e
 
     async def start_analysis(self, user, scan_id: int) -> dict:
+        """
+        OCR 분석 시작
+
+        - OCR 호출 → AI 후처리 → 스캔 결과 저장
+        - 실패 시 스캔 상태를 failed로 업데이트
+        """
         try:
             cur = await self.scan_repo.get_by_id_for_user(user.id, scan_id)
             if not cur:
@@ -215,12 +236,14 @@ class ScanAnalysisService:
             raise HTTPException(status_code=500, detail=str(e)) from e
 
     async def get_result(self, user, scan_id: int) -> dict:
+        """스캔 결과 조회. 없으면 404 예외 발생"""
         scan = await self.scan_repo.get_by_id_for_user(user.id, scan_id)
         if not scan:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="scan not found.")
         return scan
 
     async def update_result(self, user, scan_id: int, data: ScanResultUpdateRequest) -> dict:
+        """스캔 결과 수동 수정 (diagnosis, drugs, document_date 등)"""
         try:
             cur = await self.scan_repo.get_by_id_for_user(user.id, scan_id)
             if not cur:
@@ -293,6 +316,13 @@ class ScanAnalysisService:
         return created, skipped, skipped_duplicates
 
     async def save_result(self, user, scan_id: int) -> dict:
+        """
+        스캔 결과 저장
+
+        - prescription: 처방전 생성 + 복약/건강관리 시드
+        - medical_record: 건강관리 시드 + 추청 생성
+        - 중복 처방전은 스킵 (멱등성 보장)
+        """
         try:
             cur = await self.scan_repo.get_by_id_for_user(user.id, scan_id)
             if not cur:

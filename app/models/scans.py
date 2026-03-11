@@ -1,3 +1,11 @@
+"""
+스캔 모델 (ERD: scans)
+
+- 의료문서 OCR 분석 결과 저장
+- document_type: prescription(처방전) / medical_record(진료기록지)
+- 상태 흐름: uploaded → processing → done → updated → saved / failed
+"""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

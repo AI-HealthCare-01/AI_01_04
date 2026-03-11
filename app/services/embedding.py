@@ -1,3 +1,10 @@
+"""
+텍스트 임베딩 서비스
+
+- OpenAI text-embedding-3-small 모델로 1536차원 벡터 생성
+- pgvector 유사도 검색에 사용
+"""
+
 from __future__ import annotations  # 프로젝트 가이드라인 - 모든 파일 최상단에 추가하는 forward reference 지원용
 
 from openai import OpenAI

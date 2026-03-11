@@ -1,3 +1,10 @@
+"""
+인증 서비스
+
+- 회원가입, 로그인, 이메일/전화번호 중복 검증 담당
+- JWT 토큰 발급은 JwtService에 위임
+"""
+
 from __future__ import annotations
 
 from fastapi.exceptions import HTTPException
@@ -22,6 +29,12 @@ class AuthService:
         self.jwt_service = JwtService()
 
     async def signup(self, data: SignUpRequest) -> User:
+        """
+        회원가입
+
+        - 이메일/전화번호 중복 검증 후 사용자 생성
+        - 비밀번호 해시 후 user_credentials에 저장 (트랜잭션)
+        """
         await self.check_email_exists(data.email)
 
         normalized_phone_number = normalize_phone_number(data.phone_number)
@@ -42,6 +55,12 @@ class AuthService:
             return user
 
     async def authenticate(self, data: LoginRequest) -> User:
+        """
+        로그인 인증
+
+        - 이메일/비밀번호 검증
+        - 비활성화 계정 여부 확인
+        """
         email = str(data.email)
         user = await self.user_repo.get_user_by_email(email)
         if not user:
@@ -69,13 +88,16 @@ class AuthService:
         return user
 
     async def login(self, user: User) -> dict[str, AccessToken | RefreshToken]:
+        """마지막 로그인 시간 갱신 후 JWT 토큰 쌍 발급"""
         await self.user_repo.update_last_login(user.id)
         return self.jwt_service.issue_jwt_pair(user)
 
     async def check_email_exists(self, email: str | EmailStr) -> None:
+        """이메일 중복 시 409 예외 발생"""
         if await self.user_repo.exists_by_email(email):
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="이미 사용중인 이메일입니다.")
 
     async def check_phone_number_exists(self, phone_number: str) -> None:
+        """전화번호 중복 시 409 예외 발생"""
         if await self.user_repo.exists_by_phone_number(phone_number):
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="이미 사용중인 휴대폰 번호입니다.")

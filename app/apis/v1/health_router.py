@@ -1,3 +1,7 @@
+"""
+건강관리 라우터: 체크리스트 이력 조회, 일자별 상세, 로그 상태 업데이트
+"""
+
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Path, Query, status

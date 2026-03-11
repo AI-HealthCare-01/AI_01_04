@@ -1,3 +1,10 @@
+"""
+건강관리 체크리스트 모델 (ERD: health_checklist_templates, health_checklist_logs)
+
+- HealthChecklistTemplate: 체크리스트 항목 마스터 (물 마시기, 걸기 등)
+- HealthChecklistLog: 사용자 일자별 체크 로그 (done/skipped)
+"""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Literal

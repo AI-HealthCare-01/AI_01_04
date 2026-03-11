@@ -1,3 +1,7 @@
+"""
+인증 라우터: 회원가입, 로그인, 토큰 갱신
+"""
+
 # 인증 전용 라우터 : signup, login, refresh
 
 from typing import Annotated
