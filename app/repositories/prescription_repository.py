@@ -27,6 +27,7 @@ class PrescriptionRepository:
         limit: int = 100,
         offset: int = 0,
     ) -> list[Prescription]:
+        """사용자의 처방전 목록 조회 (최신순)"""
         return await self._model.filter(user_id=user_id).order_by("-created_at").offset(offset).limit(limit)
 
     async def list_by_date_range(
@@ -35,6 +36,7 @@ class PrescriptionRepository:
         from_date: date,
         to_date: date,
     ) -> list[Prescription]:
+        """기간 내 처방전 목록 조회 (start_date 기준)"""
         return await self._model.filter(
             user_id=user_id,
             start_date__gte=from_date,
@@ -64,6 +66,7 @@ class PrescriptionRepository:
         start_date: date | None = None,
         end_date: date | None = None,
     ) -> Prescription:
+        """처방전 생성"""
         return await self._model.create(
             user_id=user_id,
             disease_id=disease_id,
@@ -84,6 +87,7 @@ class PrescriptionRepository:
         effect: str | None = None,
         side_effect: str | None = None,
     ) -> PrescriptionMemo | None:
+        """처방전에 복약 메모 추가 (효과/부작용). 소유자 검증 후 생성, 없으면 None 반환"""
         rx = await self.get_by_id_for_user(user_id, prescription_id)
         if not rx:
             return None
