@@ -19,9 +19,9 @@ if TYPE_CHECKING:
 
 class UserAuthProvider(models.Model):
     """
-    소셜 로그인 연동 정보 (ERD: user_auth_providers)
+    소셜 로그인 연동 정보 (ERD: user_auth_providers).
 
-    users 테이블과 N:1 관계 (한 사용자 → 여러 provider)
+    users 테이블과 N:1 관계. 한 사용자가 Google, Kakao 등 여러 provider를 가질 수 있음.
     """
 
     id = fields.IntField(pk=True)

@@ -6,7 +6,12 @@ from __future__ import annotations
 class OCRError(Exception):
     """
     OCR 통합 예외 베이스 클래스.
-    - 서비스/라우터에서는 이 예외들만 잡아서 HTTPException으로 변환하면 됨.
+
+    서비스/라우터에서는 이 예외들만 잡아서 HTTPException으로 변환하면 됨.
+
+    Args:
+        message (str): 예외 메시지.
+        detail (str | None): 추가 상세 정보.
     """
 
     def __init__(self, message: str = "OCR error", *, detail: str | None = None):
