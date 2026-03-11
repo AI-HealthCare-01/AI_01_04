@@ -4,7 +4,7 @@ from tortoise.fields import TextField
 
 
 class VectorField(TextField):
-    SQL_TYPE = "vector(1536)"
+    SQL_TYPE = "TEXT"
 
     def to_db_value(self, value: list[float] | None, instance) -> str | None:
         if value is None:
@@ -21,4 +21,4 @@ class VectorField(TextField):
         return json.loads(value)
 
     def get_db_field_types(self) -> dict:
-        return {"": "vector(1536)", "postgres": "vector(1536)"}
+        return {"": "TEXT"}
