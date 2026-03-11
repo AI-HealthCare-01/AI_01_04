@@ -1,0 +1,1837 @@
+{
+  "A형간염": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "급성 A형간염",
+        "candidate_code": "B15",
+        "score": 0.98
+      },
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "A형간염(급성)(바이러스성) NOS",
+        "candidate_code": "B159",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "간성 혼수가 없는 A형간염",
+        "candidate_code": "B159",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "간성 혼수가 있는 A형간염",
+        "candidate_code": "B150",
+        "score": 0.93
+      }
+    ]
+  },
+  "B형간염": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "급성 B형간염",
+        "candidate_code": "B16",
+        "score": 0.98
+      },
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "B형 간염(바이러스성) NOS",
+        "candidate_code": "B181",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "B형 간염(바이러스성) NOS, 기타 및 상세불명의 기간",
+        "candidate_code": "B1819",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "B형 간염(바이러스성) NOS, 면역관용기",
+        "candidate_code": "B1810",
+        "score": 0.93
+      }
+    ]
+  },
+  "C형간염": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "급성 C형간염",
+        "candidate_code": "B171",
+        "score": 0.98
+      },
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "만성 바이러스C형간염",
+        "candidate_code": "B182",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "간의 기타 질환",
+        "candidate_code": "K76",
+        "score": 0.9
+      },
+      {
+        "candidate_name": "상세불명의 간질환",
+        "candidate_code": "K769",
+        "score": 0.9
+      }
+    ]
+  },
+  "간의 양성종양(간낭종)": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "간의 기타 질환",
+        "candidate_code": "K76",
+        "score": 0.9
+      },
+      {
+        "candidate_name": "상세불명의 간질환",
+        "candidate_code": "K769",
+        "score": 0.9
+      }
+    ]
+  },
+  "간의 양성종양(간선종)": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "간의 기타 질환",
+        "candidate_code": "K76",
+        "score": 0.9
+      },
+      {
+        "candidate_name": "상세불명의 간질환",
+        "candidate_code": "K769",
+        "score": 0.9
+      }
+    ]
+  },
+  "간의 양성종양(국소결절증식증)": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "간의 기타 질환",
+        "candidate_code": "K76",
+        "score": 0.9
+      },
+      {
+        "candidate_name": "상세불명의 간질환",
+        "candidate_code": "K769",
+        "score": 0.9
+      }
+    ]
+  },
+  "간의 양성종양(담관낭선종)": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "간의 기타 질환",
+        "candidate_code": "K76",
+        "score": 0.9
+      },
+      {
+        "candidate_name": "상세불명의 간질환",
+        "candidate_code": "K769",
+        "score": 0.9
+      }
+    ]
+  },
+  "갈색세포종": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      }
+    ]
+  },
+  "감염심내막염": {
+    "manual_alias": "심내막염",
+    "candidates": [
+      {
+        "candidate_name": "상세불명의 급성 심내막염",
+        "candidate_code": "I339",
+        "score": 0.98
+      },
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "감염성 심내막염(급성)(아급성) NOS",
+        "candidate_code": "I330",
+        "score": 0.93
+      }
+    ]
+  },
+  "건막염(감염성 건막염)": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      }
+    ]
+  },
+  "고칼슘혈증": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "고칼륨혈증",
+        "candidate_code": "E875",
+        "score": 0.8
+      }
+    ]
+  },
+  "골감소증": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "근감소증",
+        "candidate_code": "M625",
+        "score": 0.75
+      }
+    ]
+  },
+  "골다공증": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "기타 골다공증",
+        "candidate_code": "M818",
+        "score": 0.98
+      },
+      {
+        "candidate_name": "상세불명의 골다공증",
+        "candidate_code": "M819",
+        "score": 0.98
+      },
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "골다공증성 척추 허탈 및 쐐기화",
+        "candidate_code": "M80",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "골다공증을 동반한 1형 당뇨병(M82.1*)",
+        "candidate_code": "E1060",
+        "score": 0.93
+      }
+    ]
+  },
+  "공기 오염": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "기타 공기오염물질에 직업적 노출",
+        "candidate_code": "Z573",
+        "score": 0.93
+      }
+    ]
+  },
+  "구내염": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "괴사궤양성 구내염",
+        "candidate_code": "A690",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "괴사궤양성(급성) 치은구내염",
+        "candidate_code": "A691",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "괴저구내염",
+        "candidate_code": "A690",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "구내염 NOS",
+        "candidate_code": "K121",
+        "score": 0.93
+      }
+    ]
+  },
+  "귀의 통증 및 분비물": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "귀통증",
+        "candidate_code": "H920",
+        "score": 0.9
+      },
+      {
+        "candidate_name": "급성 통증",
+        "candidate_code": "R520",
+        "score": 0.9
+      },
+      {
+        "candidate_name": "기타 만성 통증",
+        "candidate_code": "R522",
+        "score": 0.9
+      },
+      {
+        "candidate_name": "상세불명의 통증",
+        "candidate_code": "R529",
+        "score": 0.9
+      }
+    ]
+  },
+  "귀의 형태 이상(소이증)": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      }
+    ]
+  },
+  "급성 간부전": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "만성 간부전",
+        "candidate_code": "K721",
+        "score": 0.98
+      },
+      {
+        "candidate_name": "상세불명의 간부전",
+        "candidate_code": "K729",
+        "score": 0.98
+      },
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "급성 및 아급성 간부전",
+        "candidate_code": "K720",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "혼수를 동반하지 않은 급성 및 아급성 간부전",
+        "candidate_code": "K7200",
+        "score": 0.93
+      }
+    ]
+  },
+  "급성 세균성 장염": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "세균성 장염 NOS",
+        "candidate_code": "A049",
+        "score": 0.9
+      },
+      {
+        "candidate_name": "장의 기타 질환",
+        "candidate_code": "K63",
+        "score": 0.9
+      },
+      {
+        "candidate_name": "장의 상세불명 질환",
+        "candidate_code": "K639",
+        "score": 0.9
+      },
+      {
+        "candidate_name": "기타 세균성 장감염",
+        "candidate_code": "A04",
+        "score": 0.8889
+      }
+    ]
+  },
+  "급성부고환염": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "고환염 및 부고환염",
+        "candidate_code": "N45",
+        "score": 0.9
+      },
+      {
+        "candidate_name": "농양을 동반하지 않은 고환염, 부고환염 및 부고환-고환염",
+        "candidate_code": "N459",
+        "score": 0.9
+      },
+      {
+        "candidate_name": "농양을 동반하지 않은 부고환염",
+        "candidate_code": "N4590",
+        "score": 0.9
+      },
+      {
+        "candidate_name": "농양을 동반한 고환염, 부고환염 및 부고환-고환염",
+        "candidate_code": "N450",
+        "score": 0.9
+      }
+    ]
+  },
+  "급성호흡기바이러스감염증": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "기타 감염",
+        "candidate_code": "B88",
+        "score": 0.9
+      },
+      {
+        "candidate_name": "기타 및 상세불명의 감염성 질환",
+        "candidate_code": "B99",
+        "score": 0.9
+      },
+      {
+        "candidate_name": "상세불명의 감염",
+        "candidate_code": "B889",
+        "score": 0.9
+      },
+      {
+        "candidate_name": "상세불명의 바이러스감염",
+        "candidate_code": "B349",
+        "score": 0.9
+      }
+    ]
+  },
+  "기저귀피부염": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "기타 피부염",
+        "candidate_code": "L30",
+        "score": 0.9
+      },
+      {
+        "candidate_name": "상세불명의 피부염",
+        "candidate_code": "L309",
+        "score": 0.9
+      },
+      {
+        "candidate_name": "기저귀[냅킨]피부염",
+        "candidate_code": "L22",
+        "score": 0.75
+      },
+      {
+        "candidate_name": "괴저성 피부염",
+        "candidate_code": "L080",
+        "score": 0.7273
+      }
+    ]
+  },
+  "기후변화에 의한 폭염": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      }
+    ]
+  },
+  "남성형 탈모": {
+    "manual_alias": "탈모증",
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "거짓원형탈모증",
+        "candidate_code": "L660",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "기타 안드로젠탈모증",
+        "candidate_code": "L648",
+        "score": 0.93
+      }
+    ]
+  },
+  "노인 부종": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "상세불명의 부종",
+        "candidate_code": "R609",
+        "score": 0.98
+      },
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "(급성) 화학적 폐부종",
+        "candidate_code": "J681",
+        "score": 0.9
+      },
+      {
+        "candidate_name": "거짓유두부종",
+        "candidate_code": "H473",
+        "score": 0.9
+      },
+      {
+        "candidate_name": "결막부종",
+        "candidate_code": "H1141",
+        "score": 0.9
+      }
+    ]
+  },
+  "노인 어지럼증": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "어지럼증 및 어지럼",
+        "candidate_code": "R42",
+        "score": 0.9
+      }
+    ]
+  },
+  "뇌사자 장기기증": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "장의 기타 질환",
+        "candidate_code": "K63",
+        "score": 0.9
+      },
+      {
+        "candidate_name": "장의 상세불명 질환",
+        "candidate_code": "K639",
+        "score": 0.9
+      }
+    ]
+  },
+  "늘어지는 영아증후군": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      }
+    ]
+  },
+  "다제내성균감염증": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "기타 감염",
+        "candidate_code": "B88",
+        "score": 0.9
+      },
+      {
+        "candidate_name": "기타 및 상세불명의 감염성 질환",
+        "candidate_code": "B99",
+        "score": 0.9
+      },
+      {
+        "candidate_name": "상세불명의 감염",
+        "candidate_code": "B889",
+        "score": 0.9
+      }
+    ]
+  },
+  "담낭 용종": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "담낭의 기타 질환",
+        "candidate_code": "K82",
+        "score": 0.9
+      },
+      {
+        "candidate_name": "담낭의 상세불명의 질환",
+        "candidate_code": "K829",
+        "score": 0.9
+      },
+      {
+        "candidate_name": "담낭의 수종",
+        "candidate_code": "K821",
+        "score": 0.75
+      }
+    ]
+  },
+  "당뇨망막병증": {
+    "manual_alias": "당뇨병성망막병증",
+    "candidates": [
+      {
+        "candidate_name": "당뇨병성 망막병증(4단위 및 5단위 숫자 .30, .31, .32, .33에 해당되는 E10-E14+)",
+        "candidate_code": "H360",
+        "score": 1.0
+      },
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "당뇨",
+        "candidate_code": "R81",
+        "score": 0.93
+      }
+    ]
+  },
+  "당뇨병성 족부병증": {
+    "manual_alias": "당뇨병성족부병증",
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "당뇨",
+        "candidate_code": "R81",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "상세불명의 당뇨병",
+        "candidate_code": "E14",
+        "score": 0.9
+      }
+    ]
+  },
+  "대사증후군": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "갈락토스대사장애",
+        "candidate_code": "E742",
+        "score": 0.9
+      },
+      {
+        "candidate_name": "과당대사장애",
+        "candidate_code": "E741",
+        "score": 0.9
+      },
+      {
+        "candidate_name": "구리대사장애",
+        "candidate_code": "E830",
+        "score": 0.9
+      },
+      {
+        "candidate_name": "글라이신대사장애",
+        "candidate_code": "E725",
+        "score": 0.9
+      }
+    ]
+  },
+  "대장게실증": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "(소)(대)장의 게실",
+        "candidate_code": "K57",
+        "score": 0.9
+      },
+      {
+        "candidate_name": "(소)(대)장의 게실증",
+        "candidate_code": "K57",
+        "score": 0.9
+      },
+      {
+        "candidate_name": "성대의 기타 질환",
+        "candidate_code": "J383",
+        "score": 0.9
+      },
+      {
+        "candidate_name": "장의 기타 질환",
+        "candidate_code": "K63",
+        "score": 0.9
+      }
+    ]
+  },
+  "대퇴골두 무혈성 괴사": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "성대의 기타 질환",
+        "candidate_code": "J383",
+        "score": 0.9
+      },
+      {
+        "candidate_name": "후두의 기타 질환",
+        "candidate_code": "J387",
+        "score": 0.9
+      }
+    ]
+  },
+  "바이러스성 간염": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "기타 급성 바이러스간염",
+        "candidate_code": "B17",
+        "score": 0.98
+      },
+      {
+        "candidate_name": "기타 만성 바이러스간염",
+        "candidate_code": "B188",
+        "score": 0.98
+      },
+      {
+        "candidate_name": "만성 바이러스간염",
+        "candidate_code": "B18",
+        "score": 0.98
+      },
+      {
+        "candidate_name": "상세불명의 급성 바이러스간염",
+        "candidate_code": "B179",
+        "score": 0.98
+      },
+      {
+        "candidate_name": "상세불명의 만성 바이러스간염",
+        "candidate_code": "B189",
+        "score": 0.98
+      }
+    ]
+  },
+  "발기부전": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "기질적 원인에 의한 발기부전",
+        "candidate_code": "N484",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "발기부전을 걱정하는 환자에 관련된 상담",
+        "candidate_code": "Z701",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "발기부전을 동반한 1형 당뇨병(G99.0*)",
+        "candidate_code": "E1042",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "발기부전을 동반한 1형 영양실조-관련 당뇨병(G99.0*)",
+        "candidate_code": "E1242",
+        "score": 0.93
+      }
+    ]
+  },
+  "보툴리눔독소증": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      }
+    ]
+  },
+  "부신부전증": {
+    "manual_alias": "부신기능저하증",
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "기타 신증후군",
+        "candidate_code": "N048",
+        "score": 0.9
+      },
+      {
+        "candidate_name": "상세불명의 신증후군",
+        "candidate_code": "N049",
+        "score": 0.9
+      }
+    ]
+  },
+  "부종": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "상세불명의 부종",
+        "candidate_code": "R609",
+        "score": 0.98
+      },
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "(급성) 화학적 폐부종",
+        "candidate_code": "J681",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "거짓유두부종",
+        "candidate_code": "H473",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "결막부종",
+        "candidate_code": "H1141",
+        "score": 0.93
+      }
+    ]
+  },
+  "불규칙한 월경주기와 월경전증후군": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      }
+    ]
+  },
+  "비뇨기계 외상": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      }
+    ]
+  },
+  "비문증(날파리증)": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "비증(痺證)",
+        "candidate_code": "U238",
+        "score": 0.8
+      }
+    ]
+  },
+  "비부비동염": {
+    "manual_alias": "부비동염",
+    "candidates": [
+      {
+        "candidate_name": "부비동염(만성)",
+        "candidate_code": "J320",
+        "score": 1.0
+      },
+      {
+        "candidate_name": "급성 부비동염",
+        "candidate_code": "J01",
+        "score": 0.98
+      },
+      {
+        "candidate_name": "급성 부비동염",
+        "candidate_code": "J010",
+        "score": 0.98
+      }
+    ]
+  },
+  "비브리오 패혈증": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "패혈증",
+        "candidate_code": "A419",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "기타 패혈증",
+        "candidate_code": "A41",
+        "score": 0.9
+      },
+      {
+        "candidate_name": "상세불명의 패혈증",
+        "candidate_code": "A419",
+        "score": 0.9
+      },
+      {
+        "candidate_name": "비브리오균에 의한 패혈증",
+        "candidate_code": "A4152",
+        "score": 0.8235
+      }
+    ]
+  },
+  "빈혈": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "기타 빈혈",
+        "candidate_code": "D64",
+        "score": 0.98
+      },
+      {
+        "candidate_name": "상세불명의 빈혈",
+        "candidate_code": "D649",
+        "score": 0.98
+      },
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "(만성) 실혈에 따른 이차성 철겹핍빈혈",
+        "candidate_code": "D500",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "G6PD결핍빈혈",
+        "candidate_code": "D550",
+        "score": 0.93
+      }
+    ]
+  },
+  "사람 브루셀라증": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      }
+    ]
+  },
+  "생활 속의 다중화학물질과민증": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      }
+    ]
+  },
+  "선천갑상샘저하증": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      }
+    ]
+  },
+  "설사": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "감염성 (신생아의) 설사 NOS",
+        "candidate_code": "A090",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "급성 물성 설사",
+        "candidate_code": "A090",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "급성 출혈성 설사",
+        "candidate_code": "A090",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "급성 혈액성 설사",
+        "candidate_code": "A090",
+        "score": 0.93
+      }
+    ]
+  },
+  "성매개감염병": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "기타 감염",
+        "candidate_code": "B88",
+        "score": 0.9
+      },
+      {
+        "candidate_name": "기타 및 상세불명의 감염성 질환",
+        "candidate_code": "B99",
+        "score": 0.9
+      },
+      {
+        "candidate_name": "상세불명의 감염",
+        "candidate_code": "B889",
+        "score": 0.9
+      },
+      {
+        "candidate_name": "상세불명의 성매개질환",
+        "candidate_code": "A64",
+        "score": 0.9
+      }
+    ]
+  },
+  "성조숙증": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      }
+    ]
+  },
+  "수근굴(수근관) 증후군": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      }
+    ]
+  },
+  "수두증(소아)": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "수두증",
+        "candidate_code": "G91",
+        "score": 1.0
+      },
+      {
+        "candidate_name": "기타 수두증",
+        "candidate_code": "G918",
+        "score": 0.98
+      },
+      {
+        "candidate_name": "상세불명의 수두증",
+        "candidate_code": "G919",
+        "score": 0.98
+      },
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "교통성 수두증",
+        "candidate_code": "G910",
+        "score": 0.93
+      }
+    ]
+  },
+  "수족구병(손발입병)": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "수족구병",
+        "candidate_code": "B084",
+        "score": 1.0
+      },
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "족구병",
+        "candidate_code": "B088",
+        "score": 0.93
+      }
+    ]
+  },
+  "신생아 황달": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "상세불명의 신생아황달",
+        "candidate_code": "P599",
+        "score": 0.98
+      },
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "감염으로 인한 신생아황달",
+        "candidate_code": "P582",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "기타 과다용혈로 인한 신생아황달",
+        "candidate_code": "P58",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "기타 명시된 과다용혈로 인한 신생아황달",
+        "candidate_code": "P588",
+        "score": 0.93
+      }
+    ]
+  },
+  "신증후군출혈열(한타바이러스감염증)": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "신증후군",
+        "candidate_code": "N04",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "기타 신증후군",
+        "candidate_code": "N048",
+        "score": 0.9
+      },
+      {
+        "candidate_name": "상세불명의 신증후군",
+        "candidate_code": "N049",
+        "score": 0.9
+      },
+      {
+        "candidate_name": "상세불명의 열",
+        "candidate_code": "R509",
+        "score": 0.9
+      }
+    ]
+  },
+  "심낭염(급성 심낭염)": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "농심낭염",
+        "candidate_code": "I301",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "만성 류마티스심근심낭염",
+        "candidate_code": "I092",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "만성 류마티스종격심낭염",
+        "candidate_code": "I092",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "유착성 종격심낭염",
+        "candidate_code": "I310",
+        "score": 0.93
+      }
+    ]
+  },
+  "안구건조증": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "안구건조증 NOS",
+        "candidate_code": "E507",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "구강건조증",
+        "candidate_code": "K117",
+        "score": 0.8
+      }
+    ]
+  },
+  "알레르기결막염": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "결막염",
+        "candidate_code": "H10",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "결막염(H13.1*)",
+        "candidate_code": "B0052",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "기타 결막염",
+        "candidate_code": "H108",
+        "score": 0.9
+      },
+      {
+        "candidate_name": "기타 급성 결막염",
+        "candidate_code": "H102",
+        "score": 0.9
+      }
+    ]
+  },
+  "액취증": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      }
+    ]
+  },
+  "야뇨증(소아)": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      }
+    ]
+  },
+  "야토병": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "상세불명의 야생토끼병",
+        "candidate_code": "A219",
+        "score": 0.75
+      },
+      {
+        "candidate_name": "야생토끼병",
+        "candidate_code": "A21",
+        "score": 0.75
+      },
+      {
+        "candidate_name": "야생토끼병",
+        "candidate_code": "A21",
+        "score": 0.75
+      }
+    ]
+  },
+  "어지럼": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "어지럼증 및 어지럼",
+        "candidate_code": "R42",
+        "score": 0.93
+      }
+    ]
+  },
+  "연조직염(봉와직염)": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "연조직염",
+        "candidate_code": "L03",
+        "score": 1.0
+      },
+      {
+        "candidate_name": "상세불명의 연조직염",
+        "candidate_code": "L039",
+        "score": 0.98
+      },
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "겨드랑의 연조직염",
+        "candidate_code": "L0310",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "귓바퀴의 연조직염",
+        "candidate_code": "H601",
+        "score": 0.93
+      }
+    ]
+  },
+  "염좌": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "S03.- 및 S13.-에 분류가능한 부위의 탈구, 염좌 및 긴장",
+        "candidate_code": "T030",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "S23.-, S33.- 및 T09.2에 분류가능한 부위의 탈구, 염좌 및 긴장",
+        "candidate_code": "T031",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "S43.-, S53.-, S63.- 및 T11.2에 분류가능한 부위의 탈구, 염좌 및 긴장",
+        "candidate_code": "T032",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "S73.-, S83.-, S93.- 및 T13.2에 분류가능한 부위의 탈구, 염좌 및 긴장",
+        "candidate_code": "T033",
+        "score": 0.93
+      }
+    ]
+  },
+  "오십견(동결견, 유착관절낭염)": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      }
+    ]
+  },
+  "외상성 척수손상": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "상세불명의 손상",
+        "candidate_code": "T149",
+        "score": 0.9
+      },
+      {
+        "candidate_name": "척수의 기타 질환",
+        "candidate_code": "G95",
+        "score": 0.9
+      },
+      {
+        "candidate_name": "척수의 상세불명 질환",
+        "candidate_code": "G959",
+        "score": 0.9
+      }
+    ]
+  },
+  "외이도염(알레르기외이도염)": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "기타 외이도염",
+        "candidate_code": "H608",
+        "score": 0.98
+      },
+      {
+        "candidate_name": "기타 외이도염",
+        "candidate_code": "H6088",
+        "score": 0.98
+      },
+      {
+        "candidate_name": "상세불명의 외이도염",
+        "candidate_code": "H609",
+        "score": 0.98
+      },
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "급성 광선 외이도염",
+        "candidate_code": "H605",
+        "score": 0.93
+      }
+    ]
+  },
+  "요로감염": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "O00-O07에 분류될 수 있는 병태에 따른 요로감염",
+        "candidate_code": "O088",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "부위가 명시되지 않은 요로감염",
+        "candidate_code": "N390",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "분만에 따른 요로감염",
+        "candidate_code": "O862",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "신생아요로감염",
+        "candidate_code": "P393",
+        "score": 0.93
+      }
+    ]
+  },
+  "위염": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "기타 급성 위염",
+        "candidate_code": "K291",
+        "score": 0.98
+      },
+      {
+        "candidate_name": "기타 위염",
+        "candidate_code": "K296",
+        "score": 0.98
+      },
+      {
+        "candidate_name": "상세불명의 만성 위염",
+        "candidate_code": "K295",
+        "score": 0.98
+      },
+      {
+        "candidate_name": "상세불명의 위염",
+        "candidate_code": "K297",
+        "score": 0.98
+      },
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      }
+    ]
+  },
+  "유루증": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "유루",
+        "candidate_code": "O926",
+        "score": 0.93
+      }
+    ]
+  },
+  "유방종괴": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      }
+    ]
+  },
+  "유선염": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      }
+    ]
+  },
+  "음낭수종": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "기타 음낭수종",
+        "candidate_code": "N432",
+        "score": 0.98
+      },
+      {
+        "candidate_name": "상세불명의 음낭수종",
+        "candidate_code": "N433",
+        "score": 0.98
+      },
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "감염성 음낭수종",
+        "candidate_code": "N431",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "선천성 음낭수종",
+        "candidate_code": "P835",
+        "score": 0.93
+      }
+    ]
+  },
+  "인두편도염": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "헤르페스바이러스 치은구내염 및 인두편도염",
+        "candidate_code": "B002",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "급성 편도염",
+        "candidate_code": "J03",
+        "score": 0.9
+      },
+      {
+        "candidate_name": "만성 편도염",
+        "candidate_code": "J350",
+        "score": 0.9
+      },
+      {
+        "candidate_name": "상세불명의 급성 편도염",
+        "candidate_code": "J039",
+        "score": 0.9
+      }
+    ]
+  },
+  "일자목(거북목)증후군": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      }
+    ]
+  },
+  "임신중독증(임신고혈압)": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "기타 신증후군",
+        "candidate_code": "N048",
+        "score": 0.9
+      },
+      {
+        "candidate_name": "상세불명의 신증후군",
+        "candidate_code": "N049",
+        "score": 0.9
+      },
+      {
+        "candidate_name": "신증후군",
+        "candidate_code": "N04",
+        "score": 0.9
+      }
+    ]
+  },
+  "잇몸병(치주질환)": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      }
+    ]
+  },
+  "자궁경부암 백신": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "백신",
+        "candidate_code": "Y14",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "기타 신증후군",
+        "candidate_code": "N048",
+        "score": 0.9
+      },
+      {
+        "candidate_name": "상세불명의 신증후군",
+        "candidate_code": "N049",
+        "score": 0.9
+      },
+      {
+        "candidate_name": "신증후군",
+        "candidate_code": "N04",
+        "score": 0.9
+      }
+    ]
+  },
+  "전립선비대증": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "성대의 기타 질환",
+        "candidate_code": "J383",
+        "score": 0.9
+      },
+      {
+        "candidate_name": "전립선의 비대(양성)",
+        "candidate_code": "N40",
+        "score": 0.9
+      },
+      {
+        "candidate_name": "전립선의 기타 염증성 질환",
+        "candidate_code": "N418",
+        "score": 0.7273
+      },
+      {
+        "candidate_name": "전립선의 상세불명의 염증성 질환",
+        "candidate_code": "N419",
+        "score": 0.7273
+      }
+    ]
+  },
+  "조기난소부전": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      }
+    ]
+  },
+  "족저근막염": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      }
+    ]
+  },
+  "중이염": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "상세불명의 중이염",
+        "candidate_code": "H669",
+        "score": 0.98
+      },
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "결핵성 중이염(H67.0*)",
+        "candidate_code": "A186",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "결핵에서의 중이염(A18.6+)",
+        "candidate_code": "H670",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "고막염 동반 비화농성 중이염",
+        "candidate_code": "H65",
+        "score": 0.93
+      }
+    ]
+  },
+  "중증열성혈소판감소증후군(SFTS)": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(F44.0-F44.6에 분류된 장애의 복합)",
+        "candidate_code": "F447",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "중증열성혈소판감소증후군 [SFTS]",
+        "candidate_code": "A9380",
+        "score": 0.93
+      },
+      {
+        "candidate_name": "상세불명의 열",
+        "candidate_code": "R509",
+        "score": 0.9
+      },
+      {
+        "candidate_name": "상세불명의 열",
+        "candidate_code": "R5099",
+        "score": 0.9
+      }
+    ]
+  }
+}
