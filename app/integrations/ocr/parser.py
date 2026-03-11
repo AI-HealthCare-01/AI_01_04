@@ -1,5 +1,5 @@
-# raw JSON → 우리 서비스가 쓰는 결과로 변환
-# /Users/admin/Desktop/1/AI_01_04/app/integrations/ocr/parser.py
+# OCR raw에서 전체 텍스트(raw_text) 와 날짜 후보 정도만 1차 추출
+
 import re
 from typing import Any
 

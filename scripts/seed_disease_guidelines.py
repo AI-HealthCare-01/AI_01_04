@@ -7,18 +7,28 @@ from typing import Any
 
 from tortoise import Tortoise
 
+from app.core.config import Config
 from app.models.diseases import Disease, DiseaseGuideline
 
 
 BASE_DIR = Path(__file__).resolve().parents[1]
 DEFAULT_JSON_PATH = BASE_DIR / "init-db" / "03-seed-recommendations.json"
 
+config = Config()
+
+# 로컬용. 실제 운영 환경에서는 환경변수로 DB 연결 정보가 주어질 것으로 예상되므로, config에서 값을 읽도록 구현
+def build_db_url() -> str:
+    return (
+        f"postgres://{config.DB_USER}:{config.DB_PASSWORD}"
+        f"@{config.DB_HOST}:{config.DB_PORT}/{config.DB_NAME}"
+    )
+
 
 async def init_db() -> None:
     await Tortoise.init(
         config={
             "connections": {
-                "default": "postgres://postgres:postgres@localhost:5432/ai_health"
+                "default": build_db_url()
             },
             "apps": {
                 "models": {
@@ -35,7 +45,6 @@ async def init_db() -> None:
             },
         }
     )
-
 
 def load_json(path: Path) -> list[dict[str, Any]]:
     with path.open("r", encoding="utf-8") as f:
