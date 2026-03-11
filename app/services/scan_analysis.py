@@ -156,6 +156,7 @@ class ScanAnalysisService:
                 raise ValueError("invalid AI response type")
             return ai_result
         except Exception as e:
+            logger.exception("AI postprocess failed: scan_id=%s", scan_id)
             await self.scan_repo.update(user_id, scan_id, status="failed")
             raise HTTPException(
                 status_code=status.HTTP_502_BAD_GATEWAY,
