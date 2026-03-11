@@ -130,6 +130,47 @@ class RecommendationService:
         text = value.strip().upper()
         return bool(re.fullmatch(r"[A-Z]\d{2,4}", text))
 
+    def _build_vector_query(
+        self,
+        *,
+        diagnosis: str | None,
+        disease_name: str | None,
+        drugs: list[str],
+        clinical_note: str | None = None,
+    ) -> str:
+        """
+        벡터 검색용 질의 문자열을 생성한다.
+
+        Args:
+            diagnosis (str | None):
+                스캔에서 추출된 진단명 또는 질병코드
+            disease_name (str | None):
+                매칭된 질환명
+            drugs (list[str]):
+                약물명 목록
+            clinical_note (str | None):
+                진료기록 요약 텍스트
+
+        Returns:
+            str:
+                임베딩 검색에 사용할 질의 문자열
+        """
+        parts: list[str] = []
+
+        if disease_name:
+            parts.append(disease_name)
+
+        if diagnosis and diagnosis != disease_name:
+            parts.append(diagnosis)
+
+        if clinical_note:
+            parts.append(clinical_note)
+
+        if drugs:
+            parts.extend(drugs[:5])
+
+        return " ".join(part for part in parts if part).strip()
+
     async def _match_disease(self, diagnosis: str | None) -> Any | None:
         """
         diagnosis 값을 기반으로 질환을 매칭한다.
@@ -155,18 +196,15 @@ class RecommendationService:
         if not value:
             return None
 
-        # 1. 질병코드 형태면 코드 우선 매칭
         if self._looks_like_disease_code(value):
             disease = await self.disease_repo.get_by_icd_code(value.upper())
             if disease:
                 return disease
 
-        # 2. 질환명 정확 일치
         disease = await self.disease_repo.get_by_name(value)
         if disease:
             return disease
 
-        # 3. 질환명 부분 일치
         diseases = await self.disease_repo.list_by_name_contains(value, limit=1)
         if diseases:
             return diseases[0]
@@ -312,7 +350,6 @@ class RecommendationService:
         """
         created: list[Any] = []
 
-        # 1. seed guideline 기반 추천 우선
         guideline_recs = await self._build_guideline_recommendations(
             user_id=user_id,
             scan_id=scan_id,
@@ -321,15 +358,24 @@ class RecommendationService:
         )
         created.extend(guideline_recs)
 
-        # 2. guideline 추천이 없을 때만 vector/fallback 사용
         if not created and diagnosis:
-            query = diagnosis + " " + " ".join(drugs[:5])
-            vector = encode(query)
-            similar_docs = await self.vector_doc_repo.search_similar(
-                vector,
-                reference_type="disease_guideline",
-                top_k=3,
+            matched_disease = await self._match_disease(diagnosis)
+            disease_name = matched_disease.name if matched_disease else None
+
+            query = self._build_vector_query(
+                diagnosis=diagnosis,
+                disease_name=disease_name,
+                drugs=drugs,
             )
+
+            similar_docs: list[Any] = []
+            if query:
+                vector = encode(query)
+                similar_docs = await self.vector_doc_repo.search_similar(
+                    vector,
+                    reference_type="disease_guideline",
+                    top_k=3,
+                )
 
             if similar_docs:
                 for i, doc in enumerate(similar_docs, start=1):
@@ -359,7 +405,6 @@ class RecommendationService:
                 if rec:
                     created.append(rec)
 
-        # 3. 약물명 기반 추천 추가
         for i, drug in enumerate(drugs[:10], start=1):
             rec = await self._create_recommendation(
                 user_id=user_id,

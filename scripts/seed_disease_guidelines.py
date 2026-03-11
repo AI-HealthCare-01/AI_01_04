@@ -12,7 +12,7 @@ from app.models.diseases import Disease, DiseaseGuideline
 
 
 BASE_DIR = Path(__file__).resolve().parents[1]
-DEFAULT_JSON_PATH = BASE_DIR / "init-db" / "03-seed-recommendations.json"
+DEFAULT_JSON_PATH = BASE_DIR / "scripts" / "init-db" / "03-seed-recommendations.json"
 
 config = Config()
 

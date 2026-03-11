@@ -5,36 +5,84 @@ import asyncio
 from tortoise import Tortoise
 
 from app.core.config import Config
+from app.models.diseases import DiseaseGuideline
 from app.repositories.vector_document_repository import VectorDocumentRepository
 from app.services.embedding import encode
 
-GUIDELINES = [
-    {"disease": "고혈압", "content": "고혈압 환자는 저염식이를 실천하고 규칙적인 유산소 운동을 권장합니다."},
-    {"disease": "당뇨", "content": "당뇨 환자는 혈당 지수가 낮은 식품을 선택하고 식후 혈당을 꾸준히 측정하세요."},
-    {"disease": "고지혈증", "content": "고지혈증은 포화지방 섭취를 줄이고 오메가3가 풍부한 식품을 섭취하세요"},
-]
 
-
-async def main() -> None:
+async def init_db() -> None:
+    """
+    벡터 문서 seed 작업을 위한 DB 연결을 초기화한다.
+    """
     cfg = Config()
     await Tortoise.init(
         db_url=f"asyncpg://{cfg.DB_USER}:{cfg.DB_PASSWORD}@{cfg.DB_HOST}:{cfg.DB_PORT}/{cfg.DB_NAME}",
-        modules={"models": ["app.models.vector_documents"]},
+        modules={
+            "models": [
+                "app.models.diseases",
+                "app.models.vector_documents",
+            ]
+        },
     )
 
+
+async def seed_vector_documents() -> None:
+    """
+    DiseaseGuideline 데이터를 읽어 vector_documents 테이블에 적재한다.
+
+    처리 규칙:
+    - reference_type은 'disease_guideline'으로 고정한다.
+    - reference_id는 DiseaseGuideline.id를 사용한다.
+    - 이미 같은 reference_type/reference_id 문서가 있으면 중복 생성하지 않는다.
+    """
     repo = VectorDocumentRepository()
 
-    for i, item in enumerate(GUIDELINES, start=1):
-        vector = encode(item["content"])
+    guidelines = await DiseaseGuideline.all().prefetch_related("disease")
+
+    created_count = 0
+    skipped_count = 0
+
+    for guideline in guidelines:
+        exists = await repo.get_by_reference(
+            reference_type="disease_guideline",
+            reference_id=guideline.id,
+        )
+        if exists:
+            skipped_count += 1
+            continue
+
+        content = guideline.content.strip()
+        if not content:
+            skipped_count += 1
+            continue
+
+        vector = encode(content)
+
         await repo.create(
             reference_type="disease_guideline",
-            reference_id=i,
-            content=item["content"],
+            reference_id=guideline.id,
+            content=content,
             embedding=vector,
         )
-        print(f"저장 완료: {item['disease']}")
 
-    await Tortoise.close_connections()
+        created_count += 1
+        disease_name = guideline.disease.name if guideline.disease else "unknown"
+        print(f"저장 완료: [{disease_name}] {guideline.category}")
+
+    print("=== vector_documents seed 완료 ===")
+    print(f"생성 수: {created_count}")
+    print(f"skip 수: {skipped_count}")
+
+
+async def main() -> None:
+    """
+    벡터 문서 seed 스크립트 실행 진입점.
+    """
+    await init_db()
+    try:
+        await seed_vector_documents()
+    finally:
+        await Tortoise.close_connections()
 
 
 if __name__ == "__main__":
