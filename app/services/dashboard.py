@@ -171,9 +171,7 @@ class DashboardService:
 
         # 현재 활성 추천 목록
         active_recommendations_raw = await self.recommendation_repo.list_active_for_user(user_id)
-        active_recommendations = [
-            _active_rec_to_dict(active.recommendation) for active in active_recommendations_raw
-        ]
+        active_recommendations = [_active_rec_to_dict(active.recommendation) for active in active_recommendations_raw]
 
         return {
             "recent_prescription": recent_prescription,
