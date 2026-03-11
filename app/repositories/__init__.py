@@ -13,7 +13,6 @@ from app.repositories.recommendation_repository import RecommendationRepository
 from app.repositories.user_credential_repository import UserCredentialRepository
 from app.repositories.user_repository import UserRepository
 
-
 __all__ = [
     "UserRepository",
     "UserCredentialRepository",

@@ -586,9 +586,7 @@ class RecommendationService:
         diagnosis = diagnosis_raw.strip() if isinstance(diagnosis_raw, str) and diagnosis_raw.strip() else None
 
         clinical_note_raw = scan.get("clinical_note")
-        clinical_note = (
-            clinical_note_raw if isinstance(clinical_note_raw, str) and clinical_note_raw.strip() else None
-        )
+        clinical_note = clinical_note_raw if isinstance(clinical_note_raw, str) and clinical_note_raw.strip() else None
 
         drugs_raw = scan.get("drugs") or []
         drugs: list[str] = drugs_raw if isinstance(drugs_raw, list) else []
