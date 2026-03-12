@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>일상 건강 기록</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .health-card {
+            background-color: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1rem;
+            transition: all 0.2s;
+        }
+
+        .health-card.selected {
+            border-color: var(--primary-color);
+            background-color: var(--secondary-color);
+            color: white !important;
+        }
+
+        .health-card.selected .text-muted {
+            color: rgba(255, 255, 255, 0.8) !important;
+        }
+
+        .icon-box-lg {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            background-color: #f0f5f2;
+            color: var(--primary-color);
+            font-size: 1.5rem;
+        }
+
+        .health-card.selected .icon-box-lg {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Mobile Menu Button -->
+    <button class="btn btn-primary d-lg-none position-fixed top-0 end-0 m-3 z-3" type="button"
+        onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <div class="app-wrapper">
+        <!-- Sidebar -->
+        <nav id="sidebar-container" class="sidebar shadow-sm"></nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="fade-in mb-4 pb-2 border-bottom d-flex justify-content-between align-items-center">
+                <div>
+                    <h3 class="fw-bold mb-0">일상 건강 활동</h3>
+                    <p class="text-soft mt-1 mb-0">수분 섭취, 운동, 수면 등 추천받은 일일 미션을 수행하세요.</p>
+                </div>
+            </div>
+
+            <div id="loading" class="text-center py-5">
+                <div class="spinner-border text-primary-custom" role="status"></div>
+            </div>
+
+            <div id="content-container" class="row g-4 d-none fade-in">
+
+                <div class="col-12">
+
+                    <h5 class="fw-bold text-primary-custom mb-3"><i class="bi bi-calendar2-check me-2"></i>오늘 및 최근 건강 기록
+                    </h5>
+                    <div id="health-list" class="row g-3">
+                        <!-- Javascript items injected here -->
+                    </div>
+
+                    <div id="empty-state" class="text-center py-5 d-none">
+                        <i class="bi bi-lungs text-soft display-1"></i>
+                        <h5 class="text-soft mt-3">등록된 건강관리 활동이 없습니다.</h5>
+                        <p class="text-secondary small">목표를 설정하거나 처방 기반 추천을 받아 시작해보세요.</p>
+                    </div>
+
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/components.js"></script>
+
+    <script>
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('show');
+        }
+
+        async function toggleHealthLog(logId, currentDone, elId) {
+            let card = document.getElementById(elId);
+            let newStatus = !currentDone;
+
+            try {
+                await window.api.fetchAPI(`/health/logs/${logId}`, {
+                    method: 'PATCH',
+                    body: { is_done: newStatus }
+                });
+
+                if (newStatus) {
+                    card.classList.add('selected');
+                    card.querySelector('.status-text').innerHTML = '<i class="bi bi-check-circle-fill me-1"></i>완료';
+                } else {
+                    card.classList.remove('selected');
+                    card.querySelector('.status-text').innerHTML = '미완료';
+                }
+
+                // Rebind
+                card.onclick = () => toggleHealthLog(logId, newStatus, elId);
+
+            } catch (err) {
+                alert('업데이트 중 오류가 발생했습니다: ' + err.message);
+            }
+        }
+
+        async function loadHealthHistory() {
+            document.getElementById('loading').classList.remove('d-none');
+            document.getElementById('content-container').classList.add('d-none');
+
+            try {
+                const data = await window.api.getHealthHistory();
+                const container = document.getElementById('health-list');
+                container.innerHTML = '';
+
+                if (!data.items || data.items.length === 0) {
+                    document.getElementById('empty-state').classList.remove('d-none');
+                    return;
+                }
+
+                let lastDate = "";
+
+                data.items.forEach(log => {
+                    if (lastDate !== log.date) {
+                        lastDate = log.date;
+                        container.innerHTML += `<div class="col-12 mt-4"><h6 class="text-soft fw-bold border-bottom pb-2">${log.date}</h6></div>`;
+                    }
+
+                    const isDone = log.is_done;
+                    const elId = `hc-${log.id}`;
+
+                    let iconClass = "bi-activity";
+                    if (log.label.includes('물')) iconClass = "bi-droplet-fill";
+                    if (log.label.includes('운동')) iconClass = "bi-bicycle";
+                    if (log.label.includes('수면') || log.label.includes('잠')) iconClass = "bi-moon-stars-fill";
+
+                    const html = `
+                <div class="col-md-6 col-lg-4">
+                    <div class="health-card cursor-pointer shadow-sm d-flex align-items-center ${isDone ? 'selected' : ''}" id="${elId}" onclick="toggleHealthLog(${log.id}, ${isDone}, '${elId}')" style="cursor:pointer;">
+                        <div class="icon-box-lg shadow-sm me-3">
+                            <i class="bi ${iconClass}"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="fw-bold mb-1">${log.label}</h6>
+                            ${log.memo ? `<p class="mb-0 small opacity-75">${log.memo}</p>` : ''}
+                        </div>
+                        <div class="ms-2">
+                           <span class="status-text fw-bold small opacity-75">${isDone ? '<i class="bi bi-check-circle-fill me-1"></i>완료' : '미완료'}</span>
+                        </div>
+                    </div>
+                </div>
+                `;
+                    container.innerHTML += html;
+                });
+
+            } catch (err) {
+                alert('데이터를 불러오지 못했습니다: ' + err.message);
+            } finally {
+                document.getElementById('loading').classList.add('d-none');
+                document.getElementById('content-container').classList.remove('d-none');
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", loadHealthHistory);
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>당신의 건강을 기원합니다 - 대시보드</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+    <!-- Mobile Menu Button (Only visible on small screens) -->
+    <button class="btn btn-primary d-lg-none position-fixed top-0 end-0 m-3 z-3" type="button"
+        onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <div class="app-wrapper">
+        <!-- Sidebar -->
+        <nav id="sidebar-container" class="sidebar shadow-sm"></nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="fade-in mb-4 pb-2 border-bottom d-flex justify-content-between align-items-center">
+                <div>
+                    <h3 class="fw-bold mb-0">건강 대시보드 요약</h3>
+                    <p class="text-soft mt-1 mb-0">당신의 지난 건강 상태와 오늘의 할 일을 확인하세요.</p>
+                </div>
+            </div>
+
+            <!-- Error / Loading Overlay -->
+            <div id="loading" class="text-center py-5">
+                <div class="spinner-border text-primary-custom" role="status"></div>
+                <p class="mt-2 text-soft">정보를 불러오는 중입니다...</p>
+            </div>
+            <div id="error-msg" class="alert alert-danger d-none" role="alert"></div>
+
+            <!-- Dashboard Grid -->
+            <div id="dashboard-content" class="row g-4 d-none fade-in">
+
+                <!-- Left: Quick Profile Summary (Data from /users/me indirectly) -->
+                <div class="col-md-5 col-lg-4">
+                    <div class="card p-4 h-100 position-relative border-0 shadow-sm"
+                        style="background: linear-gradient(135deg, var(--secondary-color) 0%, var(--primary-color) 100%);">
+                        <div class="text-white text-center position-relative z-1">
+                            <img id="dash-profile-img" src="" alt="프로필"
+                                class="profile-img-lg mb-3 shadow align-self-center mx-auto d-block">
+                            <h4 class="fw-bold mb-1" id="dash-name">로딩 중...</h4>
+                            <p class="mb-3 opacity-75 small"><i class="bi bi-person-fill me-1"></i>정회원</p>
+
+                            <div class="d-flex justify-content-center gap-3 w-100 bg-white bg-opacity-25 rounded p-3">
+                                <div>
+                                    <h6 class="mb-0 fw-bold text-truncate" id="dash-phone" style="max-width: 120px;">-
+                                    </h6>
+                                    <span class="small opacity-75">연락처</span>
+                                </div>
+                                <div class="border-start border-white border-opacity-25 opacity-50"></div>
+                                <div>
+                                    <h6 class="mb-0 fw-bold" id="dash-birth">-</h6>
+                                    <span class="small opacity-75">생년월일</span>
+                                </div>
+                            </div>
+                            <a href="profile.html"
+                                class="btn btn-light btn-sm text-primary-custom fw-bold w-100 mt-4 rounded-pill">상세 정보
+                                기입하기</a>
+                        </div>
+                        <!-- Decorative circle -->
+                        <div class="position-absolute top-0 start-0 w-100 h-100 overflow-hidden"
+                            style="border-radius: 16px; pointer-events: none;">
+                            <div class="position-absolute rounded-circle bg-white opacity-25"
+                                style="width: 150px; height: 150px; top: -50px; right: -50px;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Medication Summary Status -->
+                <div class="col-md-7 col-lg-8">
+                    <div class="card p-4 h-100">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="fw-bold mb-0 text-primary-custom"><i class="bi bi-capsule me-2"></i>최근 복약 상태 요약
+                            </h5>
+                            <a href="medications.html" class="btn btn-sm btn-outline-primary rounded-pill">전체 보기</a>
+                        </div>
+
+                        <!-- Dashboard Summary Fields -->
+                        <div class="row g-3">
+                            <!-- Total Current Meds -->
+                            <div class="col-sm-6">
+                                <div class="p-3 bg-light rounded shadow-sm border border-light">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <p class="text-soft small mb-1">현재 복용중인 약물</p>
+                                            <h3 class="fw-bold text-dark mb-0"><span id="dash-active-meds">0</span>
+                                                <span class="fs-6 text-soft fw-normal">건</span>
+                                            </h3>
+                                        </div>
+                                        <div class="bg-white p-2 rounded shadow-sm text-primary-custom"><i
+                                                class="bi bi-heptagon-half"></i></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Total Remainder -->
+                            <div class="col-sm-6">
+                                <div class="p-3 bg-light rounded shadow-sm border border-light">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <p class="text-soft small mb-1">최소 남은 일수</p>
+                                            <h3 class="fw-bold text-dark mb-0" id="dash-left-days">- 일</h3>
+                                        </div>
+                                        <div class="bg-white p-2 rounded shadow-sm text-warning"><i
+                                                class="bi bi-calendar-event"></i></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Today Meds Progress Check -->
+                            <div class="col-12 mt-4">
+                                <h6 class="fw-bold mb-3">오늘의 추천/체크</h6>
+                                <div id="dash-todays-list" class="d-flex flex-column gap-2">
+                                    <div class="text-center text-soft py-3 small bg-light rounded border border-light">
+                                        알림 내역을 분석 중입니다...</div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom: Long Photo Upload Section -->
+                <div class="col-12 mt-4">
+                    <div class="card p-4 text-center">
+                        <h5 class="fw-bold text-primary-custom mb-1"><i class="bi bi-camera me-2"></i>새로운 처방전/진단서 스캔 추가
+                        </h5>
+                        <p class="text-soft small mb-4">어려운 의료 문서, 인공지능이 쉽게 분석하고 요약해 드립니다. (이미지 선택 또는 드래그 가능)</p>
+
+                        <a href="scans.html" class="upload-area text-decoration-none shadow-sm">
+                            <i class="bi bi-cloud-arrow-up display-4 text-primary-custom mb-2"></i>
+                            <h5 class="fw-bold mb-1 text-dark">이곳을 클릭하여 사진 업로드 공간으로 이동</h5>
+                            <p class="small text-soft mb-0">jpg, png 포맷 지원 (10MB 이하)</p>
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/components.js"></script>
+
+    <script>
+        // Sidebar toggle for mobile
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('show');
+        }
+
+        async function loadDashboard() {
+            try {
+                const summaryData = await window.api.getDashboardSummary();
+                const user = await window.api.getUserMe();
+
+                document.getElementById('loading').classList.add('d-none');
+                document.getElementById('dashboard-content').classList.remove('d-none');
+
+                // Render User Snippet
+                const uName = user.name || '알수없음';
+                localStorage.setItem('user_name', uName); // update just in case
+                renderSidebar(); // refresh sidebar if name changed
+
+                document.getElementById('dash-name').innerText = `${uName} 님`;
+                document.getElementById('dash-phone').innerText = user.phone_number || "미입력";
+                document.getElementById('dash-birth').innerText = user.birthday || "미입력";
+
+                // Set DP
+                const avUrl = user.profile_image_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(uName)}&background=random&color=fff&size=80`;
+                document.getElementById('dash-profile-img').src = avUrl;
+
+                // Render Medication Fields
+                const numMeds = summaryData.recent_prescriptions ? summaryData.recent_prescriptions.length : 0;
+                document.getElementById('dash-active-meds').innerText = numMeds;
+
+                // Min left days computation
+                let minDays = Infinity;
+                if (summaryData.medication_remainder) {
+                    for (let k in summaryData.medication_remainder) {
+                        if (summaryData.medication_remainder[k] < minDays) minDays = summaryData.medication_remainder[k];
+                    }
+                }
+                document.getElementById('dash-left-days').innerText = minDays === Infinity ? "0 일" : `${minDays} 일`;
+
+                // Simple checklist based on flags
+                const todaysList = document.getElementById('dash-todays-list');
+                todaysList.innerHTML = '';
+
+                if (summaryData.today_medication_done === true) {
+                    todaysList.innerHTML += `<div class="d-flex bg-success bg-opacity-10 text-success p-3 rounded align-items-center mb-2"><i class="bi bi-check-circle-fill me-3 fs-5"></i> <div><h6 class="mb-0 fw-bold">오늘 복약 미션 완료!</h6><span class="small">모든 약을 잘 챙겨드셨습니다.</span></div></div>`;
+                } else if (summaryData.today_medication_done === false) {
+                    todaysList.innerHTML += `<div class="d-flex bg-danger bg-opacity-10 text-danger p-3 rounded align-items-center mb-2"><i class="bi bi-exclamation-circle-fill me-3 fs-5"></i> <div><h6 class="mb-0 fw-bold">아직 오늘 복약하지 않으셨습니다.</h6><span class="small">잊지 말고 약을 챙겨드세요.</span></div></div>`;
+                } else {
+                    todaysList.innerHTML += `<div class="d-flex bg-light text-secondary p-3 rounded align-items-center mb-2"><i class="bi bi-dash-circle-fill me-3 fs-5"></i> <div><h6 class="mb-0 fw-bold">오늘 등록된 복약 일정이 없습니다.</h6><span class="small">처방전을 스캔하거나 직접 등록해보세요.</span></div></div>`;
+                }
+
+                if (summaryData.today_health_done === true) {
+                    todaysList.innerHTML += `<div class="d-flex bg-primary bg-opacity-10 text-primary p-3 rounded align-items-center mb-2"><i class="bi bi-activity me-3 fs-5"></i> <div><h6 class="mb-0 fw-bold">건강관리 목표 달성!</h6><span class="small">오늘의 일상 목표를 달성했습니다.</span></div></div>`;
+                }
+
+            } catch (err) {
+                document.getElementById('loading').classList.add('d-none');
+                const eMsg = document.getElementById('error-msg');
+                eMsg.classList.remove('d-none');
+                eMsg.innerText = "데이터를 불러오는 중 오류가 발생했습니다: " + err.message;
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            if (localStorage.getItem('access_token')) {
+                loadDashboard();
+            }
+        });
+    </script>
+</body>
+
+</html>
