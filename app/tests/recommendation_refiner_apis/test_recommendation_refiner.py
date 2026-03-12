@@ -65,11 +65,34 @@ def test_limit_per_type_general_care_max_three() -> None:
     candidates = [
         RecommendationCandidate(
             type="general_care",
-            content=f"일반 관리 문구 {i}",
+            content="물을 충분히 마시세요.",
             source="direct_guideline",
-            score=1.0 - i * 0.01,
-        )
-        for i in range(5)
+            score=1.0,
+        ),
+        RecommendationCandidate(
+            type="general_care",
+            content="염분 섭취를 줄이세요.",
+            source="direct_guideline",
+            score=0.99,
+        ),
+        RecommendationCandidate(
+            type="general_care",
+            content="규칙적으로 가벼운 운동을 하세요.",
+            source="direct_guideline",
+            score=0.98,
+        ),
+        RecommendationCandidate(
+            type="general_care",
+            content="수면 시간을 일정하게 유지하세요.",
+            source="direct_guideline",
+            score=0.97,
+        ),
+        RecommendationCandidate(
+            type="general_care",
+            content="카페인 섭취를 줄여보세요.",
+            source="direct_guideline",
+            score=0.96,
+        ),
     ]
 
     result = dedup_recommendations(candidates)
