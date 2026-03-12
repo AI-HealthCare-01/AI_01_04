@@ -169,7 +169,9 @@ class ScanAnalysisService:
         if not cur:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="scan not found.")
         if not cur.get("file_path"):
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="업로드된 파일 경로(file_path)가 없습니다.")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="업로드된 파일 경로(file_path)가 없습니다."
+            )
         await self.scan_repo.update(user.id, scan_id, status="processing")
         return {"scan_id": scan_id, "status": "processing", "document_type": cur.get("document_type")}
 
