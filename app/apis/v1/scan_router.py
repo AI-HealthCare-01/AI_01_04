@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, File, Form, Path, UploadFile, status  # [CHANGED]
+from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, Path, UploadFile, status
 from fastapi.responses import ORJSONResponse as Response
 
 from app.dependencies.security import get_request_user
@@ -52,22 +52,25 @@ async def upload_scan(
 @scan_router.post(
     "/{scan_id}/analyze",
     response_model=ScanAnalyzeResponse,
-    status_code=status.HTTP_200_OK,
+    status_code=status.HTTP_202_ACCEPTED,
 )
 async def analyze_scan(
     user: Annotated[User, Depends(get_request_user)],
     scan_service: Annotated[ScanAnalysisService, Depends(ScanAnalysisService)],
+    background_tasks: BackgroundTasks,
     scan_id: Annotated[int, Path(..., ge=1)],
 ) -> Response:
     """
-    OCR 분석 시작
+    OCR 분석 시작 (백그라운드 처리)
+    - 즉시 202 반환, 분석은 백그라운드에서 진행
+    - GET /{scan_id} 로 상태 폴링
     """
-
-    result = await scan_service.start_analysis(user=user, scan_id=scan_id)
+    result = await scan_service.prepare_analysis(user=user, scan_id=scan_id)
+    background_tasks.add_task(scan_service.run_analysis_background, user=user, scan_id=scan_id)
 
     return Response(
         ScanAnalyzeResponse.model_validate(result).model_dump(),
-        status_code=status.HTTP_200_OK,
+        status_code=status.HTTP_202_ACCEPTED,
     )
 
 

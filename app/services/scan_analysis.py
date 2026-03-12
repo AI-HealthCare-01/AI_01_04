@@ -163,6 +163,44 @@ class ScanAnalysisService:
                 detail="AI 후처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
             ) from e
 
+    async def prepare_analysis(self, user, scan_id: int) -> dict:
+        """백그라운드 분석 시작 전 상태를 processing으로 변경하고 즉시 반환"""
+        cur = await self.scan_repo.get_by_id_for_user(user.id, scan_id)
+        if not cur:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="scan not found.")
+        if not cur.get("file_path"):
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="업로드된 파일 경로(file_path)가 없습니다.")
+        await self.scan_repo.update(user.id, scan_id, status="processing")
+        return {"scan_id": scan_id, "status": "processing", "document_type": cur.get("document_type")}
+
+    async def run_analysis_background(self, user, scan_id: int) -> None:
+        """백그라운드에서 OCR 분석 실행"""
+        try:
+            cur = await self.scan_repo.get_by_id_for_user(user.id, scan_id)
+            if not cur:
+                return
+            document_type = self._normalize_document_type(cur.get("document_type"))
+            raw, parsed = await self._handle_ocr_analysis(user.id, scan_id, cur["file_path"])
+            ai_result = await self._handle_ai_postprocess(user.id, scan_id, parsed, raw, document_type=document_type)
+            await self.scan_repo.update(
+                user.id,
+                scan_id,
+                status="done",
+                analyzed_at=datetime.now().isoformat(),
+                document_type=document_type,
+                document_date=ai_result.get("document_date"),
+                diagnosis=ai_result.get("diagnosis"),
+                clinical_note=ai_result.get("clinical_note"),
+                drugs=ai_result.get("drugs", []),
+                raw_text=ai_result.get("raw_text"),
+                ocr_raw=ai_result.get("ocr_raw"),
+            )
+        except HTTPException:
+            pass
+        except Exception:
+            logger.exception("run_analysis_background failed: scan_id=%s", scan_id)
+            await self.scan_repo.update(user.id, scan_id, status="failed")
+
     async def start_analysis(self, user, scan_id: int) -> dict:
         try:
             cur = await self.scan_repo.get_by_id_for_user(user.id, scan_id)
