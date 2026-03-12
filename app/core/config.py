@@ -5,7 +5,7 @@ from dataclasses import field
 from enum import StrEnum
 from pathlib import Path
 
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Env(StrEnum):
@@ -23,6 +23,7 @@ class Config(BaseSettings):
     .env 파일에서 환경변수를 자동 로드하며 타입 검증을 제공.
     """
 
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
     ENV: Env = Env.LOCAL
     SECRET_KEY: str = f"default-secret-key{uuid.uuid4().hex}"
     TIMEZONE: zoneinfo.ZoneInfo = field(default_factory=lambda: zoneinfo.ZoneInfo("Asia/Seoul"))
