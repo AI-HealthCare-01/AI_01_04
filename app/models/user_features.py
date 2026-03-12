@@ -18,9 +18,9 @@ if TYPE_CHECKING:
 
 class UserFeatureSnapshot(models.Model):
     """
-    사용자 피처 스냅샷 (ERD: user_feature_snapshots)
+    사용자 피처 스냅샷 (ERD: user_feature_snapshots).
 
-    추천 생성 시점의 사용자 상태를 저장
+    추천 생성 시점의 사용자 상태를 feature_json으로 저장하여 복원 가능.
     """
 
     id = fields.IntField(pk=True)
@@ -40,9 +40,9 @@ class UserFeatureSnapshot(models.Model):
 
 class UserCurrentFeatures(models.Model):
     """
-    사용자 현재 피처 (ERD: user_current_features)
+    사용자 현재 피처 (ERD: user_current_features).
 
-    user_id가 PK (1:1 관계, 항상 최신만 유지)
+    user_id가 PK인 1:1 관계로 항상 최신 상태만 유지.
     """
 
     user: ForeignKeyRelation["User"] = fields.OneToOneField(

@@ -1,3 +1,11 @@
+"""
+스캔 모델 (ERD: scans)
+
+- 의료문서 OCR 분석 결과 저장
+- document_type: prescription(처방전) / medical_record(진료기록지)
+- 상태 흐름: uploaded → processing → done → updated → saved / failed
+"""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -11,15 +19,14 @@ if TYPE_CHECKING:
 
 class Scan(models.Model):
     """
-    의료문서 스캔 도메인 모델  # [CHANGED]
+    의료문서 스캔 도메인 모델 (ERD: scans).
 
-    - document_type:
-        - prescription: 처방전
-        - medical_record: 진료기록지
-    - status: uploaded → processing → done → updated → saved / failed
-    - drugs: OCR 파싱된 약물명 목록 (JSON 배열)
-    - ocr_raw: Naver OCR 원본 응답 (JSON)
-    - clinical_note: 진료기록지에서 추출한 진료 내용  # [ADD]
+    Attributes:
+        document_type: ``prescription`` (처방전) | ``medical_record`` (진료기록지).
+        status: uploaded → processing → done → updated → saved | failed.
+        drugs: OCR 파싱된 약물명 목록 (JSON 배열).
+        ocr_raw: Naver OCR 원본 응답 (JSON).
+        clinical_note: 진료기록지에서 추출한 진료 내용.
     """
 
     id = fields.IntField(pk=True)

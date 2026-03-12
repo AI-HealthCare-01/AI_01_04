@@ -5,17 +5,23 @@ from dataclasses import field
 from enum import StrEnum
 from pathlib import Path
 
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings
 
 
 class Env(StrEnum):
+    """애플리케이션 실행 환경 열거형."""
+
     LOCAL = "local"
     DEV = "dev"
     PROD = "prod"
 
 
 class Config(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="allow")
+    """
+    애플리케이션 설정 클래스 (pydantic-settings 기반).
+
+    .env 파일에서 환경변수를 자동 로드하며 타입 검증을 제공.
+    """
 
     ENV: Env = Env.LOCAL
     SECRET_KEY: str = f"default-secret-key{uuid.uuid4().hex}"

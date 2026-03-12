@@ -1,3 +1,10 @@
+"""
+건강관리 체크리스트 모델 (ERD: health_checklist_templates, health_checklist_logs)
+
+- HealthChecklistTemplate: 체크리스트 항목 마스터 (물 마시기, 걸기 등)
+- HealthChecklistLog: 사용자 일자별 체크 로그 (done/skipped)
+"""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Literal
@@ -13,9 +20,9 @@ HealthStatus = Literal["done", "skipped"]
 
 class HealthChecklistTemplate(models.Model):
     """
-    건강관리 체크리스트 템플릿(마스터)
+    건강관리 체크리스트 템플릿 (마스터).
 
-    예: 물 마시기, 걷기, 스트레칭 ...
+    예: 물 마시기, 걷기, 스트레칭 등 반복 사용되는 체크리스트 항목 정의.
     """
 
     id = fields.IntField(pk=True)
@@ -33,11 +40,12 @@ class HealthChecklistTemplate(models.Model):
 
 class HealthChecklistLog(models.Model):
     """
-    사용자 일자별 건강관리 로그
+    사용자 일자별 건강관리 로그.
 
-    - date 기준으로 하루 체크리스트 조회/집계
-    - status: done / skipped
-    - checked_at: done이면 now, 해제면 None
+    Attributes:
+        date: 일자 기준 조회/집계.
+        status: done | skipped.
+        checked_at: done이면 체크 시각, 해제면 None.
     """
 
     id = fields.IntField(pk=True)
