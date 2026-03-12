@@ -1,14 +1,24 @@
+from __future__ import annotations
+
 import json
 
-from openai import OpenAI  # type: ignore[import-not-found]
+from openai import AsyncOpenAI
 
 from app.core import config
 
-client = OpenAI(api_key=config.OPENAI_API_KEY)
+_client: AsyncOpenAI | None = None
+
+
+def get_openai_client() -> AsyncOpenAI:
+    """OCR 후처리용 AsyncOpenAI 싱글턴 인스턴스를 반환한다."""
+    global _client
+    if _client is None:
+        _client = AsyncOpenAI(api_key=config.OPENAI_API_KEY)
+    return _client
 
 
 PRESCRIPTION_SYSTEM_PROMPT = """
-너는 한국어 처방전 OCR 후처리기다.  # [CHANGED]
+너는 한국어 처방전 OCR 후처리기다.
 반드시 JSON만 반환한다.
 키는 정확히 document_date, diagnosis, clinical_note, drugs, raw_text, ocr_raw.
 - document_date: YYYY-MM-DD 또는 null
@@ -17,11 +27,11 @@ PRESCRIPTION_SYSTEM_PROMPT = """
 - drugs: 문자열 배열 (없으면 [])
 - raw_text: 입력 원문 그대로
 - ocr_raw: 입력 원본 JSON 그대로
-"""  # [CHANGED]
+"""
 
 
 MEDICAL_RECORD_SYSTEM_PROMPT = """
-너는 한국어 진료기록지 OCR 후처리기다.  # [ADD]
+너는 한국어 진료기록지 OCR 후처리기다.
 반드시 JSON만 반환한다.
 키는 정확히 document_date, diagnosis, clinical_note, drugs, raw_text, ocr_raw.
 - document_date: YYYY-MM-DD 또는 null
@@ -36,32 +46,35 @@ MEDICAL_RECORD_SYSTEM_PROMPT = """
 2. 진단명이 없고 증상/소견만 있으면 diagnosis는 null로 둔다.
 3. symptoms, assessment, plan, instruction, advice 성격의 내용은 clinical_note에 요약한다.
 4. 확실하지 않은 내용은 추측하지 말고 null 또는 빈 배열로 둔다.
-"""  # [ADD]
+"""
 
 
-def _get_system_prompt(document_type: str) -> str:  # [ADD]
+def _get_system_prompt(document_type: str) -> str:
+    """문서 유형에 따라 시스템 프롬프트를 반환한다."""
     if document_type == "medical_record":
         return MEDICAL_RECORD_SYSTEM_PROMPT
     return PRESCRIPTION_SYSTEM_PROMPT
 
 
-def ai_postprocess(
+async def ai_postprocess(
     raw_text: str,
     ocr_raw: dict,
-    document_type: str = "prescription",  # [ADD]
+    document_type: str = "prescription",
 ) -> dict:
-    system_prompt = _get_system_prompt(document_type)  # [ADD]
+    """OCR 결과를 OpenAI로 후처리하여 구조화된 dict를 반환한다."""
+    client = get_openai_client()
+    system_prompt = _get_system_prompt(document_type)
 
     user_payload = {
-        "document_type": document_type,  # [ADD]
+        "document_type": document_type,
         "raw_text": raw_text,
         "ocr_raw": ocr_raw,
     }
 
-    res = client.responses.create(
+    response = await client.responses.create(
         model=config.OPENAI_MODEL,
         input=[
-            {"role": "system", "content": system_prompt},  # [CHANGED]
+            {"role": "system", "content": system_prompt},
             {
                 "role": "user",
                 "content": f"다음 데이터를 스키마에 맞춰 정규화하여 json으로 반환:\n{json.dumps(user_payload, ensure_ascii=False)}",
@@ -70,10 +83,9 @@ def ai_postprocess(
         text={"format": {"type": "json_object"}},
     )
 
-    text = res.output_text
+    text = response.output_text
     result = json.loads(text)
 
-    # [ADD] 응답 스키마 최소 보정
     if not isinstance(result, dict):
         raise ValueError("AI postprocess result must be a dict")
 

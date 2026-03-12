@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field  # [CHANGED]
+from pydantic import BaseModel, Field
 
 
 class ScanUploadResponse(BaseModel):
@@ -39,7 +39,6 @@ class ScanResultUpdateRequest(BaseModel):
     document_date: str | None = None
     diagnosis: str | None = None
     clinical_note: str | None = None
-
     drugs: list[str] | None = None
 
 
@@ -49,6 +48,7 @@ class ScanSaveResponse(BaseModel):
     scan_id: int
     saved: bool
     seeded_date: str | None = None
+    document_type: str | None = None
     created_prescriptions: list[int] | None = None
     skipped_duplicates: list[str] | None = None
     created_count: int | None = None
