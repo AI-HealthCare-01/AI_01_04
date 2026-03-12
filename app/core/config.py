@@ -49,4 +49,4 @@ class Config(BaseSettings):
     OPENAI_MODEL: str = "gpt-4o-mini"
 
     # ENABLE_LLM_REFINEMENT=False로 검증 그다음 LLM refinement 켜서 비교
-    ENABLE_LLM_REFINEMENT = False
+    ENABLE_LLM_REFINEMENT: bool = False
