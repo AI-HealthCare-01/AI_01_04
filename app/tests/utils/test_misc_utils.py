@@ -8,6 +8,8 @@ from app.utils.files import FileValidationError, sanitize_filename, validate_ext
 
 
 class TestNormalizePhoneNumber:
+    """전화번호 정규화 테스트."""
+
     def test_international_format(self):
         assert normalize_phone_number("+821012345678") == "01012345678"
 
@@ -19,6 +21,8 @@ class TestNormalizePhoneNumber:
 
 
 class TestSanitizeFilename:
+    """파일명 정제 테스트."""
+
     def test_normal(self):
         assert sanitize_filename("test.jpg") == "test.jpg"
 
@@ -41,6 +45,8 @@ class TestSanitizeFilename:
 
 
 class TestValidateExtension:
+    """파일 확장자 검증 테스트."""
+
     def test_valid_jpg(self):
         validate_extension("photo.jpg")  # 예외 없음
 
@@ -60,6 +66,8 @@ class TestValidateExtension:
 
 
 class TestValidateSize:
+    """파일 크기 검증 테스트."""
+
     @pytest.mark.asyncio
     async def test_seek_tell_fallback(self):
         """seek/tell 실패 시 chunk 읽기 fallback 경로"""
@@ -98,6 +106,8 @@ class TestValidateSize:
 
 
 class TestSaveUserUploadFile:
+    """사용자 업로드 파일 저장 테스트."""
+
     @pytest.mark.asyncio
     async def test_no_filename_raises(self):
         from unittest.mock import MagicMock
@@ -114,6 +124,8 @@ class TestSaveUserUploadFile:
 
 
 class TestOCRParser:
+    """OCR 파서 테스트."""
+
     def test_extract_full_text_fields(self):
         raw = {"images": [{"fields": [{"inferText": "아스피린"}, {"inferText": "30일"}]}]}
         text = extract_full_text(raw)

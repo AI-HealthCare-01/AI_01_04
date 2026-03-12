@@ -20,6 +20,12 @@ if TYPE_CHECKING:
 
 
 class TokenBackend:
+    """
+    JWT 인코딩/디코딩 백엔드.
+
+    PyJWT를 래핑하여 알고리즘 검증, 서명 키 준비, 만료 처리를 담당.
+    """
+
     def __init__(
         self,
         algorithm: str,
@@ -58,6 +64,15 @@ class TokenBackend:
             raise TokenBackendError(f"You must have cryptography installed to use {algorithm}.")
 
     def get_leeway(self) -> timedelta:
+        """
+        leeway 설정값을 timedelta로 변환.
+
+        Returns:
+            timedelta: leeway 값.
+
+        Raises:
+            TokenBackendError: leeway 타입이 유효하지 않은 경우.
+        """
         if self.leeway is None:
             return timedelta(seconds=0)
         elif isinstance(self.leeway, (int, float)):
@@ -70,6 +85,15 @@ class TokenBackend:
             )
 
     def encode(self, payload: dict[str, Any]) -> str:
+        """
+        payload를 JWT 문자열로 인코딩.
+
+        Args:
+            payload (dict[str, Any]): JWT 페이로드.
+
+        Returns:
+            str: 서명된 JWT 문자열.
+        """
         jwt_payload = payload.copy()
         if self.audience is not None:
             jwt_payload["aud"] = self.audience
@@ -86,6 +110,20 @@ class TokenBackend:
         return token
 
     def decode(self, token: str, verify: bool = True) -> dict[str, Any]:
+        """
+        JWT 문자열을 디코딩하여 payload 반환.
+
+        Args:
+            token (str): 디코딩할 JWT 문자열.
+            verify (bool): 서명 검증 여부. 기본값 True.
+
+        Returns:
+            dict[str, Any]: 디코딩된 payload.
+
+        Raises:
+            TokenBackendExpiredError: 토큰이 만료된 경우.
+            TokenBackendError: 알고리즘 오류 또는 유효하지 않은 토큰인 경우.
+        """
         try:
             return jwt.decode(
                 token,

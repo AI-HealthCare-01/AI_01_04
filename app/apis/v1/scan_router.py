@@ -1,3 +1,7 @@
+"""
+스캔 라우터: 의료문서 업로드, OCR 분석, 결과 조회/수정/저장
+"""
+
 from typing import Annotated
 
 from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, Path, UploadFile, status
@@ -26,15 +30,22 @@ async def upload_scan(
     user: Annotated[User, Depends(get_request_user)],
     scan_service: Annotated[ScanAnalysisService, Depends(ScanAnalysisService)],
     file: UploadFile = File(...),  # noqa: B008
-    document_type: Annotated[str, Form()] = "prescription",  # [ADD]
+    document_type: Annotated[str, Form()] = "prescription",
 ) -> Response:
     """
-    의료문서 파일 업로드  # [CHANGED]
-    - document_type:
-        - prescription
-        - medical_record
-    - jpg/png/pdf
-    - 10MB 이하
+    의료문서 파일 업로드.
+
+    Args:
+        user (User): JWT 인증으로 확인된 현재 사용자.
+        scan_service (ScanAnalysisService): 스캔 분석 서비스 의존성.
+        file (UploadFile): 업로드할 의료문서 (jpg/png/pdf, 10MB 이하).
+        document_type (str): 문서 유형 - ``prescription`` (default) 또는 ``medical_record``.
+
+    Returns:
+        Response: scan_id, status, document_type 포함 응답 (201 Created).
+
+    Raises:
+        HTTPException: 파일 형식/용량 검증 실패 시 400.
     """
 
     result = await scan_service.upload_file(  # [CHANGED]
@@ -61,9 +72,18 @@ async def analyze_scan(
     scan_id: Annotated[int, Path(..., ge=1)],
 ) -> Response:
     """
-    OCR 분석 시작 (백그라운드 처리)
-    - 즉시 202 반환, 분석은 백그라운드에서 진행
-    - GET /{scan_id} 로 상태 폴링
+    OCR 분석 시작.
+
+    Args:
+        user (User): JWT 인증으로 확인된 현재 사용자.
+        scan_service (ScanAnalysisService): 스캔 분석 서비스 의존성.
+        scan_id (int): 분석할 스캔 ID.
+
+    Returns:
+        Response: scan_id, status, document_type 포함 응답.
+
+    Raises:
+        HTTPException: 스캔 미존재 시 404, OCR 실패 시 504/429/500.
     """
     result = await scan_service.prepare_analysis(user=user, scan_id=scan_id)
     background_tasks.add_task(scan_service.run_analysis_background, user=user, scan_id=scan_id)
@@ -85,7 +105,18 @@ async def get_scan_result(
     scan_id: Annotated[int, Path(..., ge=1)],
 ) -> Response:
     """
-    OCR 분석 결과 조회
+    OCR 분석 결과 조회.
+
+    Args:
+        user (User): JWT 인증으로 확인된 현재 사용자.
+        scan_service (ScanAnalysisService): 스캔 분석 서비스 의존성.
+        scan_id (int): 조회할 스캔 ID.
+
+    Returns:
+        Response: ScanResultResponse 직렬화 데이터.
+
+    Raises:
+        HTTPException: 스캔 미존재 또는 권한 없음 시 404.
     """
 
     result = await scan_service.get_result(user=user, scan_id=scan_id)
@@ -108,7 +139,19 @@ async def update_scan_result(
     data: ScanResultUpdateRequest,
 ) -> Response:
     """
-    OCR 결과 수정
+    OCR 결과 수정.
+
+    Args:
+        user (User): JWT 인증으로 확인된 현재 사용자.
+        scan_service (ScanAnalysisService): 스캔 분석 서비스 의존성.
+        scan_id (int): 수정할 스캔 ID.
+        data (ScanResultUpdateRequest): 수정할 필드 (document_date, diagnosis, clinical_note, drugs).
+
+    Returns:
+        Response: 수정된 ScanResultResponse 데이터.
+
+    Raises:
+        HTTPException: 스캔 미존재 또는 권한 없음 시 404.
     """
 
     result = await scan_service.update_result(user=user, scan_id=scan_id, data=data)
@@ -130,7 +173,18 @@ async def save_scan_result(
     scan_id: Annotated[int, Path(..., ge=1)],
 ) -> Response:
     """
-    OCR 결과 저장 → 처방/복약 시스템 또는 진료기록 기반 추천에 반영  # [CHANGED]
+    OCR 결과 저장 → 처방/복약 시스템 또는 진료기록 기반 추천에 반영.
+
+    Args:
+        user (User): JWT 인증으로 확인된 현재 사용자.
+        scan_service (ScanAnalysisService): 스캔 분석 서비스 의존성.
+        scan_id (int): 저장할 스캔 ID.
+
+    Returns:
+        Response: ScanSaveResponse (저장 여부, 생성된 처방 ID 목록 등).
+
+    Raises:
+        HTTPException: 스캔 미존재 또는 저장 불가 상태 시 404/400.
     """
 
     result = await scan_service.save_result(user=user, scan_id=scan_id)

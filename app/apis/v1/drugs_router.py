@@ -1,3 +1,7 @@
+"""
+약품 라우터: 약품명 키워드 검색
+"""
+
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query, status
@@ -22,5 +26,17 @@ async def search_drugs(
     q: Annotated[str, Query(min_length=1, max_length=100, description="약품명 검색어")],
     limit: Annotated[int, Query(ge=1, le=50, description="최대 반환 개수")] = 20,
 ) -> Response:
+    """
+    약품명 키워드 검색.
+
+    Args:
+        user (User): JWT 인증으로 확인된 현재 사용자.
+        drug_service (DrugService): 약품 서비스 의존성.
+        q (str): 검색어 (1~100자).
+        limit (int): 최대 반환 개수 (1~50, default 20).
+
+    Returns:
+        Response: DrugSearchItemResponse 리스트 직렬화 데이터.
+    """
     result = await drug_service.search(keyword=q, limit=limit)
     return Response(result, status_code=status.HTTP_200_OK)

@@ -1,3 +1,10 @@
+"""스캔 분석 서비스.
+
+파일 업로드, OCR 분석, AI 후처리, 처방전/진료기록지 저장을 담당한다.
+document_type에 따라 prescription(처방전)과 medical_record(진료기록지)를 분기 처리한다.
+상태 흐름: uploaded → processing → done → updated → saved / failed.
+"""
+
 from __future__ import annotations
 
 import logging
@@ -42,7 +49,18 @@ class ScanAnalysisService:
         self.ocr_client = NaverOCRClient()
         self.recommendation_service = RecommendationService()
 
-    def _normalize_document_type(self, document_type: str | None) -> str:  # [ADD]
+    def _normalize_document_type(self, document_type: str | None) -> str:
+        """입력값을 prescription 또는 medical_record로 정규화한다.
+
+        Args:
+            document_type (str | None): 정규화할 문서 유형 문자열.
+
+        Returns:
+            str: 정규화된 문서 유형 (prescription 또는 medical_record).
+
+        Raises:
+            HTTPException: 허용되지 않는 문서 유형 시 400.
+        """
         value = (document_type or "prescription").strip().lower()
         if value not in {"prescription", "medical_record"}:
             raise HTTPException(
@@ -55,8 +73,23 @@ class ScanAnalysisService:
         self,
         user,
         file: UploadFile,
-        document_type: str = "prescription",  # [ADD]
+        document_type: str = "prescription",
     ) -> dict:
+        """의료문서 파일을 업로드한다.
+
+        확장자/용량 검증 후 저장하며, uploaded 상태로 스캔 레코드를 생성한다.
+
+        Args:
+            user: 업로드할 User 객체.
+            file (UploadFile): 업로드할 의료문서 파일.
+            document_type (str): 문서 유형 (prescription 또는 medical_record). 기본값 prescription.
+
+        Returns:
+            dict: scan_id, status, document_type가 담긴 딕셔너리.
+
+        Raises:
+            HTTPException: 허용되지 않는 문서 유형(400), 파일 처리 실패(500) 시.
+        """
         try:
             normalized_document_type = self._normalize_document_type(document_type)  # [ADD]
 
@@ -65,12 +98,12 @@ class ScanAnalysisService:
             scan_data = await self.scan_repo.create(
                 user_id=user.id,
                 file_path=file_path,
-                document_type=normalized_document_type,  # [ADD]
+                document_type=normalized_document_type,
             )
             return {
                 "scan_id": scan_data["scan_id"],
                 "status": "uploaded",
-                "document_type": normalized_document_type,  # [ADD]
+                "document_type": normalized_document_type,
             }
         except HTTPException:
             raise
@@ -79,7 +112,20 @@ class ScanAnalysisService:
             raise HTTPException(status_code=500, detail=str(e)) from e
 
     async def _handle_ocr_analysis(self, user_id: int, scan_id: int, file_path: str) -> tuple[dict, dict]:
-        """OCR 분석 및 에러 처리"""
+        """OCR 분석을 실행하고 예외를 HTTPException으로 변환한다.
+
+        Args:
+            user_id (int): 소유자 사용자 ID.
+            scan_id (int): 분석할 스캔 ID.
+            file_path (str): 분석할 파일 경로.
+
+        Returns:
+            tuple[dict, dict]: (OCR 원본 응답, 파싱된 결과) 튜플.
+
+        Raises:
+            HTTPException: OCR 텍스트 추출 실패(422), 설정 오류(500), 타임아웃(504),
+                           요청 한도 초과(429), 인증 실패(500), 잘못된 요청(400), 서버 오류(502) 시.
+        """
         try:
             raw = await self.ocr_client.analyze_file(file_path=file_path)
             parsed = parse_ocr_result(raw)
@@ -142,9 +188,23 @@ class ScanAnalysisService:
         scan_id: int,
         parsed: dict,
         raw: dict,
-        document_type: str,  # [ADD]
+        document_type: str,
     ) -> dict:
-        """AI 후처리 및 에러 처리"""
+        """AI 후처리를 실행하고 예외를 HTTPException으로 변환한다.
+
+        Args:
+            user_id (int): 소유자 사용자 ID.
+            scan_id (int): 처리할 스캔 ID.
+            parsed (dict): OCR 파싱 결과.
+            raw (dict): OCR 원본 응답.
+            document_type (str): 문서 유형 (prescription 또는 medical_record).
+
+        Returns:
+            dict: AI 후처리 결과 (document_date, diagnosis, drugs 등).
+
+        Raises:
+            HTTPException: AI 후처리 실패 시 502.
+        """
         try:
             # [CHANGED] 문서 유형에 따라 후처리 프롬프트/로직을 분기할 수 있도록 document_type 전달
             ai_result = ai_postprocess(
@@ -204,6 +264,21 @@ class ScanAnalysisService:
             await self.scan_repo.update(user.id, scan_id, status="failed")
 
     async def start_analysis(self, user, scan_id: int) -> dict:
+        """스캔에 대한 OCR 분석을 시작한다.
+
+        OCR 호출 → AI 후처리 → 스캔 결과 저장 순서로 실행한다.
+        실패 시 스캔 상태를 failed로 업데이트한다.
+
+        Args:
+            user: 요청한 User 객체.
+            scan_id (int): 분석할 스캔 ID.
+
+        Returns:
+            dict: scan_id, status, document_type가 담긴 딕셔너리.
+
+        Raises:
+            HTTPException: 스캔 미존재(404), OCR 실패(400/429/500/502/504), AI 후처리 실패(502) 시.
+        """
         try:
             cur = await self.scan_repo.get_by_id_for_user(user.id, scan_id)
             if not cur:
@@ -226,7 +301,7 @@ class ScanAnalysisService:
                 scan_id,
                 parsed,
                 raw,
-                document_type=document_type,  # [ADD]
+                document_type=document_type,
             )
 
             await self.scan_repo.update(
@@ -234,10 +309,10 @@ class ScanAnalysisService:
                 scan_id,
                 status="done",
                 analyzed_at=datetime.now().isoformat(),
-                document_type=document_type,  # [ADD]
+                document_type=document_type,
                 document_date=ai_result.get("document_date"),
                 diagnosis=ai_result.get("diagnosis"),
-                clinical_note=ai_result.get("clinical_note"),  # [ADD]
+                clinical_note=ai_result.get("clinical_note"),
                 drugs=ai_result.get("drugs", []),
                 raw_text=ai_result.get("raw_text"),
                 ocr_raw=ai_result.get("ocr_raw"),
@@ -246,7 +321,7 @@ class ScanAnalysisService:
             return {
                 "scan_id": scan_id,
                 "status": "done",
-                "document_type": document_type,  # [ADD]
+                "document_type": document_type,
             }
         except HTTPException:
             raise
@@ -255,12 +330,37 @@ class ScanAnalysisService:
             raise HTTPException(status_code=500, detail=str(e)) from e
 
     async def get_result(self, user, scan_id: int) -> dict:
+        """스캔 결과를 조회한다.
+
+        Args:
+            user: 요청한 User 객체.
+            scan_id (int): 조회할 스캔 ID.
+
+        Returns:
+            dict: 스캔 정보 딕셔너리.
+
+        Raises:
+            HTTPException: 스캔이 없거나 소유자가 다를 시 404.
+        """
         scan = await self.scan_repo.get_by_id_for_user(user.id, scan_id)
         if not scan:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="scan not found.")
         return scan
 
     async def update_result(self, user, scan_id: int, data: ScanResultUpdateRequest) -> dict:
+        """스캔 결과를 수동으로 수정한다 (diagnosis, drugs, document_date 등).
+
+        Args:
+            user: 요청한 User 객체.
+            scan_id (int): 수정할 스캔 ID.
+            data (ScanResultUpdateRequest): 수정할 필드가 담긴 요청 데이터.
+
+        Returns:
+            dict: 업데이트된 스캔 정보 딕셔너리.
+
+        Raises:
+            HTTPException: 스캔 미존재(404), 날짜 형식 오류(400), 예기치 않은 오류(500) 시.
+        """
         try:
             cur = await self.scan_repo.get_by_id_for_user(user.id, scan_id)
             if not cur:
@@ -291,7 +391,20 @@ class ScanAnalysisService:
     async def _create_prescriptions(
         self, user, doc_date: str, diagnosis: str | None, drug_names: list[str]
     ) -> tuple[list[int], int, list[str]]:
-        """처방전 생성 (중복 방지 포함)"""
+        """처방전을 생성한다 (중복 방지 포함).
+
+        Args:
+            user: 소유자 User 객체.
+            doc_date (str): 처방 날짜 (YYYY-MM-DD).
+            diagnosis (str | None): 진단명. 없으면 None.
+            drug_names (list[str]): 생성할 약품명 목록.
+
+        Returns:
+            tuple[list[int], int, list[str]]: (생성된 처방전 ID 목록, 스킵 건수, 스킵된 약품명 목록).
+
+        Raises:
+            OperationalError: DB 연결 오류 시.
+        """
         disease_obj = None
         if diagnosis:
             disease_obj = await Disease.get_or_none(name=diagnosis)
@@ -333,19 +446,36 @@ class ScanAnalysisService:
         return created, skipped, skipped_duplicates
 
     async def save_result(self, user, scan_id: int) -> dict:
+        """스캔 결과를 저장한다.
+
+        - prescription: 처방전 생성 + 복약/건강관리 시드
+        - medical_record: 건강관리 시드 + 추천 생성
+        - 중복 처방전은 스킵하여 멱등성을 보장한다.
+
+        Args:
+            user: 요청한 User 객체.
+            scan_id (int): 저장할 스캔 ID.
+
+        Returns:
+            dict: scan_id, saved, seeded_date, document_type, created_prescriptions,
+                  skipped_count, skipped_duplicates가 담긴 딕셔너리.
+
+        Raises:
+            HTTPException: 스캔 미존재(404), document_date 누락(400), 예기치 않은 오류(500) 시.
+        """
         try:
             cur = await self.scan_repo.get_by_id_for_user(user.id, scan_id)
             if not cur:
                 raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="scan not found.")
 
-            document_type = self._normalize_document_type(cur.get("document_type"))  # [ADD]
+            document_type = self._normalize_document_type(cur.get("document_type"))
             doc_date = cur.get("document_date")
 
-            created_prescriptions: list[int] = []  # [ADD]
-            skipped_count = 0  # [ADD]
-            skipped_duplicates: list[str] = []  # [ADD]
+            created_prescriptions: list[int] = []
+            skipped_count = 0
+            skipped_duplicates: list[str] = []
 
-            if document_type == "prescription":  # [ADD]
+            if document_type == "prescription":
                 if not doc_date:
                     raise HTTPException(
                         status_code=status.HTTP_400_BAD_REQUEST,
@@ -364,7 +494,7 @@ class ScanAnalysisService:
                     drug_names,
                 )
 
-            else:  # [ADD] medical_record
+            else:  # medical_record
                 # 진료기록지는 약 처방 생성 대신 건강관리/recommendation 중심으로 저장
                 if doc_date:
                     await self.health_service.ensure_day_seed(user_id=user.id, date=doc_date)
@@ -385,7 +515,7 @@ class ScanAnalysisService:
                 "scan_id": scan_id,
                 "saved": True,
                 "seeded_date": doc_date,
-                "document_type": document_type,  # [ADD]
+                "document_type": document_type,
                 "created_prescriptions": created_prescriptions,
                 "skipped_count": skipped_count,
                 "skipped_duplicates": skipped_duplicates,
