@@ -72,11 +72,6 @@ async def analyze_scan(
     scan_id: Annotated[int, Path(..., ge=1)],
 ) -> Response:
     """
-<<<<<<< HEAD
-    OCR 분석 시작 (백그라운드 처리)
-    - 즉시 202 반환, 분석은 백그라운드에서 진행
-    - GET /{scan_id} 로 상태 폴링
-=======
     OCR 분석 시작.
 
     Args:
@@ -89,7 +84,6 @@ async def analyze_scan(
 
     Raises:
         HTTPException: 스캔 미존재 시 404, OCR 실패 시 504/429/500.
->>>>>>> develop
     """
     result = await scan_service.prepare_analysis(user=user, scan_id=scan_id)
     background_tasks.add_task(scan_service.run_analysis_background, user=user, scan_id=scan_id)
