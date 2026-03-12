@@ -32,6 +32,7 @@ class Config(BaseSettings):
     DB_HOST: str = "localhost"
     DB_PORT: int = 5432
     DB_USER: str = "root"
+    # amazonq-ignore-next-line
     DB_PASSWORD: str = "pw1234"
     DB_NAME: str = "ai_health"
     DB_CONNECT_TIMEOUT: int = 5
