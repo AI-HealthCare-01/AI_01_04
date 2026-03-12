@@ -4,6 +4,12 @@ from tortoise.fields import TextField
 
 
 class VectorField(TextField):
+    """
+    pgvector 확장의 vector 타입을 위한 커스텀 Tortoise ORM 필드.
+
+    CI 환경에서는 TEXT로 동작하며, raw SQL에서 ``::vector`` 캐스팅으로 벡터 연산 처리.
+    """
+
     SQL_TYPE = "TEXT"
 
     def to_db_value(self, value: list[float] | None, instance) -> str | None:

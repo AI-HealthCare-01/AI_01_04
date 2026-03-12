@@ -86,6 +86,12 @@ def _rec_to_response_dict(rec: Any) -> dict:
 
 
 class RecommendationService:
+    """
+    추천 서비스.
+
+    스캔 기반 추천 생성/조회/저장 및 피드백 관리를 담당.
+    """
+
     def __init__(self):
         self.recommendation_repo = RecommendationRepository()
         self.scan_repo = ScanRepository()

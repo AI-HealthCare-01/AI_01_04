@@ -7,8 +7,10 @@ from app.repositories.scan_repository import ScanRepository
 
 
 class TestScanRepository(TestCase):
+    """스캔 레포지토리 테스트."""
+
     async def test_create_and_get_scan(self):
-        """스캔 생성 및 조회"""
+        """스캔 생성 및 조회, 다른 사용자 접근 차단 확인."""
         user = await User.create(
             email="scan_repo@example.com", name="테스터", phone_number="01011112222", birthday="1990-01-01"
         )
