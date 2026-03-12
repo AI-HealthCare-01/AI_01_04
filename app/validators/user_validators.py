@@ -7,6 +7,18 @@ from app.core import config
 
 
 def validate_password(password: str) -> str:
+    """
+    비밀번호 복잡도 검증.
+
+    Args:
+        password (str): 검증할 비밀번호.
+
+    Returns:
+        str: 유효한 비밀번호.
+
+    Raises:
+        ValueError: 8자 미만이거나 대문자/소문자/숫자/특수문자 중 하나라도 누락된 경우.
+    """
     if len(password) < 8:
         raise ValueError("비밀번호는 8자 이상이어야 합니다.")
 
@@ -30,6 +42,18 @@ def validate_password(password: str) -> str:
 
 
 def validate_phone_number(phone_number: str) -> str:
+    """
+    휴대폰 번호 형식 검증.
+
+    Args:
+        phone_number (str): 검증할 전화번호 (010-1234-5678, 01012345678, +821012345678 허용).
+
+    Returns:
+        str: 유효한 전화번호.
+
+    Raises:
+        ValueError: 유효하지 않은 형식인 경우.
+    """
     patterns = [
         r"010-\d{4}-\d{4}",  # 010-1234-5678
         r"010\d{8}",  # 01012345678
@@ -43,6 +67,18 @@ def validate_phone_number(phone_number: str) -> str:
 
 
 def validate_birthday(birthday: date | str) -> date:
+    """
+    생년월일 유효성 검증 (만 14세 이상).
+
+    Args:
+        birthday (date | str): 검증할 생년월일.
+
+    Returns:
+        date: 유효한 생년월일.
+
+    Raises:
+        ValueError: 날짜 형식 오류 또는 만 14세 미만인 경우.
+    """
     if isinstance(birthday, str):
         try:
             birthday = date.fromisoformat(birthday)

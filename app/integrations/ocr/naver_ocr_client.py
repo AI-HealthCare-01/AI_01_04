@@ -20,11 +20,33 @@ from app.integrations.ocr.exceptions import (
 
 
 class NaverOCRClient:
+    """
+    네이버 OCR API HTTP 클라이언트.
+
+    이미지/PDF 파일을 네이버 OCR API에 전송하고 raw JSON 응답을 반환.
+    """
+
     def __init__(self):
         self.url = config.NAVER_OCR_API_URL
         self.secret = config.NAVER_OCR_SECRET_KEY
 
     async def analyze_file(self, file_path: str) -> dict:
+        """
+        파일을 네이버 OCR API로 분석.
+
+        Args:
+            file_path (str): 분석할 이미지/PDF 파일 경로.
+
+        Returns:
+            dict: 네이버 OCR API raw JSON 응답.
+
+        Raises:
+            OCRTimeoutError: 요청 타임아웃 시.
+            OCRAuthError: 401/403 인증 실패 시.
+            OCRRateLimitError: 429 레이트 리미트 시.
+            OCRBadRequestError: 4xx 요청 오류 시.
+            OCRServerError: 5xx 서버 오류 시.
+        """
         path = Path(file_path)
         ext = path.suffix.lower().lstrip(".")  # jpg/png/pdf
 

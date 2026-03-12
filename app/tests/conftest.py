@@ -18,11 +18,13 @@ TEST_DB_TZ = "Asia/Seoul"
 
 def get_test_db_url() -> str:
     """
-    환경에 따라 테스트 DB 선택 (하이브리드 방식)
+    환경에 따라 테스트 DB URL 반환.
 
     - 로컬 개발: SQLite (빠름)
-    - 통합 테스트: PostgreSQL (정확함)
-    - CI/CD: PostgreSQL (자동)
+    - CI/CD 또는 TEST_DB=postgres: PostgreSQL (정확함)
+
+    Returns:
+        str: 테스트 DB 연결 URL.
     """
     # CI 환경 또는 명시적으로 PostgreSQL 요청
     if os.getenv("CI") or os.getenv("TEST_DB") == "postgres":
@@ -33,6 +35,12 @@ def get_test_db_url() -> str:
 
 
 def get_test_db_config() -> dict[str, Any]:
+    """
+    Tortoise ORM 테스트 DB 설정 딕셔너리 생성.
+
+    Returns:
+        dict[str, Any]: Tortoise ORM 테스트 설정.
+    """
     db_url = get_test_db_url()
     print(f"\n🗄️  Test DB: {db_url.split('://')[0].upper()}")
 

@@ -1,3 +1,11 @@
+"""
+처방전/복약 기록 모델 (ERD: prescriptions, medication_intake_logs)
+
+- Prescription: 사용자 처방전 (drug, disease FK)
+- PrescriptionMemo: 복약 메모 (효과/부작용)
+- MedicationIntakeLog: 일자별 복약 슬롯 로그 (taken/skipped/delayed)
+"""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -12,6 +20,12 @@ if TYPE_CHECKING:
 
 
 class Prescription(models.Model):
+    """
+    처방전 모델 (ERD: prescriptions).
+
+    사용자 처방전 정보를 저장하며 drug, disease와 FK 관계.
+    """
+
     id = fields.IntField(pk=True)
 
     user: ForeignKeyRelation[User] = fields.ForeignKeyField(
@@ -46,6 +60,12 @@ class Prescription(models.Model):
 
 
 class PrescriptionMemo(models.Model):
+    """
+    복약 메모 (ERD: prescription_memos).
+
+    약 효과 및 부작용 기록.
+    """
+
     id = fields.IntField(pk=True)
 
     prescription: ForeignKeyRelation[Prescription] = fields.ForeignKeyField(
@@ -64,12 +84,15 @@ class PrescriptionMemo(models.Model):
 
 class MedicationIntakeLog(models.Model):
     """
-    복용 기록 (ERD: medication_intake_logs)
+    복용 기록 (ERD: medication_intake_logs).
 
-    EPIC4(일자별 이력/체크리스트/달성률) 지원:
-    - intake_date: 일자별 집계
-    - slot_label: 체크리스트 슬롯(아침/점심/저녁/자기전)
-    - intake_datetime: taken이면 now, 해제면 None
+    일자별 복약 체크리스트 슬롯을 관리한다.
+
+    Attributes:
+        intake_date: 일자별 집계 기준.
+        slot_label: 체크리스트 슬롯 (아침/점심/저녁/자기전).
+        intake_datetime: taken이면 실제 복용 시각, 해제면 None.
+        status: taken | skipped | delayed.
     """
 
     id = fields.IntField(pk=True)

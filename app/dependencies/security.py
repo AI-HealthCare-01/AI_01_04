@@ -13,6 +13,19 @@ security = HTTPBearer()
 async def get_request_user(
     credential: Annotated[HTTPAuthorizationCredentials, Depends(security)],
 ) -> User:
+    """
+    Authorization 헤더의 Bearer 토큰을 검증하여 현재 사용자 반환.
+
+    Args:
+        credential (HTTPAuthorizationCredentials): Bearer 토큰 자격증명.
+
+    Returns:
+        User: 인증된 활성 사용자 인스턴스.
+
+    Raises:
+        HTTPException: 토큰 유효하지 않거나 사용자가 존재하지 않으면 401.
+        HTTPException: 비활성 사용자이면 401.
+    """
     token = credential.credentials
     verified = JwtService().verify_jwt(token=token, token_type="access")
     user_id = verified.payload["user_id"]

@@ -10,6 +10,8 @@ from app.validators.user_validators import validate_birthday, validate_password,
 
 
 class SignUpRequest(BaseModel):
+    """신규 회원가입 요청 스키마."""
+
     email: Annotated[EmailStr, Field(..., max_length=40)]
     password: Annotated[str, Field(min_length=8), AfterValidator(validate_password)]
     name: Annotated[str, Field(..., max_length=20)]
@@ -19,12 +21,17 @@ class SignUpRequest(BaseModel):
 
 
 class LoginRequest(BaseModel):
+    """로그인 요청 스키마."""
+
     email: EmailStr
     password: Annotated[str, Field(min_length=8)]
 
 
 class LoginResponse(BaseModel):
+    """로그인 응답 스키마 - access_token 포함."""
+
     access_token: str
 
 
-class TokenRefreshResponse(LoginResponse): ...
+class TokenRefreshResponse(LoginResponse):
+    """토큰 갱신 응답 스키마 - 새 access_token 포함."""
