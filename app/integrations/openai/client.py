@@ -40,13 +40,18 @@ async def create_embedding(text: str, model: str = "text-embedding-3-small") -> 
     return response.data[0].embedding
 
 
-async def chat_completion(system_prompt: str, user_prompt: str) -> str:
+async def chat_completion(
+    system_prompt: str,
+    user_prompt: str,
+    temperature: float = 0.7,
+) -> str:
     """
     ChatCompletion API 호출.
 
     Args:
         system_prompt (str): 시스템 프롬프트.
         user_prompt (str): 사용자 프롬프트.
+        temperature (float): 생성 다양성 제어값.
 
     Returns:
         str: 모델 응답 텍스트.
@@ -58,6 +63,6 @@ async def chat_completion(system_prompt: str, user_prompt: str) -> str:
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt},
         ],
-        temperature=0.7,
+        temperature=temperature,
     )
     return response.choices[0].message.content or ""
