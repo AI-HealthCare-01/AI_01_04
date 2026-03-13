@@ -8,7 +8,6 @@ from tortoise import Tortoise
 from app.core.config import Config
 from app.models.drugs import Drug
 from app.repositories.vector_document_repository import VectorDocumentRepository
-from app.services.embedding import encode
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +40,7 @@ async def embed_batch(texts: list[str]) -> list[list[float]]:
             각 텍스트에 대한 1536차원 임베딩 벡터 목록
     """
     from openai import OpenAI
+
     client = OpenAI(api_key=Config().OPENAI_API_KEY)
     response = client.embeddings.create(input=texts, model="text-embedding-3-small")
     return [item.embedding for item in response.data]
@@ -62,8 +62,7 @@ async def seed_drug_vectors() -> None:
     logger.info("총 %d개 약물 임베딩 시작", total)
 
     for i in range(0, total, BATCH_SIZE):
-        batch_drugs = drugs[i:i + BATCH_SIZE]
-        batch_names = [drug.name for drug in batch_drugs]
+        batch_drugs = drugs[i : i + BATCH_SIZE]
         # 이미 저장된 약물은 skip
         existing = await repo.list_by_reference_type_and_ids(
             reference_type="drug",
@@ -89,7 +88,7 @@ async def seed_drug_vectors() -> None:
         if embeddings is None:
             continue
 
-        for drug, embedding in zip(new_drugs, embeddings):
+        for drug, embedding in zip(new_drugs, embeddings, strict=True):
             await repo.create(
                 reference_type="drug",
                 reference_id=drug.id,
@@ -109,6 +108,7 @@ async def main() -> None:
         await seed_drug_vectors()
     finally:
         await Tortoise.close_connections()
+
 
 if __name__ == "__main__":
     asyncio.run(main())
