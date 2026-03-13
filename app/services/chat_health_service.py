@@ -37,7 +37,7 @@ class ChatHealthService(BaseService):
         4. 환자에게 동기를 부여하는 따뜻하고 권위 있는 말투를 유지하세요."""
 
         # 5. AI 분석
-        ai_result = await self.ai.get_advice(system_prompt, request.user_question)
+        ai_result = await self.ai.get_advice(system_prompt, user_content)
         print(f">>> AI 건강상담 결과: \n{ai_result} \n<<<")
 
         # 5. 건강상담이력 테이블에 저장
