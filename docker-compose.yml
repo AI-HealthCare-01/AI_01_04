@@ -40,7 +40,31 @@ services:
       timeout: 5s
       retries: 5
 
-  # 3. API Server (FastAPI)
+  # 3. Init (시드 데이터 초기화)
+  init:
+    container_name: init
+    build:
+      context: .
+      dockerfile: app/Dockerfile
+    env_file: .env
+    environment:
+      DB_HOST: postgres
+      DB_PORT: "5432"
+    command: |
+      sh -c "
+        PYTHONPATH=. uv run python scripts/seed_disease_guidelines.py &&
+        PYTHONPATH=. uv run python scripts/seed_drug_vectors.py
+      "
+    volumes:
+      - ./scripts:/app/scripts
+    networks:
+      - ws
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  # 4. API Server (FastAPI)
   fastapi:
     container_name: fastapi
     env_file: .env

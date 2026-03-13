@@ -21,3 +21,4 @@ data/
 
 # Amazon Q rules (개인 설정)
 .amazonq/
+scripts/raw_drug_license_info.xlsx
