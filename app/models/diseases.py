@@ -12,7 +12,9 @@ from tortoise.fields.relational import ForeignKeyRelation
 
 class Disease(models.Model):
     """
-    질병 마스터 테이블 (ERD: diseases)
+    질병 마스터 테이블 (ERD: diseases).
+
+    icd_code는 WHO 국제질병분류코드.
     """
 
     id = fields.IntField(pk=True)
@@ -26,7 +28,9 @@ class Disease(models.Model):
 
 class DiseaseGuideline(models.Model):
     """
-    질병별 가이드라인 (ERD: disease_guidelines)
+    질병별 가이드라인 (ERD: disease_guidelines).
+
+    질병에 대한 카테고리별 관리 지침 콘텐츠.
     """
 
     id = fields.IntField(pk=True)

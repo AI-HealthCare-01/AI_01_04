@@ -12,10 +12,25 @@ from app.models.vector_documents import VectorDocument
 
 
 class VectorDocumentRepository:
+    """
+    vector_documents 테이블 접근을 담당하는 Repository.
+    """
+
     def __init__(self):
         self._model = VectorDocument
 
     async def get_by_id(self, doc_id: int) -> VectorDocument | None:
+        """
+        문서 ID로 벡터 문서 1건을 조회한다.
+
+        Args:
+            doc_id (int):
+                벡터 문서 ID
+
+        Returns:
+            VectorDocument | None:
+                조회된 벡터 문서 객체
+        """
         return await self._model.get_or_none(id=doc_id)
 
     async def get_by_reference(
@@ -23,6 +38,19 @@ class VectorDocumentRepository:
         reference_type: str,
         reference_id: int,
     ) -> VectorDocument | None:
+        """
+        reference_type + reference_id 조합으로 벡터 문서를 조회한다.
+
+        Args:
+            reference_type (str):
+                참조 타입
+            reference_id (int):
+                참조 ID
+
+        Returns:
+            VectorDocument | None:
+                조회된 벡터 문서 객체
+        """
         return await self._model.get_or_none(
             reference_type=reference_type,
             reference_id=reference_id,
@@ -33,9 +61,22 @@ class VectorDocumentRepository:
         reference_type: str,
         reference_ids: list[int],
     ) -> list[VectorDocument]:
-        """reference_ids는 서비스에서 user 소유로 검증된 ID 목록"""
+        """
+        동일한 reference_type과 여러 reference_id에 해당하는 벡터 문서를 조회한다.
+
+        Args:
+            reference_type (str):
+                참조 타입
+            reference_ids (list[int]):
+                참조 ID 목록
+
+        Returns:
+            list[VectorDocument]:
+                조회된 벡터 문서 목록
+        """
         if not reference_ids:
             return []
+
         return await self._model.filter(
             reference_type=reference_type,
             reference_id__in=reference_ids,
@@ -49,6 +90,23 @@ class VectorDocumentRepository:
         content: str,
         embedding: list[float],
     ) -> VectorDocument:
+        """
+        벡터 문서를 생성한다.
+
+        Args:
+            reference_type (str):
+                참조 타입
+            reference_id (int):
+                참조 ID
+            content (str):
+                원문 내용
+            embedding (list[float]):
+                임베딩 벡터
+
+        Returns:
+            VectorDocument:
+                생성된 벡터 문서 객체
+        """
         return await self._model.create(
             reference_type=reference_type,
             reference_id=reference_id,
@@ -63,29 +121,47 @@ class VectorDocumentRepository:
         reference_type: str | None = None,
         top_k: int = 5,
     ) -> list[VectorDocument]:
-        """코사인 유사도 기반 유사 문서 검색 (pgvector)"""
+        """
+        pgvector 코사인 거리 연산으로 유사 문서를 검색한다.
+
+        Args:
+            embedding (list[float]):
+                검색 기준 임베딩 벡터
+            reference_type (str | None):
+                특정 reference_type으로 필터링할지 여부
+            top_k (int):
+                반환할 최대 문서 수
+
+        Returns:
+            list[VectorDocument]:
+                유사한 벡터 문서 목록
+        """
         from tortoise import connections
 
         conn = connections.get("default")
         vector_str = "[" + ",".join(str(v) for v in embedding) + "]"
-        where = "WHERE reference_type = $2" if reference_type else ""
-        params: list = [vector_str, top_k]
-        if reference_type:
-            params = [vector_str, reference_type, top_k]
-            where = "WHERE reference_type = $2"
-            limit_param = "$3"
-        else:
-            limit_param = "$2"
 
-        sql = f"""
+        if reference_type:
+            sql = """
             SELECT id, reference_type, reference_id, content, embedding, created_at
             FROM vector_documents
-            {where}
+            WHERE reference_type = $2
             ORDER BY embedding::vector <=> $1::vector
-            LIMIT {limit_param}
-        """  # noqa: S608
+            LIMIT $3
+            """  # noqa: S608
+            params = [vector_str, reference_type, top_k]
+        else:
+            sql = """
+            SELECT id, reference_type, reference_id, content, embedding, created_at
+            FROM vector_documents
+            ORDER BY embedding::vector <=> $1::vector
+            LIMIT $2
+            """  # noqa: S608
+            params = [vector_str, top_k]
+
         rows = await conn.execute_query_dict(sql, params)
-        docs = []
+
+        docs: list[VectorDocument] = []
         for row in rows:
             doc = VectorDocument(
                 id=row["id"],
@@ -96,12 +172,24 @@ class VectorDocumentRepository:
                 created_at=row["created_at"],
             )
             docs.append(doc)
+
         return docs
 
     async def delete_by_reference(self, reference_type: str, reference_id: int) -> int:
-        """삭제된 행 수 반환"""
-        result = await self._model.filter(
+        """
+        reference_type + reference_id 조합으로 벡터 문서를 삭제한다.
+
+        Args:
+            reference_type (str):
+                참조 타입
+            reference_id (int):
+                참조 ID
+
+        Returns:
+            int:
+                삭제된 행 수
+        """
+        return await self._model.filter(
             reference_type=reference_type,
             reference_id=reference_id,
         ).delete()
-        return result

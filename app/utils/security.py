@@ -7,8 +7,27 @@ pwd_context = CryptContext(
 
 
 def hash_password(password: str) -> str:
+    """
+    비밀번호를 bcrypt로 해싱.
+
+    Args:
+        password (str): 평문 비밀번호.
+
+    Returns:
+        str: bcrypt 해싱된 비밀번호.
+    """
     return pwd_context.hash(password)
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """
+    평문 비밀번호와 해싱된 비밀번호 일치 여부 확인.
+
+    Args:
+        plain_password (str): 입력된 평문 비밀번호.
+        hashed_password (str): DB에 저장된 해싱 비밀번호.
+
+    Returns:
+        bool: 일치하면 True, 아니면 False.
+    """
     return pwd_context.verify(plain_password, hashed_password)

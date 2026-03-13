@@ -8,12 +8,15 @@ from app.repositories.recommendation_repository import RecommendationRepository
 
 
 class TestRecommendationRepository(TestCase):
+    """추천 레포지토리 테스트."""
+
     async def test_get_recommendation_for_user(self):
-        """user_id 소유의 추천만 조회"""
+        """사용자 소유의 추천만 조회되고 다른 사용자는 차단됨 확인."""
         user = await User.create(
             email="test@example.com",
             name="Test User",
             phone_number="01012345678",
+            birthday="1990-01-01",
         )
         batch = await RecommendationBatch.create(user=user)
         rec = await Recommendation.create(

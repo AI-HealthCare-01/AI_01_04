@@ -11,7 +11,7 @@ from app.services.medication import MedicationService, _calc_rate_from_logs, _sl
 
 
 async def _make_user(email: str) -> User:
-    return await User.create(email=email, name="테스터", phone_number="01011112222")
+    return await User.create(email=email, name="테스터", phone_number="01011112222", birthday="1990-01-01")
 
 
 async def _make_prescription(user: User, dose_count: int = 1) -> Prescription:
@@ -28,27 +28,38 @@ async def _make_prescription(user: User, dose_count: int = 1) -> Prescription:
 
 
 class TestSlotsAndRate(TestCase):
+    """복약 슬롯/달성률 유틸 테스트."""
+
     async def test_slots_none(self):
+        """복용 횟수 None 시 아침 슬롯만 반환 확인."""
         assert _slots_by_dose_count(None) == ["아침"]
 
     async def test_slots_1(self):
+        """복용 횟수 1 시 아침 슬롯만 반환 확인."""
         assert _slots_by_dose_count(1) == ["아침"]
 
     async def test_slots_2(self):
+        """복용 횟수 2 시 아침/저녁 슬롯 반환 확인."""
         assert _slots_by_dose_count(2) == ["아침", "저녁"]
 
     async def test_slots_3(self):
+        """복용 횟수 3 시 아침/점심/저녁 슬롯 반환 확인."""
         assert _slots_by_dose_count(3) == ["아침", "점심", "저녁"]
 
     async def test_slots_4(self):
+        """복용 횟수 4 시 아침/점심/저녁/자기전 슬롯 반환 확인."""
         assert _slots_by_dose_count(4) == ["아침", "점심", "저녁", "자기전"]
 
     async def test_calc_rate_empty(self):
+        """빈 로그 리스트 시 달성률 0 반환 확인."""
         assert _calc_rate_from_logs([]) == 0
 
 
 class TestMedicationService(TestCase):
+    """복약 서비스 테스트."""
+
     async def test_list_history_empty(self):
+        """처방전 없을 때 이력 조회 시 날짜 수만큼 items 반환 확인."""
         user = await _make_user("med_hist@example.com")
         service = MedicationService()
         result = await service.list_history(user.id, "2024-01-01", "2024-01-03")

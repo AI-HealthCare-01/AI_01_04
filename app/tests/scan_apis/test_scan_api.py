@@ -17,22 +17,28 @@ SIGNUP_DATA = {
 
 
 class TestScanAPI(TestCase):
+    """스캔 API 테스트."""
+
     async def test_upload_scan_unauthorized(self):
+        """인증 없이 업로드 시 401 반환 확인."""
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             response = await client.post("/api/v1/scans/upload", files={"file": ("test.jpg", b"data", "image/jpeg")})
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
     async def test_get_scan_result_unauthorized(self):
+        """인증 없이 결과 조회 시 401 반환 확인."""
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             response = await client.get("/api/v1/scans/1")
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
     async def test_analyze_scan_unauthorized(self):
+        """인증 없이 분석 시작 시 401 반환 확인."""
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             response = await client.post("/api/v1/scans/1/analyze")
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
     async def test_upload_scan_success(self):
+        """로그인 사용자의 이미지 업로드 성공 확인."""
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             await client.post("/api/v1/auth/signup", json=SIGNUP_DATA)
             login = await client.post(

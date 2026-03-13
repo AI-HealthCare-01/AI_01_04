@@ -15,22 +15,28 @@ SIGNUP_DATA = {
 
 
 class TestMedicationAPI(TestCase):
+    """복약 관리 API 테스트."""
+
     async def test_get_medication_history_unauthorized(self):
+        """인증 없이 이력 조회 시 401 반환 확인."""
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             response = await client.get("/api/v1/medications/history")
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
     async def test_get_medication_day_detail_unauthorized(self):
+        """인증 없이 일자 상세 조회 시 401 반환 확인."""
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             response = await client.get("/api/v1/medications/history/2024-01-01")
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
     async def test_update_medication_log_unauthorized(self):
+        """인증 없이 로그 업데이트 시 401 반환 확인."""
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             response = await client.patch("/api/v1/medications/logs/1", json={"status": "taken"})
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
     async def test_get_medication_history_success(self):
+        """로그인 사용자의 복약 이력 조회 성공 확인."""
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             await client.post("/api/v1/auth/signup", json=SIGNUP_DATA)
             login = await client.post(

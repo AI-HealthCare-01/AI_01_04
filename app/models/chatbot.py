@@ -19,7 +19,9 @@ if TYPE_CHECKING:
 
 class ChatbotSession(models.Model):
     """
-    챗봇 대화 세션 (ERD: chatbot_sessions)
+    챗봇 대화 세션 (ERD: chatbot_sessions).
+
+    한 세션에 여러 메시지(1:N)가 속함.
     """
 
     id = fields.IntField(pk=True)
@@ -37,7 +39,11 @@ class ChatbotSession(models.Model):
 
 class ChatbotMessage(models.Model):
     """
-    챗봇 메시지 (ERD: chatbot_messages)
+    챗봇 메시지 (ERD: chatbot_messages).
+
+    Attributes:
+        sender: ``user`` 또는 ``assistant``.
+        message: 메시지 본문.
     """
 
     id = fields.IntField(pk=True)
@@ -57,9 +63,9 @@ class ChatbotMessage(models.Model):
 
 class ChatbotSessionSummary(models.Model):
     """
-    세션 요약 (ERD: chatbot_session_summaries)
+    세션 요약 (ERD: chatbot_session_summaries).
 
-    대화 종료 후 AI가 생성한 요약
+    대화 종료 후 AI가 생성한 요약 텍스트 저장.
     """
 
     id = fields.IntField(pk=True)
