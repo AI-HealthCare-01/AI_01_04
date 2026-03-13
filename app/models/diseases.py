@@ -42,6 +42,7 @@ class DiseaseGuideline(models.Model):
     )
     category = fields.CharField(max_length=100)
     content = fields.TextField()
+    source = fields.CharField(max_length=100, null=True)
     created_at = fields.DatetimeField(auto_now_add=True)
 
     class Meta:
