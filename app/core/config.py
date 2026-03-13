@@ -47,3 +47,6 @@ class Config(BaseSettings):
     NAVER_OCR_API_URL: str = ""
     OPENAI_API_KEY: str = ""
     OPENAI_MODEL: str = "gpt-4o-mini"
+
+    # ENABLE_LLM_REFINEMENT=False로 검증 그다음 LLM refinement 켜서 비교
+    ENABLE_LLM_REFINEMENT: bool = False
