@@ -24,7 +24,7 @@ class Config(BaseSettings):
     """
 
     model_config = SettingsConfigDict(env_file="envs/.local.env", env_file_encoding="utf-8", extra="ignore")
-    
+
     ENV: Env = Env.LOCAL
     SECRET_KEY: str = f"default-secret-key{uuid.uuid4().hex}"
     TIMEZONE: zoneinfo.ZoneInfo = field(default_factory=lambda: zoneinfo.ZoneInfo("Asia/Seoul"))
