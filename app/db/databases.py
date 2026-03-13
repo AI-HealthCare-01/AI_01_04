@@ -12,6 +12,8 @@ TORTOISE_APP_MODELS = [
     "app.models.diseases",  # Disease, DiseaseGuideline
     "app.models.drugs",
     "app.models.prescriptions",  # Prescription, PrescriptionMemo, MedicationIntakeLog
+    "app.models.chat_medication",
+    "app.models.chat_health",
     "app.models.chatbot",  # ChatbotSession, ChatbotMessage, ChatbotSessionSummary
     "app.models.vector_documents",
     "app.models.scans",
