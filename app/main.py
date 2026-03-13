@@ -1,5 +1,4 @@
 import logging
-from .ui import chatbot
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -12,6 +11,8 @@ from app.apis.v1 import v1_routers
 from app.core import config
 from app.db.databases import initialize_tortoise
 from app.models.health import HealthChecklistTemplate
+
+from .ui import chatbot
 
 logger = logging.getLogger(__name__)
 

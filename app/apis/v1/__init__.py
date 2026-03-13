@@ -4,6 +4,9 @@ from fastapi import APIRouter
 
 from app.apis.v1.auth_routers import auth_router
 
+# ai 챗봇 대화를 위한 환자 정보 (복약이력, 상담이력) 조회 및 저장
+from app.apis.v1.chatbot_router import chatbot_router
+
 # 추가 부분
 from app.apis.v1.dashboard_router import dashboard_router
 from app.apis.v1.drugs_router import drug_router
@@ -20,9 +23,6 @@ from app.apis.v1.recommendation_router import recommendation_router
 # 문서 업로드/분석 시작/OCR 결과 조회/수정/저장
 from app.apis.v1.scan_router import scan_router
 from app.apis.v1.user_routers import user_router
-
-# ai 챗봇 대화를 위한 환자 정보 (복약이력, 상담이력) 조회 및 저장
-from app.apis.v1.chatbot_router import chatbot_router
 
 v1_routers = APIRouter(prefix="/api/v1")
 v1_routers.include_router(auth_router)
