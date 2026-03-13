@@ -39,6 +39,33 @@ function formatErrorDetail(detail) {
     return String(detail);
 }
 
+function formatHttpStatusMessage(status) {
+    switch (status) {
+        case 400:
+            return '요청 형식이 올바르지 않습니다.';
+        case 401:
+            return '로그인이 필요합니다.';
+        case 403:
+            return '이 작업을 수행할 권한이 없습니다.';
+        case 404:
+            return '요청한 정보를 찾을 수 없습니다.';
+        case 409:
+            return '이미 존재하는 정보와 충돌했습니다.';
+        case 422:
+            return '입력값을 다시 확인해주세요.';
+        case 429:
+            return '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.';
+        case 500:
+            return '서버 내부 오류가 발생했습니다.';
+        case 502:
+            return '외부 연동 서버에서 오류가 발생했습니다.';
+        case 504:
+            return '분석 시간이 길어져 응답이 지연되었습니다. 잠시 후 결과를 다시 확인하거나 직접 수정해 주세요.';
+        default:
+            return `API error: ${status}`;
+    }
+}
+
 // Simple fetch wrapper
 async function fetchAPI(endpoint, options = {}) {
     const url = `${API_BASE_URL}${endpoint}`;
@@ -84,7 +111,7 @@ async function fetchAPI(endpoint, options = {}) {
         if (!response.ok) {
             let errData;
             try { errData = await response.json(); } catch (e) { }
-            throw new Error(formatErrorDetail(errData && errData.detail) || `API error: ${response.status}`);
+            throw new Error(formatErrorDetail(errData && errData.detail) || formatHttpStatusMessage(response.status));
         }
 
         const contentType = response.headers.get("content-type");
@@ -113,7 +140,9 @@ window.api = {
     uploadScan: (formData) => fetchAPI('/scans/upload', { method: 'POST', body: formData }),
     analyzeScan: (scanId) => fetchAPI(`/scans/${scanId}/analyze`, { method: 'POST' }),
     getScanResult: (scanId) => fetchAPI(`/scans/${scanId}`),
+    updateScanResult: (scanId, body) => fetchAPI(`/scans/${scanId}/result`, { method: 'PATCH', body }),
     saveScanResult: (scanId) => fetchAPI(`/scans/${scanId}/save`, { method: 'POST' }),
+    searchDrugs: (q, limit = 10) => fetchAPI(`/drugs/search?q=${encodeURIComponent(q)}&limit=${limit}`),
     getActiveRecommendations: () => fetchAPI('/recommendations/active'),
     sendFeedback: (recId, type) => fetchAPI(`/recommendations/${recId}/feedback?feedback_type=${type}`, { method: 'POST' })
 };
