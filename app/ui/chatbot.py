@@ -25,7 +25,7 @@ def index():
             .input-area { padding: 15px; border-top: 1px solid #eee; display: flex; gap: 10px; background: white; }
             input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; outline: none; }
             .send-btn { padding: 10px 20px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
-            
+
             /* 다시보기 버튼 스타일 */
             .retry-btn { border: 1px solid #ddd; background: white; padding: 8px 12px; border-radius: 20px; cursor: pointer; font-size: 12px; display: inline-flex; align-items: center; gap: 5px; transition: 0.2s; margin-top: 5px; }
             .retry-btn:hover { background: #f0f0f0; border-color: #bbb; }
@@ -91,24 +91,24 @@ def index():
                 addMsg(val, 'user');
                 input.value = '';
 
-                if (val === '1' || val === '2') { 
-                    step = 'MENU'; 
+                if (val === '1' || val === '2') {
+                    step = 'MENU';
                 }
 
                 if (step === 'MENU') {
-                    if (val === '1') { 
-                        step = 'CODE'; 
-                        mode = 'medication'; 
-                        addMsg("<b>복약 지도</b> 매뉴를 시작합니다. <b>질병명</b>를 입력해주세요.", "ai"); 
-                    } else if (val === '2') { 
-                        step = 'CHAT'; 
-                        mode = 'health'; 
-                        addMsg("<b>건강 상담</b> 매뉴를 시작합니다. <b>질문</b>을 입력해주세요.", "ai"); 
+                    if (val === '1') {
+                        step = 'CODE';
+                        mode = 'medication';
+                        addMsg("<b>복약 지도</b> 매뉴를 시작합니다. <b>질병명</b>를 입력해주세요.", "ai");
+                    } else if (val === '2') {
+                        step = 'CHAT';
+                        mode = 'health';
+                        addMsg("<b>건강 상담</b> 매뉴를 시작합니다. <b>질문</b>을 입력해주세요.", "ai");
                     } else {
                         addMsg("1번 또는 2번을 입력해주세요.", "ai");
                     }
                 } else if (step === 'CODE') {
-                    userData.disease_code = val; 
+                    userData.disease_code = val;
                     step = 'MEDS';
                     addMsg("처방받으신 <b>약 목록</b>을 입력해주세요.", "ai");
                 } else if (step === 'MEDS') {
@@ -116,9 +116,9 @@ def index():
                     addMsg("분석 리포트를 생성 중입니다...", "ai");
                     runAnalysis(mode);
                 } else if (step === 'CHAT') {
-                    userData.disease_code = ""; 
+                    userData.disease_code = "";
                     userData.medications = [];
-                    userData.user_question = val; 
+                    userData.user_question = val;
                     addMsg("분석 리포트를 생성 중입니다...", "ai");
                     runAnalysis(mode);
                 }
@@ -126,13 +126,13 @@ def index():
 
             async function runAnalysis(currentMode) {
                 const reportId = 'report_' + Date.now(); // 고유 ID 생성
-                const res = await fetch('/api/v1/chatbot/chat', { 
-                    method: 'POST', 
-                    headers: {'Content-Type': 'application/json'}, 
-                    body: JSON.stringify({...userData, mode: currentMode}) 
+                const res = await fetch('/api/v1/chatbot/chat', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({...userData, mode: currentMode})
                 });
                 const data = await res.json();
-                
+
                 // 데이터 캐싱
                 const title = currentMode === 'medication' ? '복약지도' : '건강상담';
                 const tagColor = currentMode === 'medication' ? '#2e7d32' : '#0288d1';

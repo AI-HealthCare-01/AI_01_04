@@ -25,16 +25,16 @@ class ChatHealthService(BaseService):
 
         # 2. 사용자 요청 본문
         user_content = f"""
-        - 사용자 질문: {request.user_question}        
+        - 사용자 질문: {request.user_question}
         """
         print(f">>> user_content: {user_content} \n<<<")
 
         # 3. 시스템 프롬프트
         system_prompt = f"""{COMMON_SYSTEM_PROMPT}\n
-        당신은 환자의 일상 건강을 관리하는 '전문의 겸 건강 코치'입니다. 
+        당신은 환자의 일상 건강을 관리하는 '전문의 겸 건강 코치'입니다.
         사용자의 질문에 성실히 답변하며 기존의 복약이력과 질문 내역을 참고해 답변을 작성하세요.
-        - 최근 질문 내역: {chat_hist_str if chat_hist_str else "없음"} 
-        - 과거 복약 이력: {medi_hist_str if medi_hist_str else "없음"} 
+        - 최근 질문 내역: {chat_hist_str if chat_hist_str else "없음"}
+        - 과거 복약 이력: {medi_hist_str if medi_hist_str else "없음"}
         사용자가 식단, 운동, 생활 등의 질문을 하는 경우 아래 내용을 기준으로 답변하세요.
         1. [답변]: 사용자의 궁금증에 대한 의학적 근거 기반의 상세 답변
         2. [식단 추천]: 해당 건강 이슈에 도움을 주는 음식과 피해야 할 음식

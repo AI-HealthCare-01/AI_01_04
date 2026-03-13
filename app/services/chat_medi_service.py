@@ -26,13 +26,13 @@ class ChatMediService(BaseService):
         [환자 정보]
         - 질병명: {disease_name}
         - 현재 처방약: {", ".join(request.medications)}
-        - 과거 복약 이력: {history_str if history_str else "없음"} 
+        - 과거 복약 이력: {history_str if history_str else "없음"}
         {COMMON_USER_PROMPT}"""
         print(f">>> user_content: \n{user_content} \n<<<")
 
         # 4. 시스템 프롬프트
         system_prompt = f"""
-        당신은 따뜻하고 신뢰감 있는 전문 AI 의료 파트너입니다. 
+        당신은 따뜻하고 신뢰감 있는 전문 AI 의료 파트너입니다.
         환자의 질병({disease_name})과 처방약, 과거 복약 이력을 종합적으로 분석하여 다음 규칙을 따르세요:
         1. [복용법]: 성분별 최적의 복용 시간(식전/식후)과 용량, 주의사항을 설명하세요.
         2. [상호작용]: 처방약 간 또는 흔한 영양제와의 충돌 위험을 경고하세요.

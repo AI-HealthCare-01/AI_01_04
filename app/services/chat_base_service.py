@@ -8,7 +8,7 @@ _medi_cache = {}
 
 class ChatBaseService:
     async def check_user_exists(self, patient_id: str) -> bool:
-        exists = User.filter(id=patient_id).exists
+        User.filter(id=patient_id).exists
         # exists = await MediChat.filter(patient_id=patient_id).exists
         return True
 
