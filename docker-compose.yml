@@ -32,10 +32,10 @@ services:
     networks:
       - ws
     volumes:
-      - postgres_data:/var/lib/postgresql/data  # 컨테이너가 삭제돼도 데이터는 호스트 파일시스템에 남음
-      - ./scripts/init-db:/docker-entrypoint-initdb.d  # 최초 기동 시 pgvector 확장 등 초기화 스크립트 실행
+      - postgres_data:/var/lib/postgresql/data # 컨테이너가 삭제돼도 데이터는 호스트 파일시스템에 남음
+      - ./scripts/init-db:/docker-entrypoint-initdb.d # 최초 기동 시 pgvector 확장 등 초기화 스크립트 실행
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -45,20 +45,20 @@ services:
     container_name: fastapi
     env_file: .env
     environment:
-      DB_HOST: postgres  # Docker 내부에서는 서비스명으로 접속 (.env의 localhost 덮어씀)
+      DB_HOST: postgres # Docker 내부에서는 서비스명으로 접속 (.env의 localhost 덮어씀)
       DB_PORT: "5432"
     build:
-      context: .  # 프로젝트 루트를 빌드 컨텍스트로 지정
-      dockerfile: app/Dockerfile  # Dockerfile 위치 지정
+      context: . # 프로젝트 루트를 빌드 컨텍스트로 지정
+      dockerfile: app/Dockerfile # Dockerfile 위치 지정
       platforms:
         - linux/amd64
         - linux/arm64
-    image: ${DOCKER_USER}/${DOCKER_REPOSITORY}:app-${APP_VERSION}  # APP_VERSION은 빌드된 이미지의 버전관리를 위함입니다. v1.0.0 형식으로 사용합니다.
-    command: | 
-      sh -c "uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    image: ${DOCKER_USER}/${DOCKER_REPOSITORY}:app-${APP_VERSION} # APP_VERSION은 빌드된 이미지의 버전관리를 위함입니다. v1.0.0 형식으로 사용합니다.
+    command: >
+      sh -c "uv run aerich upgrade && uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
     volumes:
-      - ./app:/app/app  # 로컬의 app 디렉토리를 컨테이너의 /app/app에 마운트(수정사항 즉시 반영)
-      - ./artifacts:/app/artifacts  # 업로드 파일 영구 보존
+      - ./app:/app/app # 로컬의 app 디렉토리를 컨테이너의 /app/app에 마운트(수정사항 즉시 반영)
+      - ./artifacts:/app/artifacts # 업로드 파일 영구 보존
       - static_volume:/app/templates
     restart: always
     ports:
@@ -76,15 +76,15 @@ services:
     container_name: ai-worker
     env_file: .env
     environment:
-      DB_HOST: postgres  # Docker 내부에서는 서비스명으로 접속
+      DB_HOST: postgres # Docker 내부에서는 서비스명으로 접속
       DB_PORT: "5432"
     build:
-      context: .  # 프로젝트 루트를 빌드 컨텍스트로 지정
-      dockerfile: ai_worker/Dockerfile  # Dockerfile 위치 지정
+      context: . # 프로젝트 루트를 빌드 컨텍스트로 지정
+      dockerfile: ai_worker/Dockerfile # Dockerfile 위치 지정
       platforms:
         - linux/amd64
         - linux/arm64
-    image: ${DOCKER_USER}/${DOCKER_REPOSITORY}:ai-${AI_WORKER_VERSION}  # AI_WORKER_VERSION은 빌드된 이미지의 버전관리를 위함입니다. V1.0.0 형식으로 사용합니다.
+    image: ${DOCKER_USER}/${DOCKER_REPOSITORY}:ai-${AI_WORKER_VERSION} # AI_WORKER_VERSION은 빌드된 이미지의 버전관리를 위함입니다. V1.0.0 형식으로 사용합니다.
     restart: always
     mem_limit: 4G
     networks:
@@ -112,6 +112,7 @@ services:
 volumes:
   postgres_data:
   static_volume:
+
 
 networks:
   ws:
