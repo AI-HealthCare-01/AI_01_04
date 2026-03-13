@@ -17,9 +17,7 @@ class ChatMediService(BaseService):
 
         # 2. 과거 복약 이력 조회
         history = await self.get_medi_history(request.patient_id)
-        print(f">>> history: \n{history} \n<<<")
         history_str = "\n".join([f"- {h['created_at'].date()}: {h['medications']}" for h in history])
-        print(f">>> history_str: \n{history_str} \n<<<")
 
         # 3. 사용자 요청 본문
         user_content = f"""
@@ -28,7 +26,6 @@ class ChatMediService(BaseService):
         - 현재 처방약: {", ".join(request.medications)}
         - 과거 복약 이력: {history_str if history_str else "없음"}
         {COMMON_USER_PROMPT}"""
-        print(f">>> user_content: \n{user_content} \n<<<")
 
         # 4. 시스템 프롬프트
         system_prompt = f"""
@@ -38,7 +35,6 @@ class ChatMediService(BaseService):
         2. [상호작용]: 처방약 간 또는 흔한 영양제와의 충돌 위험을 경고하세요.
         3. [부작용]: 즉시 복용을 중단해야 하는 위험 징후를 명시하세요.
         {COMMON_SYSTEM_PROMPT}"""
-        print(f">>> system_prompt: \n{system_prompt} \n<<<")
 
         # 5. AI 분석
         ai_result = await self.ai.get_advice(system_prompt, user_content)

@@ -8,9 +8,8 @@ _medi_cache = {}
 
 class ChatBaseService:
     async def check_user_exists(self, patient_id: str) -> bool:
-        User.filter(id=patient_id).exists
-        # exists = await MediChat.filter(patient_id=patient_id).exists
-        return True
+        exists = User.filter(id=patient_id).exists
+        return exists
 
     # 복약 이력과 건강 상담 이력을 모두 가져와 통합 관리
     async def get_health_history(self, patient_id: str, force_refresh: bool = False):
@@ -58,7 +57,6 @@ class ChatBaseService:
         # 2. DB 조회
         print(f"🔍 [DB Lookup] {patient_id}의 복약 이력 데이터를 DB에서 새로 조회합니다.")
         medi_history = await MediChat.filter(patient_id=patient_id).all()
-        print(f">>> medi_history: \n{medi_history} \n<<<")
 
         # 3. 조회한 데이터를 캐시에 저장 (세션 유지 효과)
         serialized_history = []

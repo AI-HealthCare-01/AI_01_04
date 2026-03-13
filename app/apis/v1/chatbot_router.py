@@ -15,8 +15,6 @@ chatbot_router = APIRouter(prefix="/chatbot", tags=["Medical API"])
 async def check_patient(patient_id: str):
     service = BaseService()
     exists = await service.check_user_exists(patient_id)
-    print(f">>> check_patient: \n{exists} \n<<<")
-
     return {"exists": exists}
 
 

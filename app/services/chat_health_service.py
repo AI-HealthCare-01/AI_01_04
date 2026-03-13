@@ -13,21 +13,16 @@ class ChatHealthService(BaseService):
     async def process_health_chat(self, request: ChatRequest):
         # 1. 과거 이력 조회
         chat_history = await self.get_health_history(request.patient_id)
-        print(f">>> chat_history: \n{chat_history} \n<<<")
         medi_history = await self.get_medi_history(request.patient_id)
-        print(f">>> medi_history: \n{medi_history} \n<<<")
         chat_hist_str = "\n".join([f"- {h['created_at'].date()}: {h['user_question']}" for h in chat_history])
-        print(f">>> chat_hist_str: \n{chat_hist_str} \n<<<")
         medi_hist_str = "\n".join(
             [f"- {h['created_at'].date()}: {h['disease_code']}: {h['medications']}" for h in medi_history]
         )
-        print(f">>> medi_hist_str: \n{medi_hist_str} \n<<<")
 
         # 2. 사용자 요청 본문
         user_content = f"""
         - 사용자 질문: {request.user_question}
         """
-        print(f">>> user_content: {user_content} \n<<<")
 
         # 3. 시스템 프롬프트
         system_prompt = f"""{COMMON_SYSTEM_PROMPT}\n
@@ -40,10 +35,10 @@ class ChatHealthService(BaseService):
         2. [식단 추천]: 해당 건강 이슈에 도움을 주는 음식과 피해야 할 음식
         3. [운동/생활]: 실천 가능한 구체적인 운동 방법과 수면/스트레스 관리 팁.
         4. 환자에게 동기를 부여하는 따뜻하고 권위 있는 말투를 유지하세요."""
-        print(f">>> system_prompt: \n{system_prompt} \n<<<")
 
         # 5. AI 분석
         ai_result = await self.ai.get_advice(system_prompt, request.user_question)
+        print(f">>> AI 건강상담 결과: \n{ai_result} \n<<<")
 
         # 5. 건강상담이력 테이블에 저장
         await HealthChat.create(
