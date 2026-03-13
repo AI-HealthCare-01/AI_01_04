@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>일상 건강 기록</title>
+    <title data-text="health.title">일상 건강 기록</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -64,8 +64,8 @@
         <main class="main-content">
             <div class="fade-in mb-4 pb-2 border-bottom d-flex justify-content-between align-items-center">
                 <div>
-                    <h3 class="fw-bold mb-0">일상 건강 활동</h3>
-                    <p class="text-soft mt-1 mb-0">수분 섭취, 운동, 수면 등 추천받은 일일 미션을 수행하세요.</p>
+                    <h3 class="fw-bold mb-0" data-text="health.title">일상 건강 활동</h3>
+                    <p class="text-soft mt-1 mb-0" data-text="health.subtitle">수분 섭취, 운동, 수면 등 추천받은 일일 미션을 수행하세요.</p>
                 </div>
             </div>
 
@@ -77,7 +77,7 @@
 
                 <div class="col-12">
 
-                    <h5 class="fw-bold text-primary-custom mb-3"><i class="bi bi-calendar2-check me-2"></i>오늘 및 최근 건강 기록
+                    <h5 class="fw-bold text-primary-custom mb-3"><i class="bi bi-calendar2-check me-2"></i><span data-text="health.sectionTitle">오늘 및 최근 건강 기록</span>
                     </h5>
                     <div id="health-list" class="row g-3">
                         <!-- Javascript items injected here -->
@@ -85,8 +85,8 @@
 
                     <div id="empty-state" class="text-center py-5 d-none">
                         <i class="bi bi-lungs text-soft display-1"></i>
-                        <h5 class="text-soft mt-3">등록된 건강관리 활동이 없습니다.</h5>
-                        <p class="text-secondary small">목표를 설정하거나 처방 기반 추천을 받아 시작해보세요.</p>
+                        <h5 class="text-soft mt-3" data-text="health.emptyTitle">등록된 건강관리 활동이 없습니다.</h5>
+                        <p class="text-secondary small" data-text="health.emptySubtitle">목표를 설정하거나 처방 기반 추천을 받아 시작해보세요.</p>
                     </div>
 
                 </div>
@@ -95,6 +95,7 @@
         </main>
     </div>
 
+    <script src="js/texts.js"></script>
     <script src="js/api.js"></script>
     <script src="js/components.js"></script>
 
@@ -115,17 +116,17 @@
 
                 if (newStatus === 'done') {
                     card.classList.add('selected');
-                    card.querySelector('.status-text').innerHTML = '<i class="bi bi-check-circle-fill me-1"></i>완료';
+                    card.querySelector('.status-text').innerHTML = `<i class="bi bi-check-circle-fill me-1"></i>${getText('health.done', '완료')}`;
                 } else {
                     card.classList.remove('selected');
-                    card.querySelector('.status-text').innerHTML = '미완료';
+                    card.querySelector('.status-text').innerHTML = getText('health.pending', '미완료');
                 }
 
                 // Rebind
                 card.onclick = () => toggleHealthLog(logId, newStatus, elId);
 
             } catch (err) {
-                alert('업데이트 중 오류가 발생했습니다: ' + err.message);
+                alert(getText('health.updateError', '업데이트 중 오류가 발생했습니다: ') + err.message);
             }
         }
 
@@ -134,6 +135,8 @@
             document.getElementById('content-container').classList.add('d-none');
 
             try {
+                applyTextBindings();
+                document.title = getText('health.title', document.title);
                 const data = await window.api.getHealthHistory();
                 const container = document.getElementById('health-list');
                 container.innerHTML = '';
@@ -176,7 +179,7 @@
                             ${log.memo ? `<p class="mb-0 small opacity-75">${log.memo}</p>` : ''}
                         </div>
                         <div class="ms-2">
-                           <span class="status-text fw-bold small opacity-75">${isDone ? '<i class="bi bi-check-circle-fill me-1"></i>완료' : '미완료'}</span>
+                           <span class="status-text fw-bold small opacity-75">${isDone ? `<i class="bi bi-check-circle-fill me-1"></i>${getText('health.done', '완료')}` : getText('health.pending', '미완료')}</span>
                         </div>
                     </div>
                 </div>
@@ -186,7 +189,7 @@
                 });
 
             } catch (err) {
-                alert('데이터를 불러오지 못했습니다: ' + err.message);
+                alert(getText('health.loadError', '데이터를 불러오지 못했습니다: ') + err.message);
             } finally {
                 document.getElementById('loading').classList.add('d-none');
                 document.getElementById('content-container').classList.remove('d-none');

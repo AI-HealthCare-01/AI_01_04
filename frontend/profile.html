@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>내 건강 프로필</title>
+    <title data-text="profile.title">내 건강 프로필</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -27,18 +27,18 @@
         <!-- Main Content -->
         <main class="main-content">
             <div class="fade-in mb-4 pb-2 border-bottom">
-                <h3 class="fw-bold mb-0">내 건강 프로필 설정</h3>
-                <p class="text-soft mt-1 mb-0">정확한 정보를 입력할수록 더 정교한 분석 결과를 받으실 수 있습니다.</p>
+                <h3 class="fw-bold mb-0" data-text="profile.title">내 건강 프로필 설정</h3>
+                <p class="text-soft mt-1 mb-0" data-text="profile.subtitle">정확한 정보를 입력할수록 더 정교한 분석 결과를 받으실 수 있습니다.</p>
             </div>
 
             <div class="row g-4 fade-in">
                 <div class="col-md-5 col-lg-4">
                     <div class="card p-4 text-center h-100">
-                        <h5 class="fw-bold text-primary-custom mb-3">프로필 사진</h5>
+                        <h5 class="fw-bold text-primary-custom mb-3" data-text="profile.photoTitle">프로필 사진</h5>
 
                         <img id="profile-img-preview" src="" alt="프로필"
                             class="profile-img-lg mb-3 shadow mx-auto d-block" style="width:120px;height:120px;">
-                        <p id="profile-email" class="text-soft mb-4">계정 로딩 중...</p>
+                        <p id="profile-email" class="text-soft mb-4" data-text="profile.loadingEmail">계정 로딩 중...</p>
 
                         <div id="upload-status" class="alert p-2 small d-none"></div>
 
@@ -46,47 +46,47 @@
                             accept="image/png, image/jpeg, image/jpg" onchange="uploadProfileImage(event)">
                         <button class="btn btn-outline-primary w-100 rounded-pill"
                             onclick="document.getElementById('profile-img-input').click()">
-                            <i class="bi bi-camera me-1"></i> 사진 변경하기
+                            <i class="bi bi-camera me-1"></i><span data-text="profile.changePhoto"> 사진 변경하기</span>
                         </button>
                     </div>
                 </div>
 
                 <div class="col-md-7 col-lg-8">
                     <div class="card p-4 h-100">
-                        <h5 class="fw-bold text-primary-custom mb-4">기본 정보 수정</h5>
+                        <h5 class="fw-bold text-primary-custom mb-4" data-text="profile.formTitle">기본 정보 수정</h5>
 
                         <div id="update-status" class="alert p-2 small d-none"></div>
 
                         <form id="profile-form" onsubmit="updateProfile(event)">
                             <div class="row g-3 mb-3">
                                 <div class="col-md-6">
-                                    <label class="form-label text-secondary small fw-medium">이름</label>
+                                    <label class="form-label text-secondary small fw-medium" data-text="profile.name">이름</label>
                                     <input type="text" id="prof-name" class="form-control" required>
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label text-secondary small fw-medium">생년월일 (YYYY-MM-DD)</label>
+                                    <label class="form-label text-secondary small fw-medium" data-text="profile.birthday">생년월일 (YYYY-MM-DD)</label>
                                     <input type="date" id="prof-birth" class="form-control">
                                 </div>
                             </div>
 
                             <div class="row g-3 mb-4">
                                 <div class="col-md-6">
-                                    <label class="form-label text-secondary small fw-medium">성별</label>
+                                    <label class="form-label text-secondary small fw-medium" data-text="profile.gender">성별</label>
                                     <select id="prof-gender" class="form-select border-1 px-3 py-2 bg-light">
-                                        <option value="">선택 안함</option>
-                                        <option value="MALE">남성</option>
-                                        <option value="FEMALE">여성</option>
+                                        <option value="" data-text="profile.genderNone">선택 안함</option>
+                                        <option value="MALE" data-text="profile.genderMale">남성</option>
+                                        <option value="FEMALE" data-text="profile.genderFemale">여성</option>
                                     </select>
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label text-secondary small fw-medium">휴대폰 번호</label>
-                                    <input type="tel" id="prof-phone" class="form-control" placeholder="010-1234-5678">
+                                    <label class="form-label text-secondary small fw-medium" data-text="profile.phone">휴대폰 번호</label>
+                                    <input type="tel" id="prof-phone" class="form-control" data-placeholder="profile.phonePlaceholder" placeholder="010-1234-5678">
                                 </div>
                             </div>
 
                             <div class="d-flex justify-content-end">
                                 <button type="submit" id="update-btn" class="btn btn-primary px-4 py-2">
-                                    <span class="btn-text">정보 저장하기</span>
+                                    <span class="btn-text" data-text="profile.saveButton">정보 저장하기</span>
                                     <span class="spinner-border spinner-border-sm d-none" role="status"></span>
                                 </button>
                             </div>
@@ -97,6 +97,7 @@
         </main>
     </div>
 
+    <script src="js/texts.js"></script>
     <script src="js/api.js"></script>
     <script src="js/components.js"></script>
     <script>
@@ -106,6 +107,8 @@
 
         async function loadProfile() {
             try {
+                applyTextBindings();
+                document.title = getText('profile.title', document.title);
                 const user = await window.api.getUserMe();
 
                 // Populate form
@@ -145,7 +148,7 @@
 
                 const updated = await window.api.fetchAPI('/users/me', { method: 'PATCH', body: data });
 
-                statusBox.innerText = '정보가 성공적으로 업데이트 되었습니다.';
+                statusBox.innerText = getText('profile.updateSuccess', '정보가 성공적으로 업데이트 되었습니다.');
                 statusBox.classList.add('alert-success');
                 statusBox.classList.remove('d-none', 'alert-danger');
 
@@ -171,7 +174,7 @@
             const box = document.getElementById('upload-status');
             try {
                 box.className = 'alert alert-info p-2 small';
-                box.innerText = '업로드 중입니다...';
+                box.innerText = getText('profile.uploadLoading', '업로드 중입니다...');
 
                 const formData = new FormData();
                 formData.append('file', file);
@@ -181,7 +184,7 @@
 
                 document.getElementById('profile-img-preview').src = res.profile_image_url;
                 box.className = 'alert alert-success p-2 small';
-                box.innerText = '사진이 업데이트 되었습니다.';
+                box.innerText = getText('profile.uploadSuccess', '사진이 업데이트 되었습니다.');
 
             } catch (err) {
                 box.className = 'alert alert-danger p-2 small';

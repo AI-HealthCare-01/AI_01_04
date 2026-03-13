@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>처방전 및 진단서 등록</title>
+    <title data-text="scans.title">처방전 및 진단서 등록</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -63,29 +63,29 @@
 
         <main class="main-content">
             <div class="fade-in mb-4 pb-2 border-bottom">
-                <h3 class="fw-bold mb-0">처방전 자동 입력</h3>
-                <p class="text-soft mt-1 mb-0">사진을 올리시면 AI가 약물 정보를 분석해 복약 일정에 자동으로 넣어드립니다.</p>
+                <h3 class="fw-bold mb-0" data-text="scans.title">처방전 자동 입력</h3>
+                <p class="text-soft mt-1 mb-0" data-text="scans.subtitle">사진을 올리시면 AI가 약물 정보를 분석해 복약 일정에 자동으로 넣어드립니다.</p>
             </div>
 
             <div class="row g-4 fade-in">
                 <div class="col-md-5">
                     <div class="card p-4 h-100 text-center">
-                        <h5 class="fw-bold text-primary-custom mb-3">새 처방전/기록 등록</h5>
+                        <h5 class="fw-bold text-primary-custom mb-3" data-text="scans.cardTitle">새 처방전/기록 등록</h5>
 
                         <div id="upload-status" class="alert d-none small p-2 mb-3"></div>
 
                         <div class="mb-3 text-start">
-                            <label class="form-label text-secondary small fw-bold">문서 종류 선택</label>
+                            <label class="form-label text-secondary small fw-bold" data-text="scans.docTypeLabel">문서 종류 선택</label>
                             <select id="docType" class="form-select border-1 px-3 py-2 bg-light">
-                                <option value="prescription">처방전 (약국 봉투)</option>
-                                <option value="medical_record">진단서/소견서</option>
+                                <option value="prescription" data-text="scans.prescriptionOption">처방전 (약국 봉투)</option>
+                                <option value="medical_record" data-text="scans.recordOption">진단서/소견서</option>
                             </select>
                         </div>
 
                         <div class="upload-area p-4 mt-2" onclick="document.getElementById('file-upload').click()">
                             <i class="bi bi-cloud-arrow-up display-3 text-primary-custom mb-2"></i>
-                            <h6 class="fw-bold mb-1">이미지 선택하기</h6>
-                            <p class="small text-soft mb-0">또는 여기에 파일을 끌어다 놓으세요.</p>
+                            <h6 class="fw-bold mb-1" data-text="scans.uploadTitle">이미지 선택하기</h6>
+                            <p class="small text-soft mb-0" data-text="scans.uploadSubtitle">또는 여기에 파일을 끌어다 놓으세요.</p>
                             <input type="file" id="file-upload" class="d-none" accept="image/png, image/jpeg, image/jpg, application/pdf"
                                 onchange="handleFileUpload(event)">
                         </div>
@@ -94,7 +94,7 @@
                             <img id="img-preview" src="" class="img-fluid rounded border mb-3"
                                 style="max-height: 200px;">
                             <button class="btn btn-primary w-100" id="analyze-btn" onclick="startAnalysis()">
-                                <i class="bi bi-magic me-2"></i>AI 분석 시작하기
+                                <i class="bi bi-magic me-2"></i><span data-text="scans.analyzeButton">AI 분석 시작하기</span>
                             </button>
                         </div>
                     </div>
@@ -105,58 +105,58 @@
                         <div class="d-flex justify-content-center align-items-center h-100 text-center" id="result-empty">
                             <div>
                                 <i class="bi bi-file-text display-1 text-soft opacity-50 mb-3"></i>
-                                <h5 class="text-secondary">아직 분석된 문서가 없습니다.</h5>
-                                <p class="text-soft small">좌측에서 이미지를 업로드하고 분석을 시작하세요.</p>
+                                <h5 class="text-secondary" data-text="scans.emptyTitle">아직 분석된 문서가 없습니다.</h5>
+                                <p class="text-soft small" data-text="scans.emptySubtitle">좌측에서 이미지를 업로드하고 분석을 시작하세요.</p>
                             </div>
                         </div>
 
                         <div id="result-content" class="d-none d-flex flex-column h-100">
                             <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5 class="fw-bold text-primary-custom mb-0"><i class="bi bi-list-check me-2"></i>분석 결과</h5>
-                                <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2">확인 가능</span>
+                                <h5 class="fw-bold text-primary-custom mb-0"><i class="bi bi-list-check me-2"></i><span data-text="scans.resultTitle">분석 결과</span></h5>
+                                <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2" data-text="scans.resultReady">확인 가능</span>
                             </div>
 
                             <div class="flex-grow-1 overflow-auto" id="analysis-text-container"></div>
 
                             <div class="mt-4 p-3 bg-light rounded" id="edit-section">
                                 <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <h6 class="fw-bold mb-0">분석 결과 수정</h6>
-                                    <span class="small text-soft">날짜와 약품을 직접 다듬은 뒤 저장할 수 있습니다.</span>
+                                    <h6 class="fw-bold mb-0" data-text="scans.editTitle">분석 결과 수정</h6>
+                                    <span class="small text-soft" data-text="scans.editSubtitle">날짜와 약품을 직접 다듬은 뒤 저장할 수 있습니다.</span>
                                 </div>
 
                                 <div id="analysis-warning" class="alert alert-warning small d-none"></div>
 
                                 <div class="mb-3">
-                                    <label class="form-label small fw-bold text-secondary">문서 날짜</label>
+                                    <label class="form-label small fw-bold text-secondary" data-text="scans.documentDate">문서 날짜</label>
                                     <input type="date" id="edit-document-date" class="form-control">
                                 </div>
 
                                 <div class="mb-3">
-                                    <label class="form-label small fw-bold text-secondary">진단명</label>
-                                    <input type="text" id="edit-diagnosis" class="form-control" placeholder="예: 감기">
+                                    <label class="form-label small fw-bold text-secondary" data-text="scans.diagnosis">진단명</label>
+                                    <input type="text" id="edit-diagnosis" class="form-control" data-placeholder="scans.diagnosisPlaceholder" placeholder="예: 감기">
                                 </div>
 
                                 <div class="mb-3 d-none" id="clinical-note-group">
-                                    <label class="form-label small fw-bold text-secondary">진료 요약</label>
-                                    <textarea id="edit-clinical-note" class="form-control" rows="4" placeholder="진료기록지 내용을 정리해 입력하세요."></textarea>
+                                    <label class="form-label small fw-bold text-secondary" data-text="scans.clinicalNote">진료 요약</label>
+                                    <textarea id="edit-clinical-note" class="form-control" rows="4" data-placeholder="scans.clinicalNotePlaceholder" placeholder="진료기록지 내용을 정리해 입력하세요."></textarea>
                                 </div>
 
                                 <div class="mb-3" id="drug-editor-group">
-                                    <label class="form-label small fw-bold text-secondary">약품 선택</label>
+                                    <label class="form-label small fw-bold text-secondary" data-text="scans.drugLabel">약품 선택</label>
                                     <div class="position-relative">
-                                        <input type="text" id="drug-search-input" class="form-control" placeholder="약 이름을 검색하세요. 예: 무스리">
+                                        <input type="text" id="drug-search-input" class="form-control" data-placeholder="scans.drugPlaceholder" placeholder="약 이름을 검색하세요. 예: 무스리">
                                         <div id="drug-suggestion-list" class="drug-suggestion-list d-none"></div>
                                     </div>
                                     <div id="selected-drugs" class="d-flex flex-wrap gap-2 mt-3"></div>
-                                    <div class="form-text">약품은 DB 검색 결과에서 선택해 추가합니다.</div>
+                                    <div class="form-text" data-text="scans.drugHelp">약품은 DB 검색 결과에서 선택해 추가합니다.</div>
                                 </div>
 
                                 <div class="d-flex gap-2 mt-4">
                                     <button class="btn btn-outline-primary flex-fill" id="refresh-result-btn" onclick="reloadResult()">
-                                        최신 결과 다시 불러오기
+                                        <span data-text="scans.refreshButton">최신 결과 다시 불러오기</span>
                                     </button>
                                     <button class="btn btn-primary flex-fill" id="update-result-btn" onclick="updateResult()">
-                                        수정 내용 반영
+                                        <span data-text="scans.updateButton">수정 내용 반영</span>
                                     </button>
                                 </div>
                             </div>
@@ -164,7 +164,7 @@
                             <div class="mt-4 pt-3 border-top">
                                 <button class="btn btn-success w-100 py-2 fs-5 fw-bold shadow-sm" id="save-result-btn"
                                     onclick="saveResult()">
-                                    <i class="bi bi-calendar-check me-2"></i>내 복약 및 추천 목록에 적용하기
+                                    <i class="bi bi-calendar-check me-2"></i><span data-text="scans.saveButton">내 복약 및 추천 목록에 적용하기</span>
                                 </button>
                             </div>
                         </div>
@@ -174,6 +174,7 @@
         </main>
     </div>
 
+    <script src="js/texts.js"></script>
     <script src="js/api.js"></script>
     <script src="js/components.js"></script>
 
@@ -212,7 +213,7 @@
             container.innerHTML = '';
 
             if (selectedDrugs.length === 0) {
-                container.innerHTML = '<span class="text-soft small">선택된 약품이 없습니다.</span>';
+                container.innerHTML = `<span class="text-soft small">${getText('scans.noSelectedDrugs', '선택된 약품이 없습니다.')}</span>`;
                 return;
             }
 
@@ -241,7 +242,7 @@
                 const button = document.createElement('button');
                 button.type = 'button';
                 button.className = 'drug-suggestion-item';
-                button.innerHTML = `<div class="fw-bold">${escapeHtml(item.name)}</div><div class="small text-soft">${escapeHtml(item.manufacturer || '제조사 정보 없음')}</div>`;
+                button.innerHTML = `<div class="fw-bold">${escapeHtml(item.name)}</div><div class="small text-soft">${escapeHtml(item.manufacturer || getText('scans.noManufacturer', '제조사 정보 없음'))}</div>`;
                 button.addEventListener('click', () => {
                     if (!selectedDrugs.includes(item.name)) {
                         selectedDrugs.push(item.name);
@@ -293,7 +294,7 @@
             let html = '';
 
             if (res.document_type === 'prescription') {
-                html += `<h6 class="fw-bold mb-3 p-2 bg-light rounded text-center">발견된 약품 정보</h6>`;
+                html += `<h6 class="fw-bold mb-3 p-2 bg-light rounded text-center">${getText('scans.extractedDrugTitle', '발견된 약품 정보')}</h6>`;
                 if (res.drugs && res.drugs.length > 0) {
                     html += `<ul class="list-group mb-3 shadow-sm rounded">`;
                     res.drugs.forEach((drugName) => {
@@ -301,28 +302,28 @@
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 <div>
                                     <span class="fw-bold">${escapeHtml(drugName)}</span>
-                                    <div class="small text-soft">OCR/AI 분석 결과에 포함된 약품명입니다.</div>
+                                    <div class="small text-soft">${getText('scans.extractedDrugHint', 'OCR/AI 분석 결과에 포함된 약품명입니다.')}</div>
                                 </div>
                             </li>
                         `;
                     });
                     html += `</ul>`;
                 } else {
-                    html += `<p class="text-danger small">인식된 약물이 없습니다. 아래에서 직접 선택해 주세요.</p>`;
+                    html += `<p class="text-danger small">${getText('scans.noDrugsDetected', '인식된 약물이 없습니다. 아래에서 직접 선택해 주세요.')}</p>`;
                 }
                 html += `<div class="p-3 bg-light rounded shadow-sm mt-3">`;
-                html += `<p class="mb-1"><span class="fw-bold">문서 날짜:</span> ${escapeHtml(res.document_date || '-')}</p>`;
-                html += `<p class="mb-0"><span class="fw-bold">진단명:</span> ${escapeHtml(res.diagnosis || '-')}</p>`;
+                html += `<p class="mb-1"><span class="fw-bold">${getText('scans.documentDateLabel', '문서 날짜:')}</span> ${escapeHtml(res.document_date || '-')}</p>`;
+                html += `<p class="mb-0"><span class="fw-bold">${getText('scans.diagnosisLabel', '진단명:')}</span> ${escapeHtml(res.diagnosis || '-')}</p>`;
                 html += `</div>`;
             } else {
                 html += `<div class="p-3 bg-light rounded shadow-sm">`;
-                html += `<p class="mb-0 fw-bold">추출된 텍스트 요약:</p>`;
-                html += `<p class="mt-2 small text-secondary m-0" style="white-space: pre-wrap;">${escapeHtml(res.raw_text || '분석 실패')}</p>`;
+                html += `<p class="mb-0 fw-bold">${getText('scans.rawTextTitle', '추출된 텍스트 요약:')}</p>`;
+                html += `<p class="mt-2 small text-secondary m-0" style="white-space: pre-wrap;">${escapeHtml(res.raw_text || getText('scans.analysisFailed', '분석 실패'))}</p>`;
                 html += `</div>`;
                 html += `<div class="p-3 bg-light rounded shadow-sm mt-3">`;
-                html += `<p class="mb-1"><span class="fw-bold">문서 날짜:</span> ${escapeHtml(res.document_date || '-')}</p>`;
-                html += `<p class="mb-1"><span class="fw-bold">진단명:</span> ${escapeHtml(res.diagnosis || '-')}</p>`;
-                html += `<p class="mb-0"><span class="fw-bold">진료 요약:</span> ${escapeHtml(res.clinical_note || '-')}</p>`;
+                html += `<p class="mb-1"><span class="fw-bold">${getText('scans.documentDateLabel', '문서 날짜:')}</span> ${escapeHtml(res.document_date || '-')}</p>`;
+                html += `<p class="mb-1"><span class="fw-bold">${getText('scans.diagnosisLabel', '진단명:')}</span> ${escapeHtml(res.diagnosis || '-')}</p>`;
+                html += `<p class="mb-0"><span class="fw-bold">${getText('scans.clinicalNoteLabel', '진료 요약:')}</span> ${escapeHtml(res.clinical_note || '-')}</p>`;
                 html += `</div>`;
             }
 
@@ -348,9 +349,9 @@
 
             try {
                 const updated = await window.api.updateScanResult(currentScanId, payload);
-                renderAnalysisResult(updated, '수정한 내용이 반영되었습니다.');
+                renderAnalysisResult(updated, getText('scans.resultUpdated', '수정한 내용이 반영되었습니다.'));
             } catch (err) {
-                alert('수정 반영 실패: ' + err.message);
+                alert(getText('scans.updateError', '수정 반영 실패: ') + err.message);
             }
         }
 
@@ -373,7 +374,7 @@
             const statusBox = document.getElementById('upload-status');
             const docType = document.getElementById('docType').value;
             statusBox.className = 'alert alert-info d-block small p-2 mb-3';
-            statusBox.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> 업로드 중...';
+            statusBox.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> ${getText('scans.uploadLoading', '업로드 중...')}`;
 
             const formData = new FormData();
             formData.append('file', file);
@@ -388,7 +389,7 @@
                 setWarning('');
 
                 statusBox.className = 'alert alert-success d-block small p-2 mb-3';
-                statusBox.innerHTML = '<i class="bi bi-check-circle me-1"></i> 파일이 서버에 안전하게 업로드 되었습니다. 분석하거나 직접 수정할 수 있습니다.';
+                statusBox.innerHTML = `<i class="bi bi-check-circle me-1"></i> ${getText('scans.uploadSuccess', '파일이 서버에 안전하게 업로드 되었습니다. 분석하거나 직접 수정할 수 있습니다.')}`;
 
                 document.getElementById('result-empty').classList.add('d-none');
                 document.getElementById('result-content').classList.remove('d-none');
@@ -399,7 +400,7 @@
                     clinical_note: null,
                     drugs: [],
                     raw_text: null,
-                }, '업로드는 완료되었습니다. OCR 분석 전에도 필요한 값을 직접 입력할 수 있습니다.');
+                }, getText('scans.preEditWarning', '업로드는 완료되었습니다. OCR 분석 전에도 필요한 값을 직접 입력할 수 있습니다.'));
             } catch (err) {
                 statusBox.className = 'alert alert-danger d-block small p-2 mb-3';
                 statusBox.innerText = err.message;
@@ -409,12 +410,12 @@
 
         async function startAnalysis() {
             if (!currentScanId) {
-                return alert('먼저 파일을 정상적으로 업로드해주세요.');
+                return alert(getText('scans.uploadFirst', '먼저 파일을 정상적으로 업로드해주세요.'));
             }
 
             const btn = document.getElementById('analyze-btn');
             btn.disabled = true;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>AI가 꼼꼼히 읽고 있습니다...';
+            btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>${getText('scans.analyzeActionLoading', 'AI가 꼼꼼히 읽고 있습니다...')}`;
 
             try {
                 await window.api.analyzeScan(currentScanId);
@@ -430,7 +431,7 @@
                     document.getElementById('result-content').classList.remove('d-none');
                     document.getElementById('analysis-text-container').innerHTML = `
                         <div class="alert alert-warning mb-0">
-                            분석 중 오류가 발생했습니다.<br>
+                            ${escapeHtml(getText('scans.analyzeErrorPrefix', '분석 중 오류가 발생했습니다.'))}<br>
                             ${escapeHtml(warningMessage)}
                         </div>
                     `;
@@ -438,7 +439,7 @@
                 }
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = '재분석 하기';
+                btn.innerHTML = getText('scans.reanalyzeButton', '재분석 하기');
                 btn.classList.add('btn-outline-primary');
                 btn.classList.remove('btn-primary');
             }
@@ -450,20 +451,25 @@
 
             try {
                 btn.disabled = true;
-                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>저장 중...';
+                btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>${getText('scans.saveLoading', '저장 중...')}`;
 
                 await window.api.saveScanResult(currentScanId);
 
-                alert('성공적으로 저장되었습니다! 복약 기록과 AI 추천 메뉴에서 내역을 확인할 수 있습니다.');
+                alert(getText('scans.scanSaveSuccess', '성공적으로 저장되었습니다! 복약 기록과 AI 추천 메뉴에서 내역을 확인할 수 있습니다.'));
                 window.location.href = 'medications.html';
 
             } catch (err) {
-                alert('저장 실패: ' + err.message);
+                alert(getText('scans.scanSaveError', '저장 실패: ') + err.message);
                 btn.disabled = false;
-                btn.innerHTML = '<i class="bi bi-calendar-check me-2"></i>내 복약 및 추천 목록에 적용하기';
+                btn.innerHTML = `<i class="bi bi-calendar-check me-2"></i>${getText('scans.saveButton', '내 복약 및 추천 목록에 적용하기')}`;
             }
         }
 
+        document.addEventListener('DOMContentLoaded', () => {
+            applyTextBindings();
+            document.title = getText('scans.title', document.title);
+            renderSelectedDrugs();
+        });
         document.getElementById('drug-search-input').addEventListener('input', () => {
             clearTimeout(drugSearchTimer);
             drugSearchTimer = setTimeout(searchDrugs, 250);
