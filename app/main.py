@@ -1,4 +1,5 @@
 import logging
+from .ui import chatbot
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -57,6 +58,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(chatbot.router)
 app.include_router(v1_routers)
 initialize_tortoise(app)
 
