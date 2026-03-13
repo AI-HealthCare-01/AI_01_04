@@ -59,7 +59,7 @@ async def seed_drug_vectors() -> None:
     repo = VectorDocumentRepository()
     drugs = await Drug.all()
     total = len(drugs)
-    logger.info("총 %개 약물 임베딩 시작", total)
+    logger.info("총 %d개 약물 임베딩 시작", total)
 
     for i in range(0, total, BATCH_SIZE):
         batch_drugs = drugs[i:i + BATCH_SIZE]
