@@ -46,6 +46,7 @@ class Scan(models.Model):
     document_date = fields.CharField(max_length=10, null=True)
     diagnosis = fields.TextField(null=True)
     clinical_note = fields.TextField(null=True)  # [ADD]
+    error_message = fields.TextField(null=True)
 
     drugs: list[str] = fields.JSONField(default=list)  # type: ignore[assignment]
 
