@@ -1,6 +1,5 @@
-from app.models.chat_medication import MediChat
 from app.models.chat_health import HealthChat
-from app.models.scans import Scan
+from app.models.chat_medication import MediChat
 from app.models.users import User
 
 _health_cache = {}
@@ -8,7 +7,6 @@ _medi_cache = {}
 
 
 class ChatBaseService:
-
     async def check_user_exists(self, patient_id: str) -> bool:
         exists = User.filter(id=patient_id).exists
         # exists = await MediChat.filter(patient_id=patient_id).exists
@@ -32,11 +30,13 @@ class ChatBaseService:
         # 3. 조회한 데이터를 캐시에 저장 (세션 유지 효과)
         serialized_history = []
         for h in health_history:
-            serialized_history.append({
-                "created_at": h.created_at, # 이미 읽어온 값은 괜찮음
-                "user_question": h.user_question,
-                "advice": h.advice,
-            })
+            serialized_history.append(
+                {
+                    "created_at": h.created_at,  # 이미 읽어온 값은 괜찮음
+                    "user_question": h.user_question,
+                    "advice": h.advice,
+                }
+            )
         _health_cache[patient_id] = serialized_history
         return serialized_history
 
@@ -63,11 +63,13 @@ class ChatBaseService:
         # 3. 조회한 데이터를 캐시에 저장 (세션 유지 효과)
         serialized_history = []
         for h in medi_history:
-            serialized_history.append({
-                "created_at": h.created_at, # 이미 읽어온 값은 괜찮음
-                "medications": h.medications,
-                "disease_code": h.disease_code
-            })
+            serialized_history.append(
+                {
+                    "created_at": h.created_at,  # 이미 읽어온 값은 괜찮음
+                    "medications": h.medications,
+                    "disease_code": h.disease_code,
+                }
+            )
 
         _medi_cache[patient_id] = serialized_history
         return serialized_history

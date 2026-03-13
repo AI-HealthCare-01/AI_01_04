@@ -1,10 +1,9 @@
+from ..models.chat_medication import MediChat
+from ..schemas.chat import ChatRequest
+from ..utils.constants import COMMON_SYSTEM_PROMPT, COMMON_USER_PROMPT
 from .chat_base_service import ChatBaseService as BaseService
 from .chat_openai_service import ChatOpenaiService as OpenAI
-from ..schemas.chat import ChatRequest
-from ..models.chat_medication import MediChat
-from ..utils.constants import COMMON_SYSTEM_PROMPT
-from ..utils.constants import COMMON_USER_PROMPT
-from ..utils.disease_data_loader import get_disease_name
+
 
 class ChatMediService(BaseService):
     def __init__(self):
@@ -15,13 +14,13 @@ class ChatMediService(BaseService):
         # 1. 질병명 확인
         disease_name = request.disease_code
         # get_disease_name(request.disease_code)
-        
+
         # 2. 과거 복약 이력 조회
         history = await self.get_medi_history(request.patient_id)
         print(f">>> history: \n{history} \n<<<")
         history_str = "\n".join([f"- {h['created_at'].date()}: {h['medications']}" for h in history])
         print(f">>> history_str: \n{history_str} \n<<<")
-        
+
         # 3. 사용자 요청 본문
         user_content = f"""
         [환자 정보]
@@ -50,7 +49,7 @@ class ChatMediService(BaseService):
             patient_id=request.patient_id,
             disease_code=request.disease_code,
             medications=", ".join(request.medications),
-            advice=ai_result.get("chat_answer", "")
+            advice=ai_result.get("chat_answer", ""),
         )
-        
+
         return ai_result

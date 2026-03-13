@@ -1,8 +1,9 @@
+from ..models.chat_health import HealthChat
+from ..schemas.chat import ChatRequest
+from ..utils.constants import COMMON_SYSTEM_PROMPT
 from .chat_base_service import ChatBaseService as BaseService
 from .chat_openai_service import ChatOpenaiService as OpenAI
-from ..schemas.chat import ChatRequest
-from ..models.chat_health import HealthChat
-from ..utils.constants import COMMON_SYSTEM_PROMPT
+
 
 class ChatHealthService(BaseService):
     def __init__(self):
@@ -17,15 +18,17 @@ class ChatHealthService(BaseService):
         print(f">>> medi_history: \n{medi_history} \n<<<")
         chat_hist_str = "\n".join([f"- {h['created_at'].date()}: {h['user_question']}" for h in chat_history])
         print(f">>> chat_hist_str: \n{chat_hist_str} \n<<<")
-        medi_hist_str = "\n".join([f"- {h['created_at'].date()}: {h['disease_code']}: {h['medications']}" for h in medi_history])
+        medi_hist_str = "\n".join(
+            [f"- {h['created_at'].date()}: {h['disease_code']}: {h['medications']}" for h in medi_history]
+        )
         print(f">>> medi_hist_str: \n{medi_hist_str} \n<<<")
-        
+
         # 2. 사용자 요청 본문
         user_content = f"""
         - 사용자 질문: {request.user_question}        
         """
         print(f">>> user_content: {user_content} \n<<<")
-        
+
         # 3. 시스템 프롬프트
         system_prompt = f"""{COMMON_SYSTEM_PROMPT}\n
         당신은 환자의 일상 건강을 관리하는 '전문의 겸 건강 코치'입니다. 
@@ -38,15 +41,13 @@ class ChatHealthService(BaseService):
         3. [운동/생활]: 실천 가능한 구체적인 운동 방법과 수면/스트레스 관리 팁.
         4. 환자에게 동기를 부여하는 따뜻하고 권위 있는 말투를 유지하세요."""
         print(f">>> system_prompt: \n{system_prompt} \n<<<")
-        
+
         # 5. AI 분석
         ai_result = await self.ai.get_advice(system_prompt, request.user_question)
-        
+
         # 5. 건강상담이력 테이블에 저장
         await HealthChat.create(
-            patient_id = request.patient_id, 
-            user_question = request.user_question, 
-            advice = ai_result.get("chat_answer", "")
+            patient_id=request.patient_id, user_question=request.user_question, advice=ai_result.get("chat_answer", "")
         )
 
         return ai_result

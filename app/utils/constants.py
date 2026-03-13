@@ -5,6 +5,6 @@ COMMON_SYSTEM_PROMPT = """
         응답은 JSON 형식이 아닌, 가독성 좋은 마크다운(Markdown) 텍스트로 작성하세요.
 """
 
-COMMON_USER_PROMPT =  """
+COMMON_USER_PROMPT = """
 위 정보를 바탕으로 전문적인 리포트를 작성해줘.
 """

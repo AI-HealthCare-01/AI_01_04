@@ -1,25 +1,21 @@
 import os
-import json
+
 from dotenv import load_dotenv
+from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
-from langchain_core.messages import SystemMessage, HumanMessage
+
 
 class ChatOpenaiService:
     def __init__(self):
         # .env 파일의 환경 변수 로드
         load_dotenv()
 
-        self.llm = ChatOpenAI(
-            model="gpt-4o-mini", 
-            openai_api_key=os.getenv("OPENAI_API_KEY"))
+        self.llm = ChatOpenAI(model="gpt-4o-mini", openai_api_key=os.getenv("OPENAI_API_KEY"))
 
     async def get_advice(self, system_content: str, user_content: str):
         try:
-            response = self.llm.invoke([
-                SystemMessage(content=system_content),
-                HumanMessage(content=user_content)
-            ])
-            
+            response = self.llm.invoke([SystemMessage(content=system_content), HumanMessage(content=user_content)])
+
             # response.content 체크
             ai_content = response.content if response.content else "답변을 생성할 수 없습니다."
             return {"chat_answer": ai_content}
