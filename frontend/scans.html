@@ -167,6 +167,8 @@
                                     <i class="bi bi-calendar-check me-2"></i><span data-text="scans.saveButton">내 복약 및 추천 목록에 적용하기</span>
                                 </button>
                             </div>
+
+                            <div id="save-result-summary" class="mt-3 d-none"></div>
                         </div>
                     </div>
                 </div>
@@ -288,6 +290,8 @@
         function renderAnalysisResult(res, warningMessage = '') {
             document.getElementById('result-empty').classList.add('d-none');
             document.getElementById('result-content').classList.remove('d-none');
+            document.getElementById('save-result-summary').classList.add('d-none');
+            document.getElementById('save-result-summary').innerHTML = '';
             setWarning(warningMessage);
 
             const txtBox = document.getElementById('analysis-text-container');
@@ -329,6 +333,24 @@
 
             txtBox.innerHTML = html;
             populateEditForm(res);
+        }
+
+        async function pollScanResult(scanId, options = {}) {
+            const intervalMs = options.intervalMs ?? 1500;
+            const maxAttempts = options.maxAttempts ?? 20;
+
+            for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+                const res = await window.api.getScanResult(scanId);
+                const status = res.status || '';
+
+                if (status === 'done' || status === 'failed') {
+                    return res;
+                }
+
+                await new Promise((resolve) => setTimeout(resolve, intervalMs));
+            }
+
+            return await window.api.getScanResult(scanId);
         }
 
         async function reloadResult() {
@@ -416,11 +438,25 @@
             const btn = document.getElementById('analyze-btn');
             btn.disabled = true;
             btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>${getText('scans.analyzeActionLoading', 'AI가 꼼꼼히 읽고 있습니다...')}`;
+            setWarning(getText('scans.analysisPending', '분석을 시작했습니다. 완료될 때까지 잠시만 기다려 주세요.'));
 
             try {
                 await window.api.analyzeScan(currentScanId);
-                const res = await window.api.getScanResult(currentScanId);
-                renderAnalysisResult(res);
+                const res = await pollScanResult(currentScanId);
+
+                if (res.status === 'done') {
+                    renderAnalysisResult(res);
+                } else if (res.status === 'failed') {
+                    renderAnalysisResult(
+                        res,
+                        getText('scans.analysisFailedWithRetry', '분석에 실패했습니다. 아래 내용을 직접 수정한 뒤 저장할 수 있습니다.')
+                    );
+                } else {
+                    renderAnalysisResult(
+                        res,
+                        getText('scans.analysisStillRunning', '분석이 아직 끝나지 않았습니다. 잠시 후 최신 결과를 다시 불러와 주세요.')
+                    );
+                }
             } catch (err) {
                 const warningMessage = err.message;
                 try {
@@ -448,21 +484,78 @@
         async function saveResult() {
             if (!currentScanId) return;
             const btn = document.getElementById('save-result-btn');
+            const summaryBox = document.getElementById('save-result-summary');
 
             try {
                 btn.disabled = true;
                 btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>${getText('scans.saveLoading', '저장 중...')}`;
 
-                await window.api.saveScanResult(currentScanId);
+                const saveResult = await window.api.saveScanResult(currentScanId);
+                let recommendationSave = null;
 
+                try {
+                    await window.api.getRecommendationsForScan(currentScanId);
+                    recommendationSave = await window.api.saveRecommendationsForScan(currentScanId);
+                } catch (recErr) {
+                    console.warn(getText('scans.recommendationSaveError', '추천 활성 저장 실패: ') + recErr.message);
+                }
+
+                const documentType = saveResult.document_type || currentScanResult?.document_type || document.getElementById('docType').value;
+                const createdCount = Number(saveResult.created_count || 0);
+                const skippedCount = Number(saveResult.skipped_count || 0);
+                const skippedDuplicates = Array.isArray(saveResult.skipped_duplicates) ? saveResult.skipped_duplicates : [];
+                const savedRecommendationCount = Number(recommendationSave?.saved_count || 0);
+
+                let summaryHtml = `
+                    <div class="alert alert-success mb-0">
+                        <h6 class="fw-bold mb-2">${getText('scans.saveSummaryTitle', '저장 결과 안내')}</h6>
+                        <p class="mb-2">${documentType === 'prescription'
+                            ? getText('scans.prescriptionSavedTitle', '처방전 저장이 완료되었습니다.')
+                            : getText('scans.recordSavedTitle', '진료기록 저장이 완료되었습니다.')}
+                        </p>
+                        <ul class="small mb-3 ps-3">
+                `;
+
+                if (documentType === 'prescription') {
+                    summaryHtml += `<li>${getText('scans.createdCountLabel', '새로 생성된 복약 일정')}: ${createdCount}</li>`;
+                    summaryHtml += `<li>${getText('scans.skippedCountLabel', '중복으로 건너뛴 약품')}: ${skippedCount}</li>`;
+                    if (skippedDuplicates.length > 0) {
+                        summaryHtml += `<li>${getText('scans.skippedListLabel', '중복 약품 목록')}: ${escapeHtml(skippedDuplicates.join(', '))}</li>`;
+                    }
+                }
+
+                summaryHtml += `<li>${getText('scans.recommendationSavedLabel', '활성 추천 저장 건수')}: ${savedRecommendationCount}</li>`;
+                summaryHtml += `</ul>`;
+
+                if (savedRecommendationCount > 0) {
+                    summaryHtml += `<p class="small mb-3">${getText('scans.recommendationReady', '추천도 함께 준비되었습니다.')}</p>`;
+                } else {
+                    summaryHtml += `<p class="small mb-3">${getText('scans.recommendationEmpty', '추천은 아직 활성 저장되지 않았습니다.')}</p>`;
+                }
+
+                summaryHtml += `<div class="d-flex flex-wrap gap-2">`;
+                if (documentType === 'prescription') {
+                    summaryHtml += `<a href="medications.html" class="btn btn-success btn-sm">${getText('scans.goMedicationButton', '복약 관리로 이동')}</a>`;
+                    summaryHtml += `<a href="recommendations.html" class="btn btn-outline-success btn-sm">${getText('scans.goRecommendationButton', 'AI 추천 보러 가기')}</a>`;
+                } else {
+                    summaryHtml += `<a href="health.html" class="btn btn-success btn-sm">${getText('scans.goHealthButton', '건강 기록 보러 가기')}</a>`;
+                    summaryHtml += `<a href="recommendations.html" class="btn btn-outline-success btn-sm">${getText('scans.goRecommendationButton', 'AI 추천 보러 가기')}</a>`;
+                }
+                summaryHtml += `</div></div>`;
+
+                summaryBox.innerHTML = summaryHtml;
+                summaryBox.classList.remove('d-none');
                 alert(getText('scans.scanSaveSuccess', '성공적으로 저장되었습니다! 복약 기록과 AI 추천 메뉴에서 내역을 확인할 수 있습니다.'));
-                window.location.href = 'medications.html';
 
             } catch (err) {
                 alert(getText('scans.scanSaveError', '저장 실패: ') + err.message);
                 btn.disabled = false;
                 btn.innerHTML = `<i class="bi bi-calendar-check me-2"></i>${getText('scans.saveButton', '내 복약 및 추천 목록에 적용하기')}`;
+                return;
             }
+
+            btn.disabled = false;
+            btn.innerHTML = `<i class="bi bi-calendar-check me-2"></i>${getText('scans.saveButton', '내 복약 및 추천 목록에 적용하기')}`;
         }
 
         document.addEventListener('DOMContentLoaded', () => {

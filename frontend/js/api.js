@@ -142,6 +142,8 @@ window.api = {
     getScanResult: (scanId) => fetchAPI(`/scans/${scanId}`),
     updateScanResult: (scanId, body) => fetchAPI(`/scans/${scanId}/result`, { method: 'PATCH', body }),
     saveScanResult: (scanId) => fetchAPI(`/scans/${scanId}/save`, { method: 'POST' }),
+    getRecommendationsForScan: (scanId) => fetchAPI(`/recommendations/scans/${scanId}`),
+    saveRecommendationsForScan: (scanId) => fetchAPI(`/recommendations/scans/${scanId}/save`, { method: 'POST' }),
     searchDrugs: (q, limit = 10) => fetchAPI(`/drugs/search?q=${encodeURIComponent(q)}&limit=${limit}`),
     getActiveRecommendations: () => fetchAPI('/recommendations/active'),
     sendFeedback: (recId, type) => fetchAPI(`/recommendations/${recId}/feedback?feedback_type=${type}`, { method: 'POST' })

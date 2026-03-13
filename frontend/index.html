@@ -224,9 +224,14 @@
                 const response = await window.api.login(email, pw);
                 localStorage.setItem('access_token', response.access_token);
 
-                // Call /me to get Profile Info and store Display Name
-                const user = await window.api.getUserMe();
-                localStorage.setItem('user_name', user.name || '사용자');
+                // 로그인 성공과 프로필 조회 실패를 분리해 사용자 체감 오류를 줄입니다.
+                try {
+                    const user = await window.api.getUserMe();
+                    localStorage.setItem('user_name', user.name || '사용자');
+                } catch (profileError) {
+                    console.warn('로그인 후 사용자 정보 조회 실패:', profileError);
+                    localStorage.setItem('user_name', '사용자');
+                }
 
                 window.location.href = 'dashboard.html';
 
