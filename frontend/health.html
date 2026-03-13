@@ -103,17 +103,17 @@
             document.querySelector('.sidebar').classList.toggle('show');
         }
 
-        async function toggleHealthLog(logId, currentDone, elId) {
+        async function toggleHealthLog(logId, currentStatus, elId) {
             let card = document.getElementById(elId);
-            let newStatus = !currentDone;
+            let newStatus = currentStatus === 'done' ? 'skipped' : 'done';
 
             try {
                 await window.api.fetchAPI(`/health/logs/${logId}`, {
                     method: 'PATCH',
-                    body: { is_done: newStatus }
+                    body: { status: newStatus }
                 });
 
-                if (newStatus) {
+                if (newStatus === 'done') {
                     card.classList.add('selected');
                     card.querySelector('.status-text').innerHTML = '<i class="bi bi-check-circle-fill me-1"></i>완료';
                 } else {
@@ -143,25 +143,31 @@
                     return;
                 }
 
+                const dates = data.items.slice(0, 7).map(item => item.date);
+                const dayDetails = await Promise.all(
+                    dates.map(date => window.api.fetchAPI(`/health/history/${date}`))
+                );
+
                 let lastDate = "";
 
-                data.items.forEach(log => {
-                    if (lastDate !== log.date) {
-                        lastDate = log.date;
-                        container.innerHTML += `<div class="col-12 mt-4"><h6 class="text-soft fw-bold border-bottom pb-2">${log.date}</h6></div>`;
+                dayDetails.forEach(day => {
+                    if (lastDate !== day.date) {
+                        lastDate = day.date;
+                        container.innerHTML += `<div class="col-12 mt-4"><h6 class="text-soft fw-bold border-bottom pb-2">${day.date}</h6></div>`;
                     }
 
-                    const isDone = log.is_done;
-                    const elId = `hc-${log.id}`;
+                    day.items.forEach(log => {
+                        const isDone = log.status === 'done';
+                        const elId = `hc-${log.id}`;
 
-                    let iconClass = "bi-activity";
-                    if (log.label.includes('물')) iconClass = "bi-droplet-fill";
-                    if (log.label.includes('운동')) iconClass = "bi-bicycle";
-                    if (log.label.includes('수면') || log.label.includes('잠')) iconClass = "bi-moon-stars-fill";
+                        let iconClass = "bi-activity";
+                        if (log.label.includes('물')) iconClass = "bi-droplet-fill";
+                        if (log.label.includes('운동')) iconClass = "bi-bicycle";
+                        if (log.label.includes('수면') || log.label.includes('잠')) iconClass = "bi-moon-stars-fill";
 
-                    const html = `
+                        const html = `
                 <div class="col-md-6 col-lg-4">
-                    <div class="health-card cursor-pointer shadow-sm d-flex align-items-center ${isDone ? 'selected' : ''}" id="${elId}" onclick="toggleHealthLog(${log.id}, ${isDone}, '${elId}')" style="cursor:pointer;">
+                    <div class="health-card cursor-pointer shadow-sm d-flex align-items-center ${isDone ? 'selected' : ''}" id="${elId}" onclick="toggleHealthLog(${log.id}, '${log.status}', '${elId}')" style="cursor:pointer;">
                         <div class="icon-box-lg shadow-sm me-3">
                             <i class="bi ${iconClass}"></i>
                         </div>
@@ -175,7 +181,8 @@
                     </div>
                 </div>
                 `;
-                    container.innerHTML += html;
+                        container.innerHTML += html;
+                    });
                 });
 
             } catch (err) {

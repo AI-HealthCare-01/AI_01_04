@@ -137,7 +137,7 @@
 
             try {
                 const res = await window.api.uploadScan(formData);
-                currentScanId = res.id;
+                currentScanId = res.scan_id;
 
                 statusBox.className = 'alert alert-success d-block small p-2 mb-3';
                 statusBox.innerHTML = '<i class="bi bi-check-circle me-1"></i> 파일이 서버에 안전하게 업로드 되었습니다. AI 분석을 시작해주세요.';
@@ -161,7 +161,8 @@
             btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>AI가 꼼꼼히 읽고 있습니다...';
 
             try {
-                const res = await window.api.analyzeScan(currentScanId);
+                await window.api.analyzeScan(currentScanId);
+                const res = await window.api.getScanResult(currentScanId);
 
                 // switch view
                 document.getElementById('result-empty').classList.add('d-none');
@@ -171,17 +172,16 @@
 
                 // Render Result
                 let html = '';
-                if (res.document_type === 'prescription' && res.parsed_data) {
-                    const data = res.parsed_data;
+                if (res.document_type === 'prescription') {
                     html += `<h6 class="fw-bold mb-3 p-2 bg-light rounded text-center">발견된 약품 정보</h6>`;
-                    if (data.drugs && data.drugs.length > 0) {
+                    if (res.drugs && res.drugs.length > 0) {
                         html += `<ul class="list-group mb-3 shadow-sm rounded">`;
-                        data.drugs.forEach(d => {
+                        res.drugs.forEach(drugName => {
                             html += `
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             <div>
-                                <span class="fw-bold">${d.drug_name}</span>
-                                <div class="small text-soft">1회 <span class="text-primary-custom fw-bold">${d.amount}</span>투여 x 1일 <span class="text-primary-custom fw-bold">${d.times_per_day}</span>회, 총 <span class="text-primary-custom fw-bold">${d.duration_days}</span>일</div>
+                                <span class="fw-bold">${drugName}</span>
+                                <div class="small text-soft">OCR/AI 분석 결과에 포함된 약품명입니다.</div>
                             </div>
                         </li>
                         `;
@@ -190,11 +190,24 @@
                     } else {
                         html += `<p class="text-danger small">인식된 약물이 없습니다.</p>`;
                     }
+                    if (res.document_date || res.diagnosis) {
+                        html += `<div class="p-3 bg-light rounded shadow-sm mt-3">`;
+                        html += `<p class="mb-1"><span class="fw-bold">문서 날짜:</span> ${res.document_date || '-'}</p>`;
+                        html += `<p class="mb-0"><span class="fw-bold">진단명:</span> ${res.diagnosis || '-'}</p>`;
+                        html += `</div>`;
+                    }
                 } else {
                     html += `<div class="p-3 bg-light rounded shadow-sm">
-                   <p class="mb-0 fw-bold">추출된 테스트 요약:</p>
+                   <p class="mb-0 fw-bold">추출된 텍스트 요약:</p>
                    <p class="mt-2 small text-secondary m-0" style="white-space: pre-wrap;">${res.raw_text || '분석 실패'}</p>
                 </div>`;
+                    if (res.clinical_note || res.document_date || res.diagnosis) {
+                        html += `<div class="p-3 bg-light rounded shadow-sm mt-3">`;
+                        html += `<p class="mb-1"><span class="fw-bold">문서 날짜:</span> ${res.document_date || '-'}</p>`;
+                        html += `<p class="mb-1"><span class="fw-bold">진단명:</span> ${res.diagnosis || '-'}</p>`;
+                        html += `<p class="mb-0"><span class="fw-bold">진료 요약:</span> ${res.clinical_note || '-'}</p>`;
+                        html += `</div>`;
+                    }
                 }
 
                 txtBox.innerHTML = html;

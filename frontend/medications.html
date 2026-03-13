@@ -112,14 +112,14 @@
         async function toggleMedication(logId, currentStatus, elId) {
             const checkbox = document.getElementById(elId);
             const newItem = document.getElementById(`item-${logId}`);
-            const newStatus = currentStatus === 'pending' ? 'done' : 'pending';
+            const newStatus = currentStatus === 'taken' ? 'skipped' : 'taken';
 
             try {
                 checkbox.disabled = true;
                 await window.api.updateMedicationLog(logId, newStatus);
 
                 // visually update UI instantly to save fetch time
-                if (newStatus === 'done') {
+                if (newStatus === 'taken') {
                     newItem.classList.remove('pending');
                     newItem.classList.add('done');
                     checkbox.checked = true;
@@ -152,7 +152,7 @@
 
             } catch (err) {
                 alert('업데이트 중 오류가 발생했습니다: ' + err.message);
-                checkbox.checked = currentStatus === 'done'; // revert
+                checkbox.checked = currentStatus === 'taken'; // revert
             } finally {
                 checkbox.disabled = false;
             }
@@ -175,16 +175,21 @@
                 }
 
                 let htmlHTML = "";
-                let currentDateHeader = "";
+                const dates = data.items.map(item => item.detail_key || item.date);
+                const dayDetails = await Promise.all(
+                    dates.map(date => window.api.fetchAPI(`/medications/history/${date}`))
+                );
 
-                data.items.forEach(log => {
-                    // Group by date
-                    if (currentDateHeader !== log.date) {
-                        currentDateHeader = log.date;
-                        htmlHTML += `<h6 class="fw-bold text-soft mt-3 mb-2 ms-2"><i class="bi bi-calendar-check me-2"></i>${log.date} 일정</h6>`;
+                dayDetails.forEach(day => {
+                    htmlHTML += `<h6 class="fw-bold text-soft mt-3 mb-2 ms-2"><i class="bi bi-calendar-check me-2"></i>${day.date} 일정</h6>`;
+
+                    if (!day.items || day.items.length === 0) {
+                        htmlHTML += `<div class="text-soft small ms-2 mb-3">등록된 복약 체크 항목이 없습니다.</div>`;
+                        return;
                     }
 
-                    const isDone = log.status === 'done';
+                    day.items.forEach(log => {
+                    const isDone = log.status === 'taken';
                     const mainClass = isDone ? 'done' : 'pending';
                     const elId = `chk-${log.id}`;
                     const titleColor = isDone ? 'text-muted text-decoration-line-through' : 'text-dark';
@@ -199,17 +204,17 @@
                     </div>
                     <div class="flex-grow-1">
                         <div class="d-flex justify-content-between align-items-center w-100 mb-1">
-                            <span class="fw-bold fs-6 med-title ${titleColor}">${log.drug_name}</span>
+                            <span class="fw-bold fs-6 med-title ${titleColor}">${log.label}</span>
                             ${badgeHtml}
                         </div>
                         <div class="text-soft fs-6 small d-flex flex-wrap gap-2">
-                           <span><i class="bi bi-clock me-1"></i>${log.target_time}</span>
-                           <span><i class="bi bi-capsule me-1"></i>${log.amount}개</span>
-                           ${log.medication_memo ? `<span class="border-start ps-2 ms-1 fst-italic">"${log.medication_memo}"</span>` : ''}
+                           <span><i class="bi bi-clock me-1"></i>${log.intake_datetime || '기록 없음'}</span>
+                           <span><i class="bi bi-capsule me-1"></i>${log.status}</span>
                         </div>
                     </div>
                 </div>
                 `;
+                    });
                 });
 
                 container.innerHTML = htmlHTML;

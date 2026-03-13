@@ -1,6 +1,6 @@
 // api.js - Core API Client
 
-const API_BASE_URL = 'http://localhost:8000/api/v1';
+const API_BASE_URL = `${window.location.origin}/api/v1`;
 
 const getAccessToken = () => localStorage.getItem('access_token');
 const setAccessToken = (token) => localStorage.setItem('access_token', token);
@@ -8,6 +8,36 @@ const clearAuth = () => {
     localStorage.removeItem('access_token');
     window.location.href = 'index.html';
 };
+
+function formatErrorDetail(detail) {
+    if (!detail) {
+        return null;
+    }
+
+    if (typeof detail === 'string') {
+        return detail;
+    }
+
+    if (Array.isArray(detail)) {
+        return detail
+            .map((item) => {
+                if (typeof item === 'string') {
+                    return item;
+                }
+                if (item && typeof item === 'object') {
+                    return item.msg || JSON.stringify(item);
+                }
+                return String(item);
+            })
+            .join('\n');
+    }
+
+    if (typeof detail === 'object') {
+        return detail.msg || JSON.stringify(detail);
+    }
+
+    return String(detail);
+}
 
 // Simple fetch wrapper
 async function fetchAPI(endpoint, options = {}) {
@@ -54,7 +84,7 @@ async function fetchAPI(endpoint, options = {}) {
         if (!response.ok) {
             let errData;
             try { errData = await response.json(); } catch (e) { }
-            throw new Error((errData && errData.detail) || `API error: ${response.status}`);
+            throw new Error(formatErrorDetail(errData && errData.detail) || `API error: ${response.status}`);
         }
 
         const contentType = response.headers.get("content-type");
@@ -71,6 +101,7 @@ async function fetchAPI(endpoint, options = {}) {
 
 // Named exports/global functions
 window.api = {
+    fetchAPI,
     login: (email, password) => fetchAPI('/auth/login', { method: 'POST', body: { email, password } }),
     signup: (name, email, gender, birthday, phone_number, password) => fetchAPI('/auth/signup', { method: 'POST', body: { name, email, gender, birthday, phone_number, password } }),
     logout: clearAuth,
@@ -81,6 +112,7 @@ window.api = {
     getHealthHistory: (params = '') => fetchAPI(`/health/history${params}`),
     uploadScan: (formData) => fetchAPI('/scans/upload', { method: 'POST', body: formData }),
     analyzeScan: (scanId) => fetchAPI(`/scans/${scanId}/analyze`, { method: 'POST' }),
+    getScanResult: (scanId) => fetchAPI(`/scans/${scanId}`),
     saveScanResult: (scanId) => fetchAPI(`/scans/${scanId}/save`, { method: 'POST' }),
     getActiveRecommendations: () => fetchAPI('/recommendations/active'),
     sendFeedback: (recId, type) => fetchAPI(`/recommendations/${recId}/feedback?feedback_type=${type}`, { method: 'POST' })

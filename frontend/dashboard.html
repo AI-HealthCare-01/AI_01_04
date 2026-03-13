@@ -183,32 +183,31 @@
                 document.getElementById('dash-profile-img').src = avUrl;
 
                 // Render Medication Fields
-                const numMeds = summaryData.recent_prescriptions ? summaryData.recent_prescriptions.length : 0;
+                const numMeds = summaryData.recent_prescription ? 1 : 0;
                 document.getElementById('dash-active-meds').innerText = numMeds;
 
-                // Min left days computation
-                let minDays = Infinity;
-                if (summaryData.medication_remainder) {
-                    for (let k in summaryData.medication_remainder) {
-                        if (summaryData.medication_remainder[k] < minDays) minDays = summaryData.medication_remainder[k];
-                    }
-                }
-                document.getElementById('dash-left-days').innerText = minDays === Infinity ? "0 일" : `${minDays} 일`;
+                document.getElementById('dash-left-days').innerText = `${summaryData.remaining_medication_days ?? 0} 일`;
 
                 // Simple checklist based on flags
                 const todaysList = document.getElementById('dash-todays-list');
                 todaysList.innerHTML = '';
 
-                if (summaryData.today_medication_done === true) {
+                if (summaryData.recent_prescription) {
+                    todaysList.innerHTML += `<div class="d-flex bg-light text-secondary p-3 rounded align-items-center mb-2"><i class="bi bi-capsule me-3 fs-5"></i> <div><h6 class="mb-0 fw-bold">최근 처방</h6><span class="small">${summaryData.recent_prescription.drug_name || '약품 정보 없음'} / ${summaryData.recent_prescription.disease_name || '질환 정보 없음'}</span></div></div>`;
+                }
+
+                if (summaryData.today_medication_completed === true) {
                     todaysList.innerHTML += `<div class="d-flex bg-success bg-opacity-10 text-success p-3 rounded align-items-center mb-2"><i class="bi bi-check-circle-fill me-3 fs-5"></i> <div><h6 class="mb-0 fw-bold">오늘 복약 미션 완료!</h6><span class="small">모든 약을 잘 챙겨드셨습니다.</span></div></div>`;
-                } else if (summaryData.today_medication_done === false) {
+                } else if (summaryData.today_medication_completed === false) {
                     todaysList.innerHTML += `<div class="d-flex bg-danger bg-opacity-10 text-danger p-3 rounded align-items-center mb-2"><i class="bi bi-exclamation-circle-fill me-3 fs-5"></i> <div><h6 class="mb-0 fw-bold">아직 오늘 복약하지 않으셨습니다.</h6><span class="small">잊지 말고 약을 챙겨드세요.</span></div></div>`;
                 } else {
                     todaysList.innerHTML += `<div class="d-flex bg-light text-secondary p-3 rounded align-items-center mb-2"><i class="bi bi-dash-circle-fill me-3 fs-5"></i> <div><h6 class="mb-0 fw-bold">오늘 등록된 복약 일정이 없습니다.</h6><span class="small">처방전을 스캔하거나 직접 등록해보세요.</span></div></div>`;
                 }
 
-                if (summaryData.today_health_done === true) {
+                if (summaryData.today_health_completed === true) {
                     todaysList.innerHTML += `<div class="d-flex bg-primary bg-opacity-10 text-primary p-3 rounded align-items-center mb-2"><i class="bi bi-activity me-3 fs-5"></i> <div><h6 class="mb-0 fw-bold">건강관리 목표 달성!</h6><span class="small">오늘의 일상 목표를 달성했습니다.</span></div></div>`;
+                } else if (summaryData.today_health_completed === false) {
+                    todaysList.innerHTML += `<div class="d-flex bg-warning bg-opacity-10 text-warning p-3 rounded align-items-center mb-2"><i class="bi bi-heart-pulse me-3 fs-5"></i> <div><h6 class="mb-0 fw-bold">오늘 건강관리 체크가 남아 있습니다.</h6><span class="small">물 마시기, 걷기, 스트레칭 체크를 진행해보세요.</span></div></div>`;
                 }
 
             } catch (err) {

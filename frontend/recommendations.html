@@ -136,10 +136,10 @@
                 data.forEach(rec => {
                     let badgeClass = 'bg-primary';
                     let icon = 'bi-info-circle-fill';
-                    switch (rec.category) {
-                        case 'drug_info': badgeClass = 'bg-info bg-opacity-75'; icon = 'bi-capsule-pill'; break;
-                        case 'health_tip': badgeClass = 'bg-success bg-opacity-75'; icon = 'bi-leaf-fill'; break;
-                        case 'precaution': badgeClass = 'bg-danger bg-opacity-75'; icon = 'bi-exclamation-triangle-fill'; break;
+                    switch (rec.recommendation_type) {
+                        case 'medication': badgeClass = 'bg-info bg-opacity-75'; icon = 'bi-capsule-pill'; break;
+                        case 'warning': badgeClass = 'bg-danger bg-opacity-75'; icon = 'bi-exclamation-triangle-fill'; break;
+                        case 'followup': badgeClass = 'bg-success bg-opacity-75'; icon = 'bi-heart-pulse-fill'; break;
                         case 'lifestyle': badgeClass = 'bg-primary bg-opacity-75'; icon = 'bi-bicycle'; break;
                         default: badgeClass = 'bg-secondary';
                     }
@@ -148,12 +148,13 @@
                 <div class="col-md-6 col-lg-4">
                     <div class="card p-4 h-100 rec-card shadow-sm" id="rec-card-${rec.id}">
                         <div class="mb-3 d-flex justify-content-between align-items-start">
-                            <span class="badge ${badgeClass} badge-type rounded-pill shadow-sm"><i class="bi ${icon} me-1"></i>${rec.category.toUpperCase()}</span>
-                            ${rec.source_id ? `<span class="badge bg-light text-dark border badge-type"><i class="bi bi-file-earmark-medical me-1"></i>스캔 기반</span>` : ''}
+                            <span class="badge ${badgeClass} badge-type rounded-pill shadow-sm"><i class="bi ${icon} me-1"></i>${rec.recommendation_type.toUpperCase()}</span>
+                            ${rec.is_selected ? `<span class="badge bg-light text-dark border badge-type"><i class="bi bi-check2-circle me-1"></i>활성 추천</span>` : ''}
                         </div>
                         
-                        <h5 class="fw-bold text-dark mb-2">${rec.title}</h5>
-                        <p class="text-secondary small mb-4 flex-grow-1">${rec.content}</p>
+                        <h5 class="fw-bold text-dark mb-2">AI 추천</h5>
+                        <p class="text-secondary small mb-2 flex-grow-1">${rec.content}</p>
+                        <p class="text-soft small mb-4">점수: ${rec.score ?? '-'} / 순위: ${rec.rank ?? '-'}</p>
                         
                         <div class="d-flex justify-content-between align-items-center mt-auto p-2 bg-light rounded reaction-buttons">
                             <span class="small text-soft fw-bold">도움이 되셨나요?</span>
