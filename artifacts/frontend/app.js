@@ -219,6 +219,35 @@
     });
   }
 
+  async function pollScanStatus(scanId) {
+    const INTERVAL = 3000;
+    const MAX_TRIES = 40; // 최대 2분
+    let tries = 0;
+    const timer = setInterval(async () => {
+      tries++;
+      try {
+        const data = await request(`/scans/${scanId}`, { method: "GET" });
+        const st = data?.status;
+        log(`폴링 (${tries}/${MAX_TRIES})`, { status: st });
+        if (st === "done" || st === "updated" || st === "saved") {
+          clearInterval(timer);
+          qs("scanLoadedType").value = data.document_type || "";
+          qs("scanDocDate").value = data.document_date || "";
+          qs("scanDiagnosis").value = data.diagnosis || "";
+          qs("scanClinicalNote").value = data.clinical_note || "";
+          qs("scanDrugs").value = Array.isArray(data.drugs) ? data.drugs.join(",") : "";
+          log("분석 완료", { scan_id: scanId });
+        } else if (st === "failed" || tries >= MAX_TRIES) {
+          clearInterval(timer);
+          log("분석 실패 또는 타임아웃", { status: st });
+        }
+      } catch (err) {
+        clearInterval(timer);
+        log("폴링 오류", { message: err.message });
+      }
+    }, INTERVAL);
+  }
+
   function bindScan() {
     qs("scanUploadBtn").addEventListener("click", async () => {
       try {
@@ -248,10 +277,10 @@
       const scanId = safeInt("scanId");
       if (!scanId) return log("입력 오류", { field: "scan_id" });
       try {
-        const data = await request(`/scans/${scanId}/analyze`, { method: "POST" }); // [CHANGED]
-        if (data?.document_type) {
-          qs("scanLoadedType").value = data.document_type; // [ADD]
-        }
+        const data = await request(`/scans/${scanId}/analyze`, { method: "POST" });
+        if (data?.document_type) qs("scanLoadedType").value = data.document_type;
+        log("분석 시작 (\ubc31\uadf8\ub77c\uc6b4\ub4dc)", { status: data?.status });
+        pollScanStatus(scanId);
       } catch (err) {
         log("스캔 분석 실패", { message: err.message });
       }

@@ -5,7 +5,7 @@ from dataclasses import field
 from enum import StrEnum
 from pathlib import Path
 
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings
 
 
 class Env(StrEnum):
@@ -23,7 +23,6 @@ class Config(BaseSettings):
     .env 파일에서 환경변수를 자동 로드하며 타입 검증을 제공.
     """
 
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
     ENV: Env = Env.LOCAL
     SECRET_KEY: str = f"default-secret-key{uuid.uuid4().hex}"
     TIMEZONE: zoneinfo.ZoneInfo = field(default_factory=lambda: zoneinfo.ZoneInfo("Asia/Seoul"))
@@ -32,7 +31,6 @@ class Config(BaseSettings):
     DB_HOST: str = "localhost"
     DB_PORT: int = 5432
     DB_USER: str = "root"
-    # amazonq-ignore-next-line
     DB_PASSWORD: str = "pw1234"
     DB_NAME: str = "ai_health"
     DB_CONNECT_TIMEOUT: int = 5
@@ -49,3 +47,6 @@ class Config(BaseSettings):
     NAVER_OCR_API_URL: str = ""
     OPENAI_API_KEY: str = ""
     OPENAI_MODEL: str = "gpt-4o-mini"
+
+    # ENABLE_LLM_REFINEMENT=False로 검증 그다음 LLM refinement 켜서 비교
+    ENABLE_LLM_REFINEMENT: bool = False

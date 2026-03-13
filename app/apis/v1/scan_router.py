@@ -4,7 +4,7 @@
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, File, Form, Path, UploadFile, status
+from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, Path, UploadFile, status
 from fastapi.responses import ORJSONResponse as Response
 
 from app.dependencies.security import get_request_user
@@ -68,6 +68,7 @@ async def upload_scan(
 async def analyze_scan(
     user: Annotated[User, Depends(get_request_user)],
     scan_service: Annotated[ScanAnalysisService, Depends(ScanAnalysisService)],
+    background_tasks: BackgroundTasks,
     scan_id: Annotated[int, Path(..., ge=1)],
 ) -> Response:
     """
@@ -84,7 +85,8 @@ async def analyze_scan(
     Raises:
         HTTPException: 스캔 미존재 시 404, OCR 실패 시 504/429/500.
     """
-    result = await scan_service.start_analysis(user=user, scan_id=scan_id)
+    result = await scan_service.prepare_analysis(user=user, scan_id=scan_id)
+    background_tasks.add_task(scan_service.run_analysis_background, user=user, scan_id=scan_id)
 
     return Response(
         ScanAnalyzeResponse.model_validate(result).model_dump(),

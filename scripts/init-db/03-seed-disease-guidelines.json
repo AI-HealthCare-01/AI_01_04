@@ -1,8 +1,5 @@
 [
   {
-    "_comment": "현재 미사용 파일. seed_disease_guidelines.py와 필드 구조가 맞지 않아 사용 보류."
-  },
-  {
     "candidate_id": "132598_2_5",
     "disease_code": "T23",
     "disease_name_ko": "손바닥",
