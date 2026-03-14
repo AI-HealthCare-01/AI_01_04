@@ -31,6 +31,7 @@ class ScanResultResponse(BaseModel):
     clinical_note: str | None = None
 
     drugs: list[str] = Field(default_factory=list)
+    error_message: str | None = None
 
 
 class ScanResultUpdateRequest(BaseModel):

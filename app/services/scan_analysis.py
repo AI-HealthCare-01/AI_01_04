@@ -225,7 +225,7 @@ class ScanAnalysisService:
                 user.id,
                 scan_id,
                 status="done",
-                analyzed_at=datetime.now().isoformat(),
+                analyzed_at=datetime.now(config.TIMEZONE).isoformat(),
                 document_type=document_type,
                 document_date=ai_result.get("document_date"),
                 diagnosis=ai_result.get("diagnosis"),
@@ -236,9 +236,9 @@ class ScanAnalysisService:
             )
         except HTTPException:
             logger.exception("run_analysis_background http error: scan_id=%s", scan_id)
-        except Exception:
+        except Exception as e:
             logger.exception("run_analysis_background failed: scan_id=%s", scan_id)
-            await self.scan_repo.update(user.id, scan_id, status="failed")
+            await self.scan_repo.update(user.id, scan_id, status="failed", error_message=str(e))
 
     async def start_analysis(self, user: Any, scan_id: int) -> dict[str, Any]:
         """스캔에 대한 OCR 분석과 AI 후처리를 즉시 실행한다."""
@@ -270,7 +270,7 @@ class ScanAnalysisService:
                 user.id,
                 scan_id,
                 status="done",
-                analyzed_at=datetime.now().isoformat(),
+                analyzed_at=datetime.now(config.TIMEZONE).isoformat(),
                 document_type=document_type,
                 document_date=ai_result.get("document_date"),
                 diagnosis=ai_result.get("diagnosis"),
