@@ -32,6 +32,8 @@ from app.models.diseases import Disease
 from app.models.drugs import Drug
 from app.models.prescriptions import Prescription
 from app.repositories.scan_repository import ScanRepository
+from app.repositories.vector_document_repository import VectorDocumentRepository
+from app.services.embedding import encode
 from app.services.health import HealthService
 from app.services.medication import MedicationService
 from app.services.recommendations import RecommendationService
@@ -50,6 +52,7 @@ class ScanAnalysisService:
         self.health_service = HealthService()
         self.ocr_client = NaverOCRClient()
         self.recommendation_service = RecommendationService()
+        self.vector_repo = VectorDocumentRepository()
 
     def _normalize_document_type(self, document_type: str | None) -> str:
         """입력값을 prescription 또는 medical_record로 정규화한다."""
@@ -231,6 +234,7 @@ class ScanAnalysisService:
                 diagnosis_list=ai_result.get("diagnosis_list", []),
                 clinical_note=ai_result.get("clinical_note"),
                 drugs=ai_result.get("drugs", []),
+                unrecognized_drugs=ai_result.get("unrecognized_drugs", []),
                 raw_text=ai_result.get("raw_text"),
                 ocr_raw=ai_result.get("ocr_raw"),
             )
@@ -276,6 +280,7 @@ class ScanAnalysisService:
                 diagnosis_list=ai_result.get("diagnosis_list", []),
                 clinical_note=ai_result.get("clinical_note"),
                 drugs=ai_result.get("drugs", []),
+                unrecognized_drugs=ai_result.get("unrecognized_drugs", []),
                 raw_text=ai_result.get("raw_text"),
                 ocr_raw=ai_result.get("ocr_raw"),
             )
@@ -379,7 +384,18 @@ class ScanAnalysisService:
             if not drug_name:
                 continue
 
-            drug_obj, _ = await Drug.get_or_create(name=drug_name)
+            query_vector = encode(drug_name)
+            similar = await self.vector_repo.search_similar(
+                query_vector,
+                reference_type="drug",
+                top_k=1,
+            )
+            if similar:
+                drug_obj = await Drug.get_or_none(id=similar[0].reference_id)
+                if not drug_obj:
+                    drug_obj, _ = await Drug.get_or_create(name=drug_name)
+            else:
+                drug_obj, _ = await Drug.get_or_create(name=drug_name)
 
             # 첫 번째 질환과만 처방전 연결 (1약물:1처방전)
             disease_obj = disease_objects[0]

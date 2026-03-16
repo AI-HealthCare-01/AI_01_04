@@ -50,6 +50,7 @@ class Scan(models.Model):
     error_message = fields.TextField(null=True)
 
     drugs: list[str] = fields.JSONField(default=list)  # type: ignore[assignment]
+    unrecognized_drugs: list[str] = fields.JSONField(default=list)  # type: ignore[assignment]
 
     raw_text = fields.TextField(null=True)
     ocr_raw: dict = fields.JSONField(null=True)  # type: ignore[assignment]
