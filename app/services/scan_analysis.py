@@ -231,7 +231,7 @@ class ScanAnalysisService:
                 analyzed_at=datetime.now(config.TIMEZONE).isoformat(),
                 document_type=document_type,
                 document_date=ai_result.get("document_date"),
-                diagnosis=ai_result.get("diagnosis"),
+                diagnosis_list=ai_result.get("diagnosis_list", []),
                 clinical_note=ai_result.get("clinical_note"),
                 drugs=ai_result.get("drugs", []),
                 raw_text=ai_result.get("raw_text"),
@@ -276,7 +276,7 @@ class ScanAnalysisService:
                 analyzed_at=datetime.now(config.TIMEZONE).isoformat(),
                 document_type=document_type,
                 document_date=ai_result.get("document_date"),
-                diagnosis=ai_result.get("diagnosis"),
+                diagnosis_list=ai_result.get("diagnosis_list", []),
                 clinical_note=ai_result.get("clinical_note"),
                 drugs=ai_result.get("drugs", []),
                 raw_text=ai_result.get("raw_text"),
@@ -320,7 +320,9 @@ class ScanAnalysisService:
                 update_fields["document_date"] = data.document_date
 
             if data.diagnosis is not None:
-                update_fields["diagnosis"] = data.diagnosis
+                update_fields["diagnosis_list"] = (
+                    data.diagnosis if isinstance(data.diagnosis, list) else [data.diagnosis]
+                )
 
             if data.clinical_note is not None:
                 update_fields["clinical_note"] = data.clinical_note
@@ -346,18 +348,27 @@ class ScanAnalysisService:
         self,
         user: Any,
         doc_date: str,
-        diagnosis: str | None,
+        diagnosis_list: list[str],
         drug_names: list[str],
     ) -> tuple[list[int], int, list[str]]:
         """처방전 레코드를 생성한다.
 
+        복수 진단을 지원하며, 각 진단-약물 조합에 대해 처방전을 생성한다.
         동일 사용자/동일 약물/동일 날짜/동일 질환 조합이 있으면 중복으로 간주하여 스킵한다.
         """
-        disease_obj = None
-        if diagnosis:
-            disease_obj = await Disease.get_or_none(name=diagnosis)
+        disease_objects: list[Disease | None] = []
+        for diag in diagnosis_list:
+            diag_name = diag.strip()
+            if not diag_name:
+                disease_objects.append(None)
+                continue
+            disease_obj = await Disease.get_or_none(name=diag_name)
             if not disease_obj:
-                disease_obj = await Disease.create(name=diagnosis)
+                disease_obj = await Disease.create(name=diag_name)
+            disease_objects.append(disease_obj)
+
+        if not disease_objects:
+            disease_objects = [None]
 
         created: list[int] = []
         skipped = 0
@@ -383,6 +394,9 @@ class ScanAnalysisService:
                     drug_obj, _ = await Drug.get_or_create(name=drug_name)
             else:
                 drug_obj, _ = await Drug.get_or_create(name=drug_name)
+
+            # 첫 번째 질환과만 처방전 연결 (1약물:1처방전)
+            disease_obj = disease_objects[0]
 
             exists_qs = Prescription.filter(
                 user_id=user.id,
@@ -445,7 +459,7 @@ class ScanAnalysisService:
                 created_prescriptions, skipped_count, skipped_duplicates = await self._create_prescriptions(
                     user,
                     doc_date,
-                    cur.get("diagnosis"),
+                    cur.get("diagnosis_list", []),
                     drug_names,
                 )
 

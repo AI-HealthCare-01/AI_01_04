@@ -6,7 +6,7 @@ Disease 마스터 데이터 및 DiseaseGuideline 조회를 담당한다.
 
 from __future__ import annotations
 
-from app.models.diseases import Disease, DiseaseGuideline
+from app.models.diseases import Disease, DiseaseCodeMapping, DiseaseGuideline
 
 
 class DiseaseRepository:
@@ -131,3 +131,40 @@ class DiseaseRepository:
         if not keyword.strip():
             return []
         return await self._model.filter(name__icontains=keyword.strip()).limit(limit)
+
+    async def get_mapping_by_code(self, code: str) -> DiseaseCodeMapping | None:
+        """상세 KCD 코드로 매핑 레코드를 조회한다."""
+        return await DiseaseCodeMapping.get_or_none(code=code.strip().upper())
+
+    async def resolve_anchor_code(self, code: str) -> tuple[str, str] | None:
+        """상세 KCD 코드를 anchor 코드로 변환한다.
+
+        DB 매핑 테이블을 먼저 조회하고, 없으면 prefix를 줄여가며 탐색한다.
+
+        Returns:
+            (anchor_code, anchor_name) 또는 None
+        """
+        upper = code.strip().upper()
+        if not upper:
+            return None
+
+        # 1) DB exact match
+        mapping = await DiseaseCodeMapping.get_or_none(code=upper)
+        if mapping:
+            return mapping.mapped_code, mapping.mapped_name
+
+        # 2) prefix fallback: 한 글자씩 줄여가며 DB 조회
+        for length in range(len(upper) - 1, 2, -1):
+            prefix = upper[:length]
+            mapping = await DiseaseCodeMapping.get_or_none(code=prefix)
+            if mapping:
+                return mapping.mapped_code, mapping.mapped_name
+
+        return None
+
+    async def get_guidelines_by_anchor_code(self, anchor_code: str) -> list[DiseaseGuideline]:
+        """anchor 코드에 해당하는 Disease의 가이드라인을 조회한다."""
+        disease = await self._model.get_or_none(icd_code=anchor_code.strip().upper())
+        if not disease:
+            return []
+        return await self._guideline_model.filter(disease_id=disease.id).order_by("category")
