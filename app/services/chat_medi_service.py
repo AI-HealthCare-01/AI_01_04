@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+
 from app.repositories.disease_repository import DiseaseRepository
 
 from ..models.chat_medication import MediChat
