@@ -393,7 +393,8 @@ class ScanAnalysisService:
                 reference_type="drug",
                 top_k=1,
             )
-            if similar:
+            _DRUG_SIMILARITY_THRESHOLD = 0.15
+            if similar and getattr(similar[0], "_distance", 1.0) <= _DRUG_SIMILARITY_THRESHOLD:
                 drug_obj = await Drug.get_or_none(id=similar[0].reference_id)
                 if not drug_obj:
                     drug_obj, _ = await Drug.get_or_create(name=drug_name)
