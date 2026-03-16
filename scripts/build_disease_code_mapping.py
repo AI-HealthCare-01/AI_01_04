@@ -4,7 +4,6 @@ import csv
 import json
 from pathlib import Path
 
-
 BASE_DIR = Path(__file__).resolve().parents[1]
 
 DISEASE_CODES_CSV_PATH = BASE_DIR / "scripts" / "init-db" / "03-disease_codes.csv"

@@ -7,7 +7,6 @@ from unittest.mock import AsyncMock, patch
 from tortoise.contrib.test import TestCase
 
 from app.models.diseases import Disease, DiseaseCodeMapping, DiseaseGuideline
-from app.models.recommendations import RecommendationBatch
 from app.models.scans import Scan
 from app.models.users import User
 from app.services.recommendations import RecommendationService

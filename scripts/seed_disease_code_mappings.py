@@ -48,9 +48,9 @@ def generate_sql() -> str:
 
 
 async def execute_to_db() -> None:
-    from app.core import config  # noqa: E402
+    import asyncpg  # type: ignore[import-untyped]  # noqa: E402
 
-    import asyncpg  # noqa: E402
+    from app.core import config  # noqa: E402
 
     conn = await asyncpg.connect(
         host=config.DB_HOST,

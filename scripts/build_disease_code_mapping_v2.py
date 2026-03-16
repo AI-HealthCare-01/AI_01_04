@@ -203,7 +203,7 @@ def main() -> None:
             print(f'  {r["code"]} ({r["name"]}) → {r["mapped_code"]} ({r["mapped_name"]})')
 
     if unmatched:
-        print(f"\n[WARN] unmatched (first 20):")
+        print("\n[WARN] unmatched (first 20):")
         for r in unmatched[:20]:
             print(f'  {r["code"]}: {r["name"]}')
         if len(unmatched) > 20:

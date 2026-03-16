@@ -190,7 +190,7 @@ class RecommendationService:
 
         return " ".join(part for part in parts if part).strip()
 
-    def _parse_diagnosis_entry(self, entry: str) -> tuple[str | None, str | None]:
+    def _parse_diagnosis_entry(self, entry: str | None) -> tuple[str | None, str | None]:
         """
         diagnosis_list 항목에서 질병코드와 질병명을 분리한다.
 
