@@ -74,7 +74,6 @@ async def ai_postprocess(
     user_payload = {
         "document_type": document_type,
         "raw_text": raw_text,
-        "ocr_raw": ocr_raw,
     }
 
     response = await client.responses.create(
@@ -100,7 +99,7 @@ async def ai_postprocess(
     result.setdefault("clinical_note", None)
     result.setdefault("drugs", [])
     result.setdefault("raw_text", raw_text)
-    result.setdefault("ocr_raw", ocr_raw)
+    result["ocr_raw"] = ocr_raw  # LLM 응답과 무관하게 원본 그대로 저장
 
     if not isinstance(result["diagnosis_list"], list):
         result["diagnosis_list"] = []

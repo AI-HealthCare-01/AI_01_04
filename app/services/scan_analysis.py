@@ -37,7 +37,7 @@ from app.services.embedding import encode
 from app.services.health import HealthService
 from app.services.medication import MedicationService
 from app.services.recommendations import RecommendationService
-from app.utils.datetime import parse_date_yyyy_mm_dd
+from app.utils.datetime import DateTimeError, parse_date_yyyy_mm_dd
 from app.utils.files import save_user_upload_file
 
 logger = logging.getLogger(__name__)
@@ -238,8 +238,9 @@ class ScanAnalysisService:
                 raw_text=ai_result.get("raw_text"),
                 ocr_raw=ai_result.get("ocr_raw"),
             )
-        except HTTPException:
+        except HTTPException as e:
             logger.exception("run_analysis_background http error: scan_id=%s", scan_id)
+            await self.scan_repo.update(user.id, scan_id, status="failed", error_message=e.detail)
         except Exception as e:
             logger.exception("run_analysis_background failed: scan_id=%s", scan_id)
             await self.scan_repo.update(user.id, scan_id, status="failed", error_message=str(e))
@@ -342,6 +343,8 @@ class ScanAnalysisService:
             return updated
         except HTTPException:
             raise
+        except DateTimeError as e:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e
         except Exception as e:
             logger.exception("update_result failed")
             raise HTTPException(status_code=500, detail=str(e)) from e
@@ -488,6 +491,8 @@ class ScanAnalysisService:
             }
         except HTTPException:
             raise
+        except DateTimeError as e:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e
         except Exception as e:
             logger.exception("save_result failed")
             raise HTTPException(status_code=500, detail=str(e)) from e
