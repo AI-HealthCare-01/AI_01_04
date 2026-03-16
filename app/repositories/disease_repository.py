@@ -168,3 +168,34 @@ class DiseaseRepository:
         if not disease:
             return []
         return await self._guideline_model.filter(disease_id=disease.id).order_by("category")
+
+    async def resolve_disease_info(self, code_or_name: str) -> tuple[str | None, str | None, list[str]]:
+        """질병코드 또는 질병명으로 (anchor_code, disease_name, guideline_texts)를 반환한다.
+
+        챗봇 프롬프트 구성용 헬퍼.
+        """
+        text = code_or_name.strip()
+        if not text:
+            return None, None, []
+
+        # 1) 코드 형태면 매핑 테이블 → anchor → guideline
+        import re
+
+        if re.fullmatch(r"[A-Za-z]\d{2,5}", text):
+            anchor = await self.resolve_anchor_code(text)
+            if anchor:
+                anchor_code, anchor_name = anchor
+                guidelines = await self.get_guidelines_by_anchor_code(anchor_code)
+                return anchor_code, anchor_name, [gl.content for gl in guidelines]
+
+        # 2) 이름 매칭
+        disease = await self.get_by_name(text)
+        if not disease:
+            results = await self.list_by_name_contains(text, limit=1)
+            disease = results[0] if results else None
+
+        if disease:
+            guidelines = await self.get_guidelines_by_disease(disease.id)
+            return disease.icd_code, disease.name, [gl.content for gl in guidelines]
+
+        return None, None, []
