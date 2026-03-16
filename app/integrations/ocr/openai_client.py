@@ -24,7 +24,9 @@ PRESCRIPTION_SYSTEM_PROMPT = """
 - document_date: YYYY-MM-DD 또는 null
 - diagnosis: 진단명, 질병명, 또는 질병분류기호(KCD 코드, 예: I219, J00 등)가 있으면 문자열로, 없으면 null
 - clinical_note: null
-- drugs: 문자열 배열 (없으면 [])
+- drugs: 
+    1. 문자열 배열. OCR로 인식된 텍스트를 가장 유사한 한국 약물명으로 보정해라. (없으면 [])
+    2. 보정 불가능하면 "인식 불가"를 배열에 포함시켜라.
 - raw_text: 입력 원문 그대로
 - ocr_raw: 입력 원본 JSON 그대로
 """
@@ -98,5 +100,8 @@ async def ai_postprocess(
 
     if not isinstance(result["drugs"], list):
         result["drugs"] = []
+
+    result["unrecognized_drugs"] = [d for d in result["drugs"] if d == "인식 불가"]
+    result["drugs"] = [d for d in result["drugs"] if d != "인식 불가"]
 
     return result
