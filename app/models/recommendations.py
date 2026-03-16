@@ -21,9 +21,9 @@ if TYPE_CHECKING:
 
 class RecommendationBatch(models.Model):
     """
-    추천 배치 (ERD: recommendation_batches)
+    추천 배치 (ERD: recommendation_batches).
 
-    한 번의 추천 요청 파라미터와 결과물 묶음
+    한 번의 추천 요청 파라미터와 결과물 묶음.
     """
 
     id = fields.IntField(pk=True)
@@ -48,7 +48,9 @@ class RecommendationBatch(models.Model):
 
 class Recommendation(models.Model):
     """
-    개별 추천 결과 (ERD: recommendations)
+    개별 추천 결과 (ERD: recommendations).
+
+    rank, score, model_version 등 A/B 테스트용 필드 포함.
     """
 
     id = fields.IntField(pk=True)
@@ -94,10 +96,9 @@ class Recommendation(models.Model):
 
 class UserActiveRecommendation(models.Model):
     """
-    사용자 활성 추천 (ERD: user_active_recommendations)
+    사용자 활성 추천 (ERD: user_active_recommendations).
 
-    현재 사용자에게 노출 중인 추천 (user ↔ recommendation N:N)
-    ERD에는 id 없지만 Tortoise 호환을 위해 추가
+    현재 사용자에게 노출 중인 추천 (user ↔ recommendation N:N 중간 테이블).
     """
 
     id = fields.IntField(pk=True)
@@ -122,9 +123,9 @@ class UserActiveRecommendation(models.Model):
 
 class RecommendationFeedback(models.Model):
     """
-    추천 피드백 (ERD: recommendation_feedback)
+    추천 피드백 (ERD: recommendation_feedback).
 
-    사용자가 추천에 대해 좋아요/싫어요 등 반응 기록
+    사용자가 추천에 대해 좋아요/싫어요 등 반응 기록.
     """
 
     id = fields.IntField(pk=True)

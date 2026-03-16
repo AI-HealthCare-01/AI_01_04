@@ -18,6 +18,11 @@ logger = logging.getLogger(__name__)
 
 
 async def seed_health_templates() -> None:
+    """
+    건강관리 체크리스트 기본 템플릿 시딩.
+
+    물 마시기, 걸기, 스트레칭 항목을 없으면 생성.
+    """
     labels = ["물 마시기", "걷기", "스트레칭"]
     for i, lb in enumerate(labels):
         await HealthChecklistTemplate.get_or_create(

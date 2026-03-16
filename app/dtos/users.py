@@ -12,6 +12,8 @@ from app.validators.user_validators import validate_birthday, validate_phone_num
 
 
 class UserUpdateRequest(BaseModel):
+    """사용자 프로필 수정 요청 스키마. 모든 필드 선택적."""
+
     name: Annotated[str | None, Field(None, min_length=2, max_length=100)]
     email: Annotated[EmailStr | None, Field(None, max_length=40)]
     phone_number: Annotated[
@@ -31,7 +33,21 @@ class UserUpdateRequest(BaseModel):
 
 
 class UserInfoResponse(BaseSerializerModel):
-    """User 모델 → API 응답 매핑"""
+    """
+    User 모델 → API 응답 매핑.
+
+    Attributes:
+        id: 사용자 PK.
+        name: 이름.
+        email: 이메일.
+        phone_number: 전화번호.
+        birthday: 생년월일.
+        gender: 성별.
+        is_active: 활성 여부.
+        is_admin: 관리자 여부.
+        last_login: 마지막 로그인 시각.
+        profile_image_url: 프로필 이미지 URL.
+    """
 
     id: int
     name: str

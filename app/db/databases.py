@@ -49,5 +49,11 @@ TORTOISE_ORM = {
 
 
 def initialize_tortoise(app: FastAPI) -> None:
+    """
+    Tortoise ORM을 FastAPI 앱에 등록.
+
+    Args:
+        app (FastAPI): Tortoise ORM을 등록할 FastAPI 앱 인스턴스.
+    """
     Tortoise.init_models(TORTOISE_APP_MODELS, "models")
     register_tortoise(app, config=TORTOISE_ORM)

@@ -13,8 +13,9 @@ from pydantic import BaseModel, ConfigDict, Field
 
 class OCRField(BaseModel):
     """
-    OCR 결과의 가장 작은 단위(단어/토큰/블록).
-    네이버 OCR 응답에서 보통 fields[*].inferText 를 많이 사용함.
+    OCR 결과의 가장 작은 단위 (단어/토큰/블록).
+
+    네이버 OCR 응답에서 보통 ``fields[*].inferText``를 많이 사용.
     """
 
     model_config = ConfigDict(extra="allow", populate_by_name=True)
@@ -25,7 +26,7 @@ class OCRField(BaseModel):
 
 class OCRImageResult(BaseModel):
     """
-    이미지(페이지) 단위 결과.
+    이미지(페이지) 단위 OCR 결과.
     """
 
     model_config = ConfigDict(extra="allow", populate_by_name=True)
@@ -40,6 +41,8 @@ class OCRImageResult(BaseModel):
 
 class OCRErrorInfo(BaseModel):
     """
+    OCR 응답에 포함되는 에러 정보.
+
     일부 응답에는 error/code/message 형태가 포함되기도 함.
     """
 
@@ -51,7 +54,7 @@ class OCRErrorInfo(BaseModel):
 
 class NaverOCRResponse(BaseModel):
     """
-    네이버 OCR 최상위 응답.
+    네이버 OCR 최상위 응답 스키마.
     """
 
     model_config = ConfigDict(extra="allow", populate_by_name=True)
@@ -65,8 +68,13 @@ class NaverOCRResponse(BaseModel):
 
     def full_text(self, sep: str = " ") -> str:
         """
-        inferText를 모두 합쳐서 전체 텍스트를 만들기 위한 헬퍼.
-        parser.py에서 쓰기 좋게 schemas에 넣어둠.
+        모든 inferText를 합쳐 전체 텍스트 반환.
+
+        Args:
+            sep (str): 토큰 구분자. 기본값  .
+
+        Returns:
+            str: 연결된 전체 텍스트.
         """
         tokens: list[str] = []
         for img in self.images:
@@ -81,7 +89,14 @@ class NaverOCRResponse(BaseModel):
 
 class ParsedPrescription(BaseModel):
     """
-    OCR raw를 파싱해서 우리 서비스에서 쓰는 표준 결과 형태(선택).
+    OCR raw를 파싱해서 서비스에서 사용하는 표준 결과 형태.
+
+    Attributes:
+        document_date: YYYY-MM-DD 형식 처방/진단 날짜.
+        diagnosis: 진단명.
+        drugs: 약물명 목록.
+        raw_text: 전체 텍스트.
+        ocr_raw: 원본 raw JSON (저장/디버깅용).
     """
 
     model_config = ConfigDict(extra="allow")

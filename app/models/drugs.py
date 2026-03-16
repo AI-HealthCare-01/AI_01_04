@@ -10,7 +10,9 @@ from tortoise import fields, models
 
 class Drug(models.Model):
     """
-    약품 마스터 테이블 (ERD: drugs)
+    약품 마스터 테이블 (ERD: drugs).
+
+    prescriptions 등에서 FK로 참조되는 마스터 데이터.
     """
 
     id = fields.IntField(pk=True)

@@ -7,27 +7,29 @@ from typing import Any, cast
 from fastapi import HTTPException
 from starlette import status
 
+from app.core import config
 from app.dtos.recommendations import RecommendationType, RecommendationUpdateRequest
 from app.repositories.disease_repository import DiseaseRepository
 from app.repositories.recommendation_repository import RecommendationRepository
 from app.repositories.scan_repository import ScanRepository
 from app.repositories.vector_document_repository import VectorDocumentRepository
 from app.services.embedding import encode
+from app.services.recommendation_refiner import (
+    RecommendationCandidate,
+    finalize_recommendations,
+)
 
 logger = logging.getLogger(__name__)
 
 
 def _normalize_rec_type(raw: Any) -> RecommendationType:
     """
-    recommendation_type 값을 API 응답용 표준 타입으로 정규화한다.
+    DB에 저장된 recommendation_type 값을 API 응답용 표준 타입으로 변환한다.
 
-    Args:
-        raw (Any):
-            원본 recommendation_type 값
-
-    Returns:
-        RecommendationType:
-            정규화된 추천 타입
+    예:
+    - general_care -> lifestyle
+    - medication_caution -> warning
+    - follow_up -> followup
     """
     s = str(raw or "").strip().lower()
 
@@ -36,6 +38,7 @@ def _normalize_rec_type(raw: Any) -> RecommendationType:
         "general_care": "lifestyle",
         "daily_care": "lifestyle",
         "self_care": "lifestyle",
+        "general": "lifestyle",
         "medication": "medication",
         "medication_caution": "warning",
         "drug_caution": "warning",
@@ -45,6 +48,8 @@ def _normalize_rec_type(raw: Any) -> RecommendationType:
         "follow_up": "followup",
         "follow-up": "followup",
         "monitoring": "followup",
+        "visit": "followup",
+        "hospital_visit": "followup",
     }
 
     if s in exact_map:
@@ -56,24 +61,16 @@ def _normalize_rec_type(raw: Any) -> RecommendationType:
         return "warning"
     if "warn" in s or "caution" in s:
         return "warning"
-    if "follow" in s or "monitor" in s:
+    if "follow" in s or "monitor" in s or "visit" in s:
         return "followup"
     if "drug" in s or "medicine" in s or "medication" in s:
         return "medication"
     return "lifestyle"
 
 
-def _rec_to_response_dict(rec: Any) -> dict:
+def _rec_to_response_dict(rec: Any) -> dict[str, Any]:
     """
     Recommendation ORM 객체를 API 응답용 dict로 변환한다.
-
-    Args:
-        rec (Any):
-            Recommendation ORM 객체
-
-    Returns:
-        dict:
-            API 응답용 추천 데이터
     """
     return {
         "id": rec.id,
@@ -86,7 +83,16 @@ def _rec_to_response_dict(rec: Any) -> dict:
 
 
 class RecommendationService:
-    def __init__(self):
+    """
+    scan 기반 recommendation 생성/조회/저장/피드백 서비스.
+
+    현재 구조:
+    1. scan 데이터에서 추천 후보를 수집
+    2. 후보를 rule-based dedup 및 optional LLM refinement로 정제
+    3. 최종 후보만 Recommendation 레코드로 저장
+    """
+
+    def __init__(self) -> None:
         self.recommendation_repo = RecommendationRepository()
         self.scan_repo = ScanRepository()
         self.vector_doc_repo = VectorDocumentRepository()
@@ -94,15 +100,7 @@ class RecommendationService:
 
     def _normalize_document_type(self, raw: Any) -> str:
         """
-        문서 유형 값을 정규화한다.
-
-        Args:
-            raw (Any):
-                원본 document_type 값
-
-        Returns:
-            str:
-                정규화된 document_type
+        document_type 값을 내부 사용값으로 정규화한다.
         """
         value = str(raw or "prescription").strip().lower()
         if value in {"prescription", "medical_record"}:
@@ -111,24 +109,53 @@ class RecommendationService:
 
     def _looks_like_disease_code(self, value: str | None) -> bool:
         """
-        문자열이 질병분류코드(KCD/ICD) 형태인지 대략 판별한다.
+        문자열이 질병분류코드(KCD/ICD) 형식인지 대략 판별한다.
 
         예:
-            B15, I10, J00, E119, M545
-
-        Args:
-            value (str | None):
-                diagnosis 후보 문자열
-
-        Returns:
-            bool:
-                질병코드 형태로 보이면 True
+        - B15
+        - I10
+        - E119
+        - M545
         """
         if not value:
             return False
 
         text = value.strip().upper()
         return bool(re.fullmatch(r"[A-Z]\d{2,4}", text))
+
+    def _normalize_diagnosis_text(self, diagnosis: str | None) -> str | None:
+        """
+        OCR/AI 결과의 diagnosis 문자열을 질환 매칭용으로 정리한다.
+
+        처리 예:
+        - '고혈압 의증' -> '고혈압'
+        - '편두통?' -> '편두통'
+        - '당뇨 의심' -> '당뇨'
+
+        Notes:
+            현재는 단순 노이즈 제거 수준이며,
+            추후 synonym 매핑이나 표준화 사전으로 확장 가능하다.
+        """
+        if not diagnosis:
+            return None
+
+        value = diagnosis.strip()
+        if not value:
+            return None
+
+        noise_patterns = [
+            r"\s*의증\b",
+            r"\s*의심\b",
+            r"\s*추정\b",
+            r"\?",
+            r"\s*suspected\b",
+        ]
+
+        for pattern in noise_patterns:
+            value = re.sub(pattern, "", value, flags=re.IGNORECASE)
+
+        value = re.sub(r"\s+", " ", value).strip()
+        return value or None
 
     def _build_vector_query(
         self,
@@ -139,21 +166,13 @@ class RecommendationService:
         clinical_note: str | None = None,
     ) -> str:
         """
-        벡터 검색용 질의 문자열을 생성한다.
+        vector search용 질의 문자열을 생성한다.
 
-        Args:
-            diagnosis (str | None):
-                스캔에서 추출된 진단명 또는 질병코드
-            disease_name (str | None):
-                매칭된 질환명
-            drugs (list[str]):
-                약물명 목록
-            clinical_note (str | None):
-                진료기록 요약 텍스트
-
-        Returns:
-            str:
-                임베딩 검색에 사용할 질의 문자열
+        구성 요소:
+        - disease_name
+        - diagnosis
+        - clinical_note
+        - 약물명 일부
         """
         parts: list[str] = []
 
@@ -173,26 +192,14 @@ class RecommendationService:
 
     async def _match_disease(self, diagnosis: str | None) -> Any | None:
         """
-        diagnosis 값을 기반으로 질환을 매칭한다.
+        diagnosis 문자열을 Disease에 매칭한다.
 
-        매칭 우선순위:
-        1. 질병코드 형태면 icd_code 매칭
-        2. 질환명 정확 일치
-        3. 질환명 부분 일치
-
-        Args:
-            diagnosis (str | None):
-                스캔 결과에서 저장된 diagnosis 값
-                (질환명 또는 질병코드일 수 있음)
-
-        Returns:
-            Any | None:
-                매칭된 Disease 객체
+        우선순위:
+        1. icd/kcd code 형태면 코드 매칭
+        2. 이름 정확 일치
+        3. 이름 부분 일치
         """
-        if not diagnosis:
-            return None
-
-        value = diagnosis.strip()
+        value = self._normalize_diagnosis_text(diagnosis)
         if not value:
             return None
 
@@ -211,6 +218,32 @@ class RecommendationService:
 
         return None
 
+    def _create_recommendation_candidate(
+        self,
+        *,
+        recommendation_type: str,
+        source: str,
+        content: str,
+        score: float,
+        disease_id: int | None = None,
+        guideline_id: int | None = None,
+        drug_name: str | None = None,
+        metadata: dict[str, Any] | None = None,
+    ) -> RecommendationCandidate:
+        """
+        중간 단계에서 사용할 recommendation 후보를 생성한다.
+        """
+        return RecommendationCandidate(
+            type=recommendation_type,
+            content=content,
+            source=source,
+            score=score,
+            disease_id=disease_id,
+            guideline_id=guideline_id,
+            drug_name=drug_name,
+            metadata=metadata or {},
+        )
+
     async def _create_recommendation(
         self,
         *,
@@ -225,31 +258,7 @@ class RecommendationService:
         status_value: str = "active",
     ) -> Any | None:
         """
-        Recommendation 레코드 1건을 생성한다.
-
-        Args:
-            user_id (int):
-                사용자 ID
-            batch_id (int):
-                RecommendationBatch ID
-            scan_id (int):
-                스캔 ID
-            recommendation_type (str):
-                추천 유형
-            source (str):
-                추천 생성 출처
-            content (str):
-                추천 문구
-            score (float):
-                추천 점수
-            rank (int):
-                정렬 순위
-            status_value (str):
-                추천 상태값
-
-        Returns:
-            Any | None:
-                생성된 Recommendation 객체
+        Recommendation 레코드 1건을 DB에 생성한다.
         """
         return await self.recommendation_repo.create_recommendation(
             user_id=user_id,
@@ -263,273 +272,279 @@ class RecommendationService:
             status=status_value,
         )
 
-    async def _build_guideline_recommendations(
+    async def _save_candidates(
         self,
         *,
         user_id: int,
         scan_id: int,
         batch_id: int,
-        diagnosis: str | None,
+        candidates: list[RecommendationCandidate],
+        status_value: str = "candidate",
     ) -> list[Any]:
         """
-        diagnosis를 질환에 매칭한 뒤 DiseaseGuideline 기반 추천을 생성한다.
-
-        Args:
-            user_id (int):
-                사용자 ID
-            scan_id (int):
-                스캔 ID
-            batch_id (int):
-                RecommendationBatch ID
-            diagnosis (str | None):
-                진단명 또는 질병코드
-
-        Returns:
-            list[Any]:
-                생성된 Recommendation 객체 목록
+        최종 정제된 recommendation 후보를 DB에 저장한다.
         """
         created: list[Any] = []
 
-        disease = await self._match_disease(diagnosis)
-        if not disease:
-            return created
-
-        guidelines = await self.disease_repo.get_guidelines_by_disease(disease.id)
-        if not guidelines:
-            return created
-
-        for idx, guideline in enumerate(guidelines, start=1):
+        for rank, candidate in enumerate(candidates, start=1):
             rec = await self._create_recommendation(
                 user_id=user_id,
                 batch_id=batch_id,
                 scan_id=scan_id,
-                recommendation_type=guideline.category,
-                source="disease_guideline_seed",
-                content=guideline.content,
-                score=0.95,
-                rank=idx,
-                status_value="candidate",
+                recommendation_type=candidate.type,
+                source=candidate.source,
+                content=candidate.content,
+                score=candidate.score,
+                rank=rank,
+                status_value=status_value,
             )
             if rec:
                 created.append(rec)
 
         return created
+
+    async def _build_guideline_recommendations(
+        self,
+        *,
+        diagnosis: str | None,
+    ) -> list[RecommendationCandidate]:
+        """
+        diagnosis를 Disease에 매칭한 뒤 guideline 기반 후보를 생성한다.
+        """
+        candidates: list[RecommendationCandidate] = []
+
+        disease = await self._match_disease(diagnosis)
+        if not disease:
+            return candidates
+
+        guidelines = await self.disease_repo.get_guidelines_by_disease(disease.id)
+        if not guidelines:
+            return candidates
+
+        normalized_diagnosis = self._normalize_diagnosis_text(diagnosis)
+
+        for guideline in guidelines:
+            candidates.append(
+                self._create_recommendation_candidate(
+                    recommendation_type=getattr(guideline, "category", "general_care"),
+                    source="direct_guideline",
+                    content=getattr(guideline, "content", ""),
+                    score=0.95,
+                    disease_id=disease.id,
+                    guideline_id=getattr(guideline, "id", None),
+                    metadata={"matched_from": normalized_diagnosis or ""},
+                )
+            )
+
+        return candidates
+
+    async def _search_vector_guidelines(
+        self,
+        *,
+        diagnosis: str | None,
+        drugs: list[str],
+        clinical_note: str | None = None,
+        top_k: int = 3,
+    ) -> list[RecommendationCandidate]:
+        """
+        vector_documents에서 유사 guideline을 검색해 후보로 변환한다.
+
+        Notes:
+            현재는 반환 type을 followup으로 두고 있으나,
+            추후 vector 문서 메타데이터(category 등)가 정리되면 타입도 함께 반영 가능하다.
+        """
+        normalized_diagnosis = self._normalize_diagnosis_text(diagnosis)
+        matched_disease = await self._match_disease(normalized_diagnosis)
+        disease_name = getattr(matched_disease, "name", None) if matched_disease else None
+
+        query = self._build_vector_query(
+            diagnosis=normalized_diagnosis,
+            disease_name=disease_name,
+            drugs=drugs,
+            clinical_note=clinical_note,
+        )
+
+        if not query:
+            return []
+
+        similar_docs: list[Any] = []
+        try:
+            vector = encode(query)
+            similar_docs = await self.vector_doc_repo.search_similar(
+                vector,
+                reference_type="disease_guideline",
+                top_k=top_k,
+            )
+        except Exception:
+            logger.exception("vector similarity search failed")
+            return []
+
+        candidates: list[RecommendationCandidate] = []
+
+        for doc in similar_docs:
+            content = getattr(doc, "content", None)
+            if not isinstance(content, str) or not content.strip():
+                continue
+
+            candidates.append(
+                self._create_recommendation_candidate(
+                    recommendation_type="followup",
+                    source="vector_fallback",
+                    content=content,
+                    score=0.9,
+                    metadata={
+                        "matched_from": normalized_diagnosis or clinical_note,
+                        "reference_type": getattr(doc, "reference_type", None),
+                        "reference_id": getattr(doc, "reference_id", None),
+                    },
+                )
+            )
+
+        return candidates
 
     async def _build_prescription_recommendations(
         self,
         *,
-        user_id: int,
-        scan_id: int,
-        batch_id: int,
         diagnosis: str | None,
         drugs: list[str],
-    ) -> list[Any]:
+    ) -> list[RecommendationCandidate]:
         """
-        처방전 스캔 결과를 기반으로 추천을 생성한다.
+        처방전 scan 결과를 바탕으로 recommendation 후보를 생성한다.
 
         우선순위:
-        1. 질환 guideline 기반 추천
-        2. 없으면 vector 검색 또는 기본 문구
-        3. 약물명 기반 복약 안내 추천
-
-        Args:
-            user_id (int):
-                사용자 ID
-            scan_id (int):
-                스캔 ID
-            batch_id (int):
-                추천 배치 ID
-            diagnosis (str | None):
-                진단명 또는 질병코드
-            drugs (list[str]):
-                스캔에서 추출된 약물명 목록
-
-        Returns:
-            list[Any]:
-                생성된 Recommendation 객체 목록
+        1. guideline 직접 매칭 후보
+        2. guideline이 없을 때 vector fallback 후보
+        3. 약물명 기반 복약 안내 후보
         """
-        created: list[Any] = []
+        candidates: list[RecommendationCandidate] = []
 
-        guideline_recs = await self._build_guideline_recommendations(
-            user_id=user_id,
-            scan_id=scan_id,
-            batch_id=batch_id,
-            diagnosis=diagnosis,
+        normalized_diagnosis = self._normalize_diagnosis_text(diagnosis)
+
+        # 1) guideline 직접 매칭 후보
+        guideline_candidates = await self._build_guideline_recommendations(
+            diagnosis=normalized_diagnosis,
         )
-        created.extend(guideline_recs)
+        candidates.extend(guideline_candidates)
 
-        if not created and diagnosis:
-            matched_disease = await self._match_disease(diagnosis)
-            disease_name = matched_disease.name if matched_disease else None
-
-            query = self._build_vector_query(
-                diagnosis=diagnosis,
-                disease_name=disease_name,
+        # 2) guideline 후보가 전혀 없을 때만 vector fallback 수행
+        if normalized_diagnosis and not guideline_candidates:
+            vector_candidates = await self._search_vector_guidelines(
+                diagnosis=normalized_diagnosis,
                 drugs=drugs,
+                clinical_note=None,
+                top_k=3,
             )
+            candidates.extend(vector_candidates)
 
-            similar_docs: list[Any] = []
-            if query:
-                vector = encode(query)
-                similar_docs = await self.vector_doc_repo.search_similar(
-                    vector,
-                    reference_type="disease_guideline",
-                    top_k=3,
-                )
-
-            if similar_docs:
-                for i, doc in enumerate(similar_docs, start=1):
-                    rec = await self._create_recommendation(
-                        user_id=user_id,
-                        batch_id=batch_id,
-                        scan_id=scan_id,
-                        recommendation_type="followup",
-                        source="vector.disease_guideline",
-                        content=doc.content,
-                        score=0.9,
-                        rank=100 + i,
-                    )
-                    if rec:
-                        created.append(rec)
-            else:
-                rec = await self._create_recommendation(
-                    user_id=user_id,
-                    batch_id=batch_id,
-                    scan_id=scan_id,
+        # 3) 진단은 있지만 guideline / vector 모두 못 만든 경우 임시 안내 문구 추가
+        if not candidates and normalized_diagnosis:
+            candidates.append(
+                self._create_recommendation_candidate(
                     recommendation_type="followup",
                     source="scan.diagnosis",
-                    content=f"진단 정보 '{diagnosis}' 기준으로 생활관리 및 추적 관찰 항목을 확인해보세요.",
+                    content=f"진단 정보 '{normalized_diagnosis}' 기준으로 생활관리 및 추적 관찰 항목을 확인해보세요.",
                     score=0.6,
-                    rank=150,
+                    metadata={"matched_from": normalized_diagnosis},
                 )
-                if rec:
-                    created.append(rec)
-
-        for i, drug in enumerate(drugs[:10], start=1):
-            rec = await self._create_recommendation(
-                user_id=user_id,
-                batch_id=batch_id,
-                scan_id=scan_id,
-                recommendation_type="medication",
-                source="scan.drugs",
-                content=f"약물 '{drug}' 복용 관련 주의사항과 복용법을 확인해보세요.",
-                score=0.7,
-                rank=200 + i,
             )
-            if rec:
-                created.append(rec)
 
-        return created
+        # 4) 약물명 기반 복약 주의 후보 추가
+        for drug in drugs[:10]:
+            if not isinstance(drug, str):
+                continue
+
+            drug_name = drug.strip()
+            if not drug_name:
+                continue
+
+            candidates.append(
+                self._create_recommendation_candidate(
+                    recommendation_type="medication",
+                    source="medication_rule",
+                    content=f"약물 '{drug_name}' 복용 관련 주의사항과 복용법을 확인해보세요.",
+                    score=0.7,
+                    drug_name=drug_name,
+                )
+            )
+
+        return candidates
 
     async def _build_medical_record_recommendations(
         self,
         *,
-        user_id: int,
-        scan_id: int,
-        batch_id: int,
         diagnosis: str | None,
         clinical_note: str | None,
-    ) -> list[Any]:
+    ) -> list[RecommendationCandidate]:
         """
-        진료기록지 스캔 결과를 기반으로 추천을 생성한다.
+        진료기록지 scan 결과를 기반으로 recommendation 후보를 생성한다.
 
-        우선순위:
-        1. 질환 guideline 기반 추천
-        2. 진료기록 임시 문구 기반 추천
-
-        Args:
-            user_id (int):
-                사용자 ID
-            scan_id (int):
-                스캔 ID
-            batch_id (int):
-                추천 배치 ID
-            diagnosis (str | None):
-                진단명 또는 질병코드
-            clinical_note (str | None):
-                진료기록지에서 추출한 진료 내용
-
-        Returns:
-            list[Any]:
-                생성된 Recommendation 객체 목록
+        개선점:
+        - guideline direct match가 없으면
+          diagnosis 또는 clinical_note 기반 vector fallback을 수행한다.
         """
-        created: list[Any] = []
+        candidates: list[RecommendationCandidate] = []
 
-        guideline_recs = await self._build_guideline_recommendations(
-            user_id=user_id,
-            scan_id=scan_id,
-            batch_id=batch_id,
-            diagnosis=diagnosis,
+        normalized_diagnosis = self._normalize_diagnosis_text(diagnosis)
+        normalized_clinical_note = (
+            clinical_note.strip() if isinstance(clinical_note, str) and clinical_note.strip() else None
         )
-        created.extend(guideline_recs)
 
-        if diagnosis and not guideline_recs:
-            rec = await self._create_recommendation(
-                user_id=user_id,
-                batch_id=batch_id,
-                scan_id=scan_id,
-                recommendation_type="followup",
-                source="scan.medical_record.diagnosis",
-                content=f"진단 정보 '{diagnosis}' 기준으로 증상 변화와 경과를 관찰하고 필요한 추적 진료 일정을 확인해보세요.",
-                score=0.9,
-                rank=100,
+        # 1) guideline 직접 매칭 후보
+        guideline_candidates = await self._build_guideline_recommendations(
+            diagnosis=normalized_diagnosis,
+        )
+        candidates.extend(guideline_candidates)
+
+        # 2) guideline이 없으면 diagnosis / clinical_note 기반 vector fallback
+        if not guideline_candidates and (normalized_diagnosis or normalized_clinical_note):
+            vector_candidates = await self._search_vector_guidelines(
+                diagnosis=normalized_diagnosis,
+                drugs=[],
+                clinical_note=normalized_clinical_note,
+                top_k=3,
             )
-            if rec:
-                created.append(rec)
+            candidates.extend(vector_candidates)
 
-        if clinical_note:
-            rec = await self._create_recommendation(
-                user_id=user_id,
-                batch_id=batch_id,
-                scan_id=scan_id,
-                recommendation_type="lifestyle",
-                source="scan.medical_record.clinical_note",
-                content="진료기록지에 기재된 진료 내용과 생활지도에 맞춰 일상 관리 항목을 꾸준히 실천해보세요.",
-                score=0.75,
-                rank=200,
+        # 3) 그래도 없으면 diagnosis 기반 임시 followup 후보
+        if not candidates and normalized_diagnosis:
+            candidates.append(
+                self._create_recommendation_candidate(
+                    recommendation_type="followup",
+                    source="scan.medical_record.diagnosis",
+                    content=f"진단 정보 '{normalized_diagnosis}' 기준으로 증상 변화와 경과를 관찰하고 필요한 추적 진료 일정을 확인해보세요.",
+                    score=0.9,
+                    metadata={"matched_from": normalized_diagnosis},
+                )
             )
-            if rec:
-                created.append(rec)
 
-            rec = await self._create_recommendation(
-                user_id=user_id,
-                batch_id=batch_id,
-                scan_id=scan_id,
-                recommendation_type="warning",
-                source="scan.medical_record.clinical_note",
-                content="진료기록지의 증상 및 소견 내용을 바탕으로 악화 징후가 있는지 주의 깊게 관찰해보세요.",
-                score=0.7,
-                rank=201,
+        # 4) clinical_note가 있으면 생활관리/주의 문구 추가
+        if normalized_clinical_note:
+            candidates.append(
+                self._create_recommendation_candidate(
+                    recommendation_type="lifestyle",
+                    source="scan.medical_record.clinical_note",
+                    content="진료기록지에 기재된 진료 내용과 생활지도에 맞춰 일상 관리 항목을 꾸준히 실천해보세요.",
+                    score=0.75,
+                )
             )
-            if rec:
-                created.append(rec)
+            candidates.append(
+                self._create_recommendation_candidate(
+                    recommendation_type="warning",
+                    source="scan.medical_record.clinical_note",
+                    content="진료기록지의 증상 및 소견 내용을 바탕으로 악화 징후가 있는지 주의 깊게 관찰해보세요.",
+                    score=0.7,
+                )
+            )
 
-        return created
+        return candidates
 
     async def _build_fallback_recommendation(
         self,
         *,
-        user_id: int,
-        scan_id: int,
-        batch_id: int,
         document_type: str,
-    ) -> list[Any]:
+    ) -> list[RecommendationCandidate]:
         """
-        질환/약물/진료내용 기반 추천 생성이 어려울 때 기본 추천 1건을 생성한다.
-
-        Args:
-            user_id (int):
-                사용자 ID
-            scan_id (int):
-                스캔 ID
-            batch_id (int):
-                추천 배치 ID
-            document_type (str):
-                문서 유형
-
-        Returns:
-            list[Any]:
-                생성된 Recommendation 객체 목록
+        추천 후보를 만들기 어려운 경우 기본 fallback 후보를 생성한다.
         """
         if document_type == "medical_record":
             content = (
@@ -541,37 +556,18 @@ class RecommendationService:
             content = "스캔 결과에서 진단/약물 정보를 찾지 못했어요. 텍스트 보정 또는 수동 입력 후 다시 시도해 주세요."
             source = "scan"
 
-        rec = await self._create_recommendation(
-            user_id=user_id,
-            batch_id=batch_id,
-            scan_id=scan_id,
-            recommendation_type="lifestyle",
-            source=source,
-            content=content,
-            score=0.1,
-            rank=999,
-        )
-        return [rec] if rec else []
+        return [
+            self._create_recommendation_candidate(
+                recommendation_type="lifestyle",
+                source=source,
+                content=content,
+                score=0.1,
+            )
+        ]
 
-    async def get_for_scan(self, user_id: int, scan_id: int) -> dict:
+    async def get_for_scan(self, user_id: int, scan_id: int) -> dict[str, Any]:
         """
-        scan 기반 추천을 조회하거나 새로 생성한다.
-
-        처리 흐름:
-        1. scan 조회
-        2. 기존 추천 존재 여부 확인
-        3. 문서 유형별 추천 생성
-        4. 생성 결과 반환
-
-        Args:
-            user_id (int):
-                사용자 ID
-            scan_id (int):
-                스캔 ID
-
-        Returns:
-            dict:
-                scan_id와 추천 목록을 포함한 응답 데이터
+        특정 scan의 recommendation을 조회하거나, 없으면 새로 생성한다.
         """
         scan = await self.scan_repo.get_by_id_for_user(user_id, scan_id)
         if not scan:
@@ -582,70 +578,67 @@ class RecommendationService:
             return {"scan_id": scan_id, "items": [_rec_to_response_dict(r) for r in existing]}
 
         document_type = self._normalize_document_type(scan.get("document_type"))
+
         diagnosis_raw = scan.get("diagnosis")
         diagnosis = diagnosis_raw.strip() if isinstance(diagnosis_raw, str) and diagnosis_raw.strip() else None
 
         clinical_note_raw = scan.get("clinical_note")
-        clinical_note = clinical_note_raw if isinstance(clinical_note_raw, str) and clinical_note_raw.strip() else None
+        clinical_note = (
+            clinical_note_raw.strip() if isinstance(clinical_note_raw, str) and clinical_note_raw.strip() else None
+        )
 
         drugs_raw = scan.get("drugs") or []
-        drugs: list[str] = drugs_raw if isinstance(drugs_raw, list) else []
+        drugs: list[str] = (
+            [d for d in drugs_raw if isinstance(d, str) and d.strip()] if isinstance(drugs_raw, list) else []
+        )
 
         batch = await self.recommendation_repo.create_batch(
             user_id=user_id,
-            retrieval_strategy=f"scan-{document_type}-mvp",
+            retrieval_strategy=f"scan-{document_type}-dedup-v2",
         )
 
-        created: list[Any] = []
+        candidates: list[RecommendationCandidate] = []
 
         if document_type == "medical_record":
-            created.extend(
+            candidates.extend(
                 await self._build_medical_record_recommendations(
-                    user_id=user_id,
-                    scan_id=scan_id,
-                    batch_id=batch.id,
                     diagnosis=diagnosis,
                     clinical_note=clinical_note,
                 )
             )
         else:
-            created.extend(
+            candidates.extend(
                 await self._build_prescription_recommendations(
-                    user_id=user_id,
-                    scan_id=scan_id,
-                    batch_id=batch.id,
                     diagnosis=diagnosis,
                     drugs=drugs,
                 )
             )
 
-        if not created:
-            created.extend(
+        if not candidates:
+            candidates.extend(
                 await self._build_fallback_recommendation(
-                    user_id=user_id,
-                    scan_id=scan_id,
-                    batch_id=batch.id,
                     document_type=document_type,
                 )
             )
 
+        final_candidates = await finalize_recommendations(
+            candidates,
+            enable_llm_refinement=getattr(config, "ENABLE_LLM_REFINEMENT", False),
+        )
+
+        created = await self._save_candidates(
+            user_id=user_id,
+            scan_id=scan_id,
+            batch_id=batch.id,
+            candidates=final_candidates,
+            status_value="candidate",
+        )
+
         return {"scan_id": scan_id, "items": [_rec_to_response_dict(r) for r in created]}
 
-    async def list_by_user(self, user_id: int, limit: int = 50, offset: int = 0) -> list[dict]:
+    async def list_by_user(self, user_id: int, limit: int = 50, offset: int = 0) -> list[dict[str, Any]]:
         """
-        사용자의 추천 목록을 조회한다.
-
-        Args:
-            user_id (int):
-                사용자 ID
-            limit (int):
-                조회 개수 제한
-            offset (int):
-                조회 시작 위치
-
-        Returns:
-            list[dict]:
-                추천 목록
+        사용자의 recommendation 목록을 조회한다.
         """
         try:
             recs = await self.recommendation_repo.list_by_user(user_id, limit=limit, offset=offset)
@@ -654,17 +647,9 @@ class RecommendationService:
             logger.exception("list_by_user failed")
             raise HTTPException(status_code=500, detail=str(e)) from e
 
-    async def list_active(self, user_id: int) -> list[dict]:
+    async def list_active(self, user_id: int) -> list[dict[str, Any]]:
         """
-        현재 활성 상태인 추천 목록을 조회한다.
-
-        Args:
-            user_id (int):
-                사용자 ID
-
-        Returns:
-            list[dict]:
-                활성 추천 목록
+        사용자의 active recommendation 목록을 조회한다.
         """
         try:
             active_recs = await self.recommendation_repo.list_active_for_user(user_id)
@@ -673,21 +658,9 @@ class RecommendationService:
             logger.exception("list_active failed")
             raise HTTPException(status_code=500, detail=str(e)) from e
 
-    async def update(self, user_id: int, recommendation_id: int, data: RecommendationUpdateRequest) -> dict:
+    async def update(self, user_id: int, recommendation_id: int, data: RecommendationUpdateRequest) -> dict[str, Any]:
         """
-        추천 내용을 수정하거나 선택 여부를 갱신한다.
-
-        Args:
-            user_id (int):
-                사용자 ID
-            recommendation_id (int):
-                추천 ID
-            data (RecommendationUpdateRequest):
-                수정 요청 데이터
-
-        Returns:
-            dict:
-                수정된 추천 데이터
+        recommendation 내용을 수정하거나 선택 여부를 갱신한다.
         """
         try:
             rec = await self.recommendation_repo.get_recommendation_for_user(user_id, recommendation_id)
@@ -714,13 +687,7 @@ class RecommendationService:
 
     async def delete(self, user_id: int, recommendation_id: int) -> None:
         """
-        추천을 삭제 상태로 변경한다.
-
-        Args:
-            user_id (int):
-                사용자 ID
-            recommendation_id (int):
-                추천 ID
+        recommendation을 삭제 상태(revoked)로 변경한다.
         """
         try:
             rec = await self.recommendation_repo.get_recommendation_for_user(user_id, recommendation_id)
@@ -735,24 +702,9 @@ class RecommendationService:
             logger.exception("delete failed")
             raise HTTPException(status_code=500, detail=str(e)) from e
 
-    async def save_for_scan(self, user_id: int, scan_id: int) -> dict:
+    async def save_for_scan(self, user_id: int, scan_id: int) -> dict[str, Any]:
         """
-        scan 기반 추천을 active 추천으로 반영한다.
-
-        처리 규칙:
-        - scan_id로 생성된 추천이 없으면 먼저 생성한다.
-        - is_selected=True 인 추천이 있으면 그것만 반영한다.
-        - 선택된 추천이 없으면 전체 추천을 active로 반영한다.
-
-        Args:
-            user_id (int):
-                사용자 ID
-            scan_id (int):
-                스캔 ID
-
-        Returns:
-            dict:
-                저장 결과
+        scan 기반 recommendation을 active recommendation으로 반영한다.
         """
         try:
             recs = await self.recommendation_repo.list_by_user_scan(user_id=user_id, scan_id=scan_id)
@@ -775,21 +727,9 @@ class RecommendationService:
             logger.exception("save_for_scan failed")
             raise HTTPException(status_code=500, detail=str(e)) from e
 
-    async def add_feedback(self, user_id: int, recommendation_id: int, feedback_type: str) -> dict:
+    async def add_feedback(self, user_id: int, recommendation_id: int, feedback_type: str) -> dict[str, Any]:
         """
-        추천 피드백을 저장한다.
-
-        Args:
-            user_id (int):
-                사용자 ID
-            recommendation_id (int):
-                추천 ID
-            feedback_type (str):
-                피드백 유형
-
-        Returns:
-            dict:
-                저장된 피드백 정보
+        recommendation 피드백을 저장한다.
         """
         try:
             fb = await self.recommendation_repo.add_feedback(user_id, recommendation_id, feedback_type=feedback_type)

@@ -6,7 +6,10 @@ from app.main import app
 
 
 class TestLoginAPI(TestCase):
+    """로그인 API 테스트."""
+
     async def test_login_success(self):
+        """정상 로그인 시 access_token 및 refresh_token 쿠키 반환 확인."""
         # 먼저 사용자 등록
         signup_data = {
             "email": "login_test@example.com",
@@ -31,6 +34,7 @@ class TestLoginAPI(TestCase):
         assert any("refresh_token" in header for header in response.headers.get_list("set-cookie"))
 
     async def test_login_invalid_credentials(self):
+        """존재하지 않는 이메일/비밀번호로 로그인 시 400 반환 확인."""
         login_data = {"email": "nonexistent@example.com", "password": "WrongPassword123!"}
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             response = await client.post("/api/v1/auth/login", json=login_data)

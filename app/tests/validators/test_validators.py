@@ -6,6 +6,8 @@ from app.validators.user_validators import validate_birthday, validate_password,
 
 
 class TestValidatePassword:
+    """비밀번호 검증 테스트."""
+
     def test_valid(self):
         assert validate_password("Password123!") == "Password123!"
 
@@ -31,6 +33,8 @@ class TestValidatePassword:
 
 
 class TestValidatePhoneNumber:
+    """전화번호 형식 검증 테스트."""
+
     def test_valid_no_dash(self):
         assert validate_phone_number("01012345678") == "01012345678"
 
@@ -46,6 +50,8 @@ class TestValidatePhoneNumber:
 
 
 class TestValidateBirthday:
+    """생년월일 검증 테스트."""
+
     def test_valid(self):
         result = validate_birthday(date(1990, 1, 1))
         assert result == date(1990, 1, 1)
