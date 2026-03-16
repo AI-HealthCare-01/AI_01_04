@@ -72,10 +72,7 @@ def load_disease_codes_csv(path: Path) -> list[dict[str, str]]:
         reader = csv.DictReader(f)
         by_code: dict[str, dict[str, str]] = {}
         for row in reader:
-            normalized = {
-                (k.strip() if k else ""): (v.strip() if isinstance(v, str) else v)
-                for k, v in row.items()
-            }
+            normalized = {(k.strip() if k else ""): (v.strip() if isinstance(v, str) else v) for k, v in row.items()}
             code = normalize_text(normalized.get("상병기호", "")).upper()
             name = normalize_text(normalized.get("한글명", ""))
             if code and name and code not in by_code:
@@ -142,13 +139,15 @@ def build_mappings(
             continue
 
         mapped_code, mapped_name = result
-        mapped.append({
-            "code": code,
-            "name": name,
-            "mapped_code": mapped_code,
-            "mapped_name": mapped_name,
-            "is_recommendation_anchor": str(code == mapped_code).lower(),
-        })
+        mapped.append(
+            {
+                "code": code,
+                "name": name,
+                "mapped_code": mapped_code,
+                "mapped_name": mapped_name,
+                "is_recommendation_anchor": str(code == mapped_code).lower(),
+            }
+        )
 
     return mapped, unmatched
 
@@ -189,8 +188,8 @@ def main() -> None:
 
     total = len(disease_rows)
     print(f"[DONE] total disease codes (unique): {total}")
-    print(f"[DONE] mapped: {len(mapped)} ({len(mapped)/total*100:.1f}%)")
-    print(f"[DONE] unmatched: {len(unmatched)} ({len(unmatched)/total*100:.1f}%)")
+    print(f"[DONE] mapped: {len(mapped)} ({len(mapped) / total * 100:.1f}%)")
+    print(f"[DONE] unmatched: {len(unmatched)} ({len(unmatched) / total * 100:.1f}%)")
     print(f"[DONE] csv: {OUTPUT_CSV_PATH}")
     print(f"[DONE] json: {OUTPUT_JSON_PATH}")
 
@@ -200,12 +199,12 @@ def main() -> None:
     if found:
         print("\n[SAMPLE]")
         for r in sorted(found, key=lambda x: x["code"]):
-            print(f'  {r["code"]} ({r["name"]}) → {r["mapped_code"]} ({r["mapped_name"]})')
+            print(f"  {r['code']} ({r['name']}) → {r['mapped_code']} ({r['mapped_name']})")
 
     if unmatched:
         print("\n[WARN] unmatched (first 20):")
         for r in unmatched[:20]:
-            print(f'  {r["code"]}: {r["name"]}')
+            print(f"  {r['code']}: {r['name']}")
         if len(unmatched) > 20:
             print(f"  ... and {len(unmatched) - 20} more")
 

@@ -80,8 +80,7 @@ def load_disease_codes_csv(path: Path) -> list[dict[str, str]]:
 
         for row in reader:
             normalized_row = {
-                (k.strip() if k else ""): (v.strip() if isinstance(v, str) else v)
-                for k, v in row.items()
+                (k.strip() if k else ""): (v.strip() if isinstance(v, str) else v) for k, v in row.items()
             }
 
             code = normalize_text(normalized_row.get("상병기호", "")).upper()
@@ -206,9 +205,9 @@ def print_sample(mapped_rows: list[dict[str, str]]) -> None:
         print("\n[DEBUG] sample mappings:")
         for row in sample:
             print(
-                f' - {row["code"]} | {row["name"]} -> '
-                f'{row["mapped_code"]} | {row["mapped_name"]} '
-                f'(anchor={row["is_recommendation_anchor"]})'
+                f" - {row['code']} | {row['name']} -> "
+                f"{row['mapped_code']} | {row['mapped_name']} "
+                f"(anchor={row['is_recommendation_anchor']})"
             )
 
 
@@ -232,7 +231,7 @@ def main() -> None:
     if unmatched_rows:
         print("\n[WARN] unmatched rows (first 30):")
         for row in unmatched_rows[:30]:
-            print(f' - {row["code"]}: {row["name"]}')
+            print(f" - {row['code']}: {row['name']}")
         if len(unmatched_rows) > 30:
             print(f" ... and {len(unmatched_rows) - 30} more")
 

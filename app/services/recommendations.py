@@ -484,9 +484,7 @@ class RecommendationService:
                 candidates.extend(guideline_candidates)
 
         # 2) guideline이 하나도 없으면 vector fallback
-        first_diag = self._normalize_diagnosis_text(
-            diagnosis_list[0] if diagnosis_list else None
-        )
+        first_diag = self._normalize_diagnosis_text(diagnosis_list[0] if diagnosis_list else None)
         if first_diag and not has_any_guideline:
             vector_candidates = await self._search_vector_guidelines(
                 diagnosis=first_diag,
@@ -498,9 +496,7 @@ class RecommendationService:
 
         # 3) 진단은 있지만 guideline / vector 모두 못 만든 경우
         if not candidates and diagnosis_list:
-            diag_summary = ", ".join(
-                d.strip() for d in diagnosis_list[:3] if isinstance(d, str) and d.strip()
-            )
+            diag_summary = ", ".join(d.strip() for d in diagnosis_list[:3] if isinstance(d, str) and d.strip())
             if diag_summary:
                 candidates.append(
                     self._create_recommendation_candidate(
@@ -564,9 +560,7 @@ class RecommendationService:
                 candidates.extend(guideline_candidates)
 
         # 2) guideline이 없으면 vector fallback
-        first_diag = self._normalize_diagnosis_text(
-            diagnosis_list[0] if diagnosis_list else None
-        )
+        first_diag = self._normalize_diagnosis_text(diagnosis_list[0] if diagnosis_list else None)
         if not has_any_guideline and (first_diag or normalized_clinical_note):
             vector_candidates = await self._search_vector_guidelines(
                 diagnosis=first_diag,
@@ -578,9 +572,7 @@ class RecommendationService:
 
         # 3) 그래도 없으면 diagnosis 기반 임시 followup 후보
         if not candidates and diagnosis_list:
-            diag_summary = ", ".join(
-                d.strip() for d in diagnosis_list[:3] if isinstance(d, str) and d.strip()
-            )
+            diag_summary = ", ".join(d.strip() for d in diagnosis_list[:3] if isinstance(d, str) and d.strip())
             if diag_summary:
                 candidates.append(
                     self._create_recommendation_candidate(
@@ -660,9 +652,7 @@ class RecommendationService:
             single = scan.get("diagnosis")
             if isinstance(single, str) and single.strip():
                 diagnosis_list_raw = [single.strip()]
-        diagnosis_list: list[str] = [
-            d for d in diagnosis_list_raw if isinstance(d, str) and d.strip()
-        ]
+        diagnosis_list: list[str] = [d for d in diagnosis_list_raw if isinstance(d, str) and d.strip()]
 
         clinical_note_raw = scan.get("clinical_note")
         clinical_note = (

@@ -14,7 +14,10 @@ from app.services.recommendations import RecommendationService
 
 async def _make_user(email: str) -> User:
     return await User.create(
-        email=email, name="테스터", phone_number="01012345678", birthday="1990-01-01",
+        email=email,
+        name="테스터",
+        phone_number="01012345678",
+        birthday="1990-01-01",
     )
 
 
@@ -72,7 +75,9 @@ class TestBuildGuidelineWithMapping(TestCase):
         """Disease 테이블에 직접 매칭되면 해당 가이드라인 반환."""
         disease = await Disease.create(name="고혈압", icd_code="I10")
         await DiseaseGuideline.create(
-            disease=disease, category="general_care", content="염분 섭취를 줄이세요",
+            disease=disease,
+            category="general_care",
+            content="염분 섭취를 줄이세요",
         )
 
         svc = RecommendationService()
@@ -85,10 +90,16 @@ class TestBuildGuidelineWithMapping(TestCase):
         """Disease 직접 매칭 실패 시 DiseaseCodeMapping → anchor 가이드라인 반환."""
         anchor_disease = await Disease.create(name="당뇨병", icd_code="E14")
         await DiseaseGuideline.create(
-            disease=anchor_disease, category="general_care", content="혈당을 정기적으로 측정하세요",
+            disease=anchor_disease,
+            category="general_care",
+            content="혈당을 정기적으로 측정하세요",
         )
         await DiseaseCodeMapping.create(
-            code="E118", name="2형 당뇨병", mapped_code="E14", mapped_name="당뇨병", is_anchor=False,
+            code="E118",
+            name="2형 당뇨병",
+            mapped_code="E14",
+            mapped_name="당뇨병",
+            is_anchor=False,
         )
 
         svc = RecommendationService()
@@ -142,11 +153,16 @@ class TestBuildPrescriptionMultiDiagnosis(TestCase):
         """단일 진단(코드+이름 형태)도 정상 처리."""
         disease = await Disease.create(name="급성 상기도감염", icd_code="J06")
         await DiseaseGuideline.create(
-            disease=disease, category="general_care", content="충분한 휴식을 취하세요",
+            disease=disease,
+            category="general_care",
+            content="충분한 휴식을 취하세요",
         )
         await DiseaseCodeMapping.create(
-            code="J06", name="급성 상기도감염", mapped_code="J06",
-            mapped_name="급성 상기도감염", is_anchor=True,
+            code="J06",
+            name="급성 상기도감염",
+            mapped_code="J06",
+            mapped_name="급성 상기도감염",
+            is_anchor=True,
         )
 
         svc = RecommendationService()
@@ -187,7 +203,9 @@ class TestGetForScanMultiDiagnosis(TestCase):
         user = await _make_user("multi_diag@example.com")
         disease = await Disease.create(name="고혈압", icd_code="I10")
         await DiseaseGuideline.create(
-            disease=disease, category="general_care", content="염분 섭취를 줄이세요",
+            disease=disease,
+            category="general_care",
+            content="염분 섭취를 줄이세요",
         )
 
         scan = await Scan.create(
