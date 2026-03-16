@@ -1,12 +1,18 @@
+from __future__ import annotations
+
+import logging
+
 from ..models.chat_health import HealthChat
 from ..schemas.chat import ChatRequest
 from ..utils.constants import COMMON_SYSTEM_PROMPT
 from .chat_base_service import ChatBaseService as BaseService
 from .chat_openai_service import ChatOpenaiService as OpenAI
 
+logger = logging.getLogger(__name__)
+
 
 class ChatHealthService(BaseService):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.ai = OpenAI()
 
@@ -38,7 +44,7 @@ class ChatHealthService(BaseService):
 
         # 5. AI 분석
         ai_result = await self.ai.get_advice(system_prompt, user_content)
-        print(f">>> AI 건강상담 결과: \n{ai_result} \n<<<")
+        logger.debug("AI 건강상담 결과: %s", ai_result)
 
         # 5. 건강상담이력 테이블에 저장
         await HealthChat.create(

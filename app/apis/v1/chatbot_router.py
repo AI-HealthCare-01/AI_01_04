@@ -1,9 +1,15 @@
+from __future__ import annotations
+
+import logging
+
 from fastapi import APIRouter
 
 from app.schemas.chat import ChatRequest, ChatResponse
 from app.services.chat_base_service import ChatBaseService as BaseService
 from app.services.chat_health_service import ChatHealthService
 from app.services.chat_medi_service import ChatMediService
+
+logger = logging.getLogger(__name__)
 
 chatbot_router = APIRouter(prefix="/chatbot", tags=["Medical API"])
 
@@ -33,7 +39,7 @@ async def get_history(patient_id: str):
 
 @chatbot_router.post("/chat", response_model=ChatResponse)
 async def chat_endpoint(request: ChatRequest):
-    print(f">>> chat_endpoint: \n{request} \n<<<")
+    logger.debug("chat_endpoint: %s", request)
     if request.mode == "medication":
         medi_service = ChatMediService()
         return await medi_service.process_medical_chat(request)

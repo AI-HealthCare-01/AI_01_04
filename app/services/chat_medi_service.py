@@ -1,20 +1,24 @@
+from __future__ import annotations
+
+import logging
+
 from ..models.chat_medication import MediChat
 from ..schemas.chat import ChatRequest
 from ..utils.constants import COMMON_SYSTEM_PROMPT, COMMON_USER_PROMPT
 from .chat_base_service import ChatBaseService as BaseService
 from .chat_openai_service import ChatOpenaiService as OpenAI
 
+logger = logging.getLogger(__name__)
+
 
 class ChatMediService(BaseService):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.ai = OpenAI()
 
     async def process_medical_chat(self, request: ChatRequest):
-        # 1. 질병명 확인
         disease_name = request.disease_code
         medications = request.medications or []
-        # get_disease_name(request.disease_code)
 
         # 2. 과거 복약 이력 조회
         history = await self.get_medi_history(request.patient_id)
@@ -39,7 +43,7 @@ class ChatMediService(BaseService):
 
         # 5. AI 분석
         ai_result = await self.ai.get_advice(system_prompt, user_content)
-        print(f">>> ai_result: \n{ai_result} \n<<<")
+        logger.debug("AI 복약지도 결과: %s", ai_result)
 
         # 6. 복약이력 테이블에 저장
         await MediChat.create(
