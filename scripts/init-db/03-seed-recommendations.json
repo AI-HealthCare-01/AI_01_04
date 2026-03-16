@@ -8942,5 +8942,805 @@
     "category": "general_care",
     "content": "긁지 않도록 주의하기",
     "source": "rule_template"
+  },
+  {
+    "disease_code": "J06",
+    "disease_name": "급성 상기도감염",
+    "original_disease_name": "감기",
+    "category": "general_care",
+    "content": "충분한 수분 섭취와 휴식을 취하세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "J06",
+    "disease_name": "급성 상기도감염",
+    "original_disease_name": "감기",
+    "category": "general_care",
+    "content": "실내 습도를 50~60%로 유지하세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "J06",
+    "disease_name": "급성 상기도감염",
+    "original_disease_name": "감기",
+    "category": "medication_caution",
+    "content": "해열제는 38.5도 이상일 때 복용하고, 용법·용량을 지키세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "J06",
+    "disease_name": "급성 상기도감염",
+    "original_disease_name": "감기",
+    "category": "follow_up",
+    "content": "고열이 3일 이상 지속되거나 호흡곤란이 있으면 재진료를 받으세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "J02",
+    "disease_name": "급성 인두염",
+    "original_disease_name": "인두염",
+    "category": "general_care",
+    "content": "따뜻한 물이나 차를 자주 마시고 목을 쉬게 하세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "J02",
+    "disease_name": "급성 인두염",
+    "original_disease_name": "인두염",
+    "category": "general_care",
+    "content": "자극적인 음식과 찬 음료를 피하세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "J02",
+    "disease_name": "급성 인두염",
+    "original_disease_name": "인두염",
+    "category": "medication_caution",
+    "content": "항생제가 처방된 경우 증상이 호전되어도 처방 기간을 끝까지 복용하세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "J02",
+    "disease_name": "급성 인두염",
+    "original_disease_name": "인두염",
+    "category": "follow_up",
+    "content": "고열이 지속되거나 음식을 삼키기 어려우면 재진료를 받으세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "J03",
+    "disease_name": "급성 편도염",
+    "original_disease_name": "편도염",
+    "category": "general_care",
+    "content": "충분한 수분 섭취와 안정을 취하세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "J03",
+    "disease_name": "급성 편도염",
+    "original_disease_name": "편도염",
+    "category": "general_care",
+    "content": "부드러운 음식을 섭취하고 자극적인 음식을 피하세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "J03",
+    "disease_name": "급성 편도염",
+    "original_disease_name": "편도염",
+    "category": "medication_caution",
+    "content": "항생제가 처방된 경우 정해진 기간 동안 빠짐없이 복용하세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "J03",
+    "disease_name": "급성 편도염",
+    "original_disease_name": "편도염",
+    "category": "follow_up",
+    "content": "편도염이 반복되면 이비인후과 전문의와 상담하세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "J20",
+    "disease_name": "급성 기관지염",
+    "original_disease_name": "기관지염",
+    "category": "general_care",
+    "content": "충분한 수분 섭취로 가래 배출을 도우세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "J20",
+    "disease_name": "급성 기관지염",
+    "original_disease_name": "기관지염",
+    "category": "general_care",
+    "content": "흡연을 삼가고 먼지가 많은 환경을 피하세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "J20",
+    "disease_name": "급성 기관지염",
+    "original_disease_name": "기관지염",
+    "category": "medication_caution",
+    "content": "기침 억제제와 거담제를 혼용하지 마세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "J20",
+    "disease_name": "급성 기관지염",
+    "original_disease_name": "기관지염",
+    "category": "follow_up",
+    "content": "기침이 3주 이상 지속되면 추가 검사를 받으세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "J30",
+    "disease_name": "알레르기성 비염",
+    "original_disease_name": "알레르기비염",
+    "category": "general_care",
+    "content": "꽃가루·먼지 등 알레르겐 노출을 최소화하세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "J30",
+    "disease_name": "알레르기성 비염",
+    "original_disease_name": "알레르기비염",
+    "category": "general_care",
+    "content": "외출 후 세안과 코 세척을 하세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "J30",
+    "disease_name": "알레르기성 비염",
+    "original_disease_name": "알레르기비염",
+    "category": "medication_caution",
+    "content": "항히스타민제 복용 시 졸음이 올 수 있으니 운전에 주의하세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "J30",
+    "disease_name": "알레르기성 비염",
+    "original_disease_name": "알레르기비염",
+    "category": "follow_up",
+    "content": "증상이 일상생활에 지장을 줄 정도면 알레르기 검사를 받아보세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "J45",
+    "disease_name": "천식",
+    "original_disease_name": "천식",
+    "category": "general_care",
+    "content": "먼지, 담배연기, 찬 공기 등 유발인자를 피하세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "J45",
+    "disease_name": "천식",
+    "original_disease_name": "천식",
+    "category": "general_care",
+    "content": "규칙적인 유산소 운동을 하되 과격한 운동은 피하세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "J45",
+    "disease_name": "천식",
+    "original_disease_name": "천식",
+    "category": "medication_caution",
+    "content": "흡입기 사용법을 정확히 익히고 정해진 시간에 사용하세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "J45",
+    "disease_name": "천식",
+    "original_disease_name": "천식",
+    "category": "medication_caution",
+    "content": "증상이 없어도 예방 흡입제를 임의로 중단하지 마세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "J45",
+    "disease_name": "천식",
+    "original_disease_name": "천식",
+    "category": "follow_up",
+    "content": "야간 증상이 잦거나 응급 흡입기 사용이 늘면 진료를 받으세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "K21",
+    "disease_name": "위식도역류병",
+    "original_disease_name": "역류성식도염",
+    "category": "general_care",
+    "content": "식후 바로 눕지 말고 최소 2~3시간 후에 눕세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "K21",
+    "disease_name": "위식도역류병",
+    "original_disease_name": "역류성식도염",
+    "category": "general_care",
+    "content": "과식을 피하고 기름진 음식, 카페인, 탄산음료를 줄이세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "K21",
+    "disease_name": "위식도역류병",
+    "original_disease_name": "역류성식도염",
+    "category": "medication_caution",
+    "content": "제산제는 식후 1시간 또는 취침 전에 복용하세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "K21",
+    "disease_name": "위식도역류병",
+    "original_disease_name": "역류성식도염",
+    "category": "follow_up",
+    "content": "속쓰림이 4주 이상 지속되면 내시경 검사를 고려하세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "K58",
+    "disease_name": "과민성장증후군",
+    "original_disease_name": "과민성장증후군",
+    "category": "general_care",
+    "content": "규칙적인 식사와 충분한 식이섬유 섭취를 하세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "K58",
+    "disease_name": "과민성장증후군",
+    "original_disease_name": "과민성장증후군",
+    "category": "general_care",
+    "content": "스트레스 관리와 규칙적인 운동이 증상 완화에 도움됩니다",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "K58",
+    "disease_name": "과민성장증후군",
+    "original_disease_name": "과민성장증후군",
+    "category": "medication_caution",
+    "content": "증상 유형(설사형/변비형)에 맞는 약물을 복용하세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "K58",
+    "disease_name": "과민성장증후군",
+    "original_disease_name": "과민성장증후군",
+    "category": "follow_up",
+    "content": "체중 감소, 혈변 등 경고 증상이 있으면 즉시 진료를 받으세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "M17",
+    "disease_name": "무릎관절증",
+    "original_disease_name": "무릎관절염",
+    "category": "general_care",
+    "content": "적정 체중을 유지하여 무릎 부담을 줄이세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "M17",
+    "disease_name": "무릎관절증",
+    "original_disease_name": "무릎관절염",
+    "category": "general_care",
+    "content": "수영, 자전거 등 관절에 부담이 적은 운동을 하세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "M17",
+    "disease_name": "무릎관절증",
+    "original_disease_name": "무릎관절염",
+    "category": "medication_caution",
+    "content": "소염진통제는 위장장애가 올 수 있으니 식후에 복용하세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "M17",
+    "disease_name": "무릎관절증",
+    "original_disease_name": "무릎관절염",
+    "category": "follow_up",
+    "content": "관절 부종이나 잠김 현상이 있으면 정형외과 진료를 받으세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "M51",
+    "disease_name": "추간판장애",
+    "original_disease_name": "디스크",
+    "category": "general_care",
+    "content": "올바른 자세를 유지하고 장시간 같은 자세를 피하세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "M51",
+    "disease_name": "추간판장애",
+    "original_disease_name": "디스크",
+    "category": "general_care",
+    "content": "무거운 물건을 들 때 허리가 아닌 무릎을 굽혀 들어올리세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "M51",
+    "disease_name": "추간판장애",
+    "original_disease_name": "디스크",
+    "category": "medication_caution",
+    "content": "근이완제 복용 시 졸음이 올 수 있으니 주의하세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "M51",
+    "disease_name": "추간판장애",
+    "original_disease_name": "디스크",
+    "category": "follow_up",
+    "content": "하지 저림이나 근력 약화가 있으면 즉시 진료를 받으세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "M54",
+    "disease_name": "등통증",
+    "original_disease_name": "요통",
+    "category": "general_care",
+    "content": "적절한 스트레칭과 코어 근력 운동을 꾸준히 하세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "M54",
+    "disease_name": "등통증",
+    "original_disease_name": "요통",
+    "category": "general_care",
+    "content": "장시간 앉아있을 때는 1시간마다 일어나 움직이세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "M54",
+    "disease_name": "등통증",
+    "original_disease_name": "요통",
+    "category": "medication_caution",
+    "content": "진통제를 장기 복용하지 말고 증상이 지속되면 진료를 받으세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "M54",
+    "disease_name": "등통증",
+    "original_disease_name": "요통",
+    "category": "follow_up",
+    "content": "통증이 6주 이상 지속되거나 다리로 방사되면 정밀검사를 받으세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "M79",
+    "disease_name": "연조직장애",
+    "original_disease_name": "근육통",
+    "category": "general_care",
+    "content": "무리한 활동을 피하고 충분한 휴식을 취하세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "M79",
+    "disease_name": "연조직장애",
+    "original_disease_name": "근육통",
+    "category": "general_care",
+    "content": "온찜질이나 가벼운 스트레칭으로 근육 긴장을 풀어주세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "M79",
+    "disease_name": "연조직장애",
+    "original_disease_name": "근육통",
+    "category": "medication_caution",
+    "content": "소염진통제는 단기간 사용하고 위장장애에 주의하세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "M79",
+    "disease_name": "연조직장애",
+    "original_disease_name": "근육통",
+    "category": "follow_up",
+    "content": "통증이 2주 이상 지속되거나 부종이 동반되면 진료를 받으세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "M75",
+    "disease_name": "어깨병변",
+    "original_disease_name": "어깨질환",
+    "category": "general_care",
+    "content": "어깨 스트레칭을 꾸준히 하되 통증 범위 내에서 하세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "M75",
+    "disease_name": "어깨병변",
+    "original_disease_name": "어깨질환",
+    "category": "general_care",
+    "content": "팔을 머리 위로 반복적으로 올리는 동작을 피하세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "M75",
+    "disease_name": "어깨병변",
+    "original_disease_name": "어깨질환",
+    "category": "medication_caution",
+    "content": "소염진통제와 함께 물리치료를 병행하면 효과적입니다",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "M75",
+    "disease_name": "어깨병변",
+    "original_disease_name": "어깨질환",
+    "category": "follow_up",
+    "content": "야간 통증이 심하거나 팔을 올리기 어려우면 정형외과 진료를 받으세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "L20",
+    "disease_name": "아토피피부염",
+    "original_disease_name": "아토피",
+    "category": "general_care",
+    "content": "보습제를 하루 2회 이상 충분히 바르세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "L20",
+    "disease_name": "아토피피부염",
+    "original_disease_name": "아토피",
+    "category": "general_care",
+    "content": "뜨거운 물 목욕을 피하고 미지근한 물로 짧게 씻으세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "L20",
+    "disease_name": "아토피피부염",
+    "original_disease_name": "아토피",
+    "category": "medication_caution",
+    "content": "스테로이드 연고는 처방된 부위와 기간만 사용하세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "L20",
+    "disease_name": "아토피피부염",
+    "original_disease_name": "아토피",
+    "category": "follow_up",
+    "content": "피부 감염 징후(진물, 고름)가 보이면 진료를 받으세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "L50",
+    "disease_name": "두드러기",
+    "original_disease_name": "두드러기",
+    "category": "general_care",
+    "content": "원인 물질(음식, 약물 등)을 파악하고 피하세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "L50",
+    "disease_name": "두드러기",
+    "original_disease_name": "두드러기",
+    "category": "general_care",
+    "content": "피부를 긁지 말고 냉찜질로 가려움을 완화하세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "L50",
+    "disease_name": "두드러기",
+    "original_disease_name": "두드러기",
+    "category": "medication_caution",
+    "content": "항히스타민제 복용 시 졸음에 주의하세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "L50",
+    "disease_name": "두드러기",
+    "original_disease_name": "두드러기",
+    "category": "follow_up",
+    "content": "호흡곤란이나 입술/혀 부종이 동반되면 즉시 응급실을 방문하세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "F32",
+    "disease_name": "우울에피소드",
+    "original_disease_name": "우울증",
+    "category": "general_care",
+    "content": "규칙적인 수면과 기상 시간을 유지하세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "F32",
+    "disease_name": "우울에피소드",
+    "original_disease_name": "우울증",
+    "category": "general_care",
+    "content": "가벼운 산책이나 운동을 매일 30분 이상 하세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "F32",
+    "disease_name": "우울에피소드",
+    "original_disease_name": "우울증",
+    "category": "medication_caution",
+    "content": "항우울제는 효과가 나타나기까지 2~4주가 걸릴 수 있으니 꾸준히 복용하세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "F32",
+    "disease_name": "우울에피소드",
+    "original_disease_name": "우울증",
+    "category": "medication_caution",
+    "content": "임의로 약을 중단하면 금단 증상이 올 수 있으니 반드시 의료진과 상의하세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "F32",
+    "disease_name": "우울에피소드",
+    "original_disease_name": "우울증",
+    "category": "follow_up",
+    "content": "자해 충동이나 극심한 무기력감이 있으면 즉시 전문의와 상담하세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "F41",
+    "disease_name": "불안장애",
+    "original_disease_name": "불안장애",
+    "category": "general_care",
+    "content": "복식호흡이나 명상 등 이완 기법을 연습하세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "F41",
+    "disease_name": "불안장애",
+    "original_disease_name": "불안장애",
+    "category": "general_care",
+    "content": "카페인과 알코올 섭취를 줄이세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "F41",
+    "disease_name": "불안장애",
+    "original_disease_name": "불안장애",
+    "category": "medication_caution",
+    "content": "항불안제는 의존성이 있을 수 있으니 처방대로만 복용하세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "F41",
+    "disease_name": "불안장애",
+    "original_disease_name": "불안장애",
+    "category": "follow_up",
+    "content": "공황발작이 반복되거나 일상생활이 어려우면 정신건강의학과 진료를 받으세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "F51",
+    "disease_name": "비기질성 수면장애",
+    "original_disease_name": "수면장애",
+    "category": "general_care",
+    "content": "매일 같은 시간에 자고 일어나는 수면 습관을 만드세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "F51",
+    "disease_name": "비기질성 수면장애",
+    "original_disease_name": "수면장애",
+    "category": "general_care",
+    "content": "취침 전 스마트폰, TV 등 전자기기 사용을 줄이세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "F51",
+    "disease_name": "비기질성 수면장애",
+    "original_disease_name": "수면장애",
+    "category": "medication_caution",
+    "content": "수면제는 단기간만 사용하고 장기 복용 시 의료진과 상의하세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "F51",
+    "disease_name": "비기질성 수면장애",
+    "original_disease_name": "수면장애",
+    "category": "follow_up",
+    "content": "불면이 4주 이상 지속되면 수면 클리닉 상담을 받아보세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "G43",
+    "disease_name": "편두통",
+    "original_disease_name": "편두통",
+    "category": "general_care",
+    "content": "유발인자(스트레스, 수면부족, 특정 음식)를 파악하고 피하세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "G43",
+    "disease_name": "편두통",
+    "original_disease_name": "편두통",
+    "category": "general_care",
+    "content": "규칙적인 식사와 충분한 수면을 유지하세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "G43",
+    "disease_name": "편두통",
+    "original_disease_name": "편두통",
+    "category": "medication_caution",
+    "content": "두통약을 월 10일 이상 복용하면 약물과용두통이 올 수 있으니 주의하세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "G43",
+    "disease_name": "편두통",
+    "original_disease_name": "편두통",
+    "category": "follow_up",
+    "content": "두통 양상이 변하거나 구토·시력장애가 동반되면 진료를 받으세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "G47",
+    "disease_name": "수면장애",
+    "original_disease_name": "수면장애(신경계)",
+    "category": "general_care",
+    "content": "규칙적인 수면 스케줄과 쾌적한 수면 환경을 유지하세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "G47",
+    "disease_name": "수면장애",
+    "original_disease_name": "수면장애(신경계)",
+    "category": "general_care",
+    "content": "낮잠은 30분 이내로 제한하세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "G47",
+    "disease_name": "수면장애",
+    "original_disease_name": "수면장애(신경계)",
+    "category": "medication_caution",
+    "content": "수면 보조제는 의료진 처방에 따라 단기간만 사용하세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "G47",
+    "disease_name": "수면장애",
+    "original_disease_name": "수면장애(신경계)",
+    "category": "follow_up",
+    "content": "코골이나 수면 중 호흡 멈춤이 있으면 수면다원검사를 받아보세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "H10",
+    "disease_name": "결막염",
+    "original_disease_name": "결막염",
+    "category": "general_care",
+    "content": "손으로 눈을 만지지 말고 손 씻기를 자주 하세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "H10",
+    "disease_name": "결막염",
+    "original_disease_name": "결막염",
+    "category": "general_care",
+    "content": "수건, 베개 등 개인 물품을 공유하지 마세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "H10",
+    "disease_name": "결막염",
+    "original_disease_name": "결막염",
+    "category": "medication_caution",
+    "content": "안약은 정해진 횟수와 간격을 지켜 점안하세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "H10",
+    "disease_name": "결막염",
+    "original_disease_name": "결막염",
+    "category": "follow_up",
+    "content": "시력 저하나 심한 통증이 있으면 안과 진료를 받으세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "H65",
+    "disease_name": "비화농성 중이염",
+    "original_disease_name": "중이염",
+    "category": "general_care",
+    "content": "코를 세게 풀지 말고 한쪽씩 부드럽게 풀으세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "H65",
+    "disease_name": "비화농성 중이염",
+    "original_disease_name": "중이염",
+    "category": "general_care",
+    "content": "수영이나 물놀이 시 귀에 물이 들어가지 않도록 주의하세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "H65",
+    "disease_name": "비화농성 중이염",
+    "original_disease_name": "중이염",
+    "category": "medication_caution",
+    "content": "항생제가 처방된 경우 증상이 호전되어도 끝까지 복용하세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "H65",
+    "disease_name": "비화농성 중이염",
+    "original_disease_name": "중이염",
+    "category": "follow_up",
+    "content": "청력 저하가 느껴지거나 귀에서 분비물이 나오면 이비인후과 진료를 받으세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "N76",
+    "disease_name": "질 및 외음부의 기타 염증",
+    "original_disease_name": "질염",
+    "category": "general_care",
+    "content": "통풍이 잘 되는 면 속옷을 착용하세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "N76",
+    "disease_name": "질 및 외음부의 기타 염증",
+    "original_disease_name": "질염",
+    "category": "general_care",
+    "content": "질 내부 세정제 사용을 피하고 외음부만 깨끗이 씻으세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "N76",
+    "disease_name": "질 및 외음부의 기타 염증",
+    "original_disease_name": "질염",
+    "category": "medication_caution",
+    "content": "처방된 질정이나 연고는 증상이 호전되어도 치료 기간을 지키세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "N76",
+    "disease_name": "질 및 외음부의 기타 염증",
+    "original_disease_name": "질염",
+    "category": "follow_up",
+    "content": "증상이 반복되면 원인균 검사를 받아보세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "R10",
+    "disease_name": "복부 및 골반 통증",
+    "original_disease_name": "복통",
+    "category": "general_care",
+    "content": "자극적인 음식을 피하고 소화가 잘 되는 음식을 드세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "R10",
+    "disease_name": "복부 및 골반 통증",
+    "original_disease_name": "복통",
+    "category": "general_care",
+    "content": "스트레스 관리와 규칙적인 식사 습관을 유지하세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "R10",
+    "disease_name": "복부 및 골반 통증",
+    "original_disease_name": "복통",
+    "category": "follow_up",
+    "content": "복통이 지속되거나 발열·구토가 동반되면 진료를 받으세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "R50",
+    "disease_name": "달리 분류되지 않은 발열",
+    "original_disease_name": "발열",
+    "category": "general_care",
+    "content": "충분한 수분 섭취와 휴식을 취하세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "R50",
+    "disease_name": "달리 분류되지 않은 발열",
+    "original_disease_name": "발열",
+    "category": "medication_caution",
+    "content": "해열제는 38.5도 이상일 때 복용하고 용법을 지키세요",
+    "source": "common_disease_guide"
+  },
+  {
+    "disease_code": "R50",
+    "disease_name": "달리 분류되지 않은 발열",
+    "original_disease_name": "발열",
+    "category": "follow_up",
+    "content": "고열이 3일 이상 지속되거나 원인을 모르면 진료를 받으세요",
+    "source": "common_disease_guide"
   }
 ]

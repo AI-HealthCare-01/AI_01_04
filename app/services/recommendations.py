@@ -190,6 +190,29 @@ class RecommendationService:
 
         return " ".join(part for part in parts if part).strip()
 
+    def _parse_diagnosis_entry(self, entry: str) -> tuple[str | None, str | None]:
+        """
+        diagnosis_list 항목에서 질병코드와 질병명을 분리한다.
+
+        예:
+        - 'I109 기타 및 상세불명의 원발성 고혈압' → ('I109', '기타 및 상세불명의 원발성 고혈압')
+        - 'E118 합병증을 동반하지 않은 2형 당뇨병' → ('E118', '합병증을 동반하지 않은 2형 당뇨병')
+        - '고혈압' → (None, '고혈압')
+        - 'I10' → ('I10', None)
+        """
+        if not entry or not entry.strip():
+            return None, None
+
+        text = entry.strip()
+        match = re.match(r"^([A-Za-z]\d{2,5})\s+(.*)", text)
+        if match:
+            return match.group(1).upper(), match.group(2).strip() or None
+
+        if self._looks_like_disease_code(text):
+            return text.upper(), None
+
+        return None, text
+
     async def _match_disease(self, diagnosis: str | None) -> Any | None:
         """
         diagnosis 문자열을 Disease에 매칭한다.
@@ -310,31 +333,58 @@ class RecommendationService:
     ) -> list[RecommendationCandidate]:
         """
         diagnosis를 Disease에 매칭한 뒤 guideline 기반 후보를 생성한다.
+
+        매칭 우선순위:
+        1. 기존 Disease 직접 매칭 (이름/코드)
+        2. 질병코드 매핑 테이블을 통한 anchor 코드 → guideline 조회
         """
         candidates: list[RecommendationCandidate] = []
-
-        disease = await self._match_disease(diagnosis)
-        if not disease:
+        normalized = self._normalize_diagnosis_text(diagnosis)
+        if not normalized:
             return candidates
 
-        guidelines = await self.disease_repo.get_guidelines_by_disease(disease.id)
-        if not guidelines:
-            return candidates
+        # 1) 기존 직접 매칭
+        disease = await self._match_disease(normalized)
+        if disease:
+            guidelines = await self.disease_repo.get_guidelines_by_disease(disease.id)
+            if guidelines:
+                for gl in guidelines:
+                    candidates.append(
+                        self._create_recommendation_candidate(
+                            recommendation_type=getattr(gl, "category", "general_care"),
+                            source="direct_guideline",
+                            content=getattr(gl, "content", ""),
+                            score=0.95,
+                            disease_id=disease.id,
+                            guideline_id=getattr(gl, "id", None),
+                            metadata={"matched_from": normalized},
+                        )
+                    )
+                return candidates
 
-        normalized_diagnosis = self._normalize_diagnosis_text(diagnosis)
-
-        for guideline in guidelines:
-            candidates.append(
-                self._create_recommendation_candidate(
-                    recommendation_type=getattr(guideline, "category", "general_care"),
-                    source="direct_guideline",
-                    content=getattr(guideline, "content", ""),
-                    score=0.95,
-                    disease_id=disease.id,
-                    guideline_id=getattr(guideline, "id", None),
-                    metadata={"matched_from": normalized_diagnosis or ""},
-                )
-            )
+        # 2) 질병코드 매핑 테이블 fallback
+        code, _name = self._parse_diagnosis_entry(diagnosis)
+        if code:
+            anchor = await self.disease_repo.resolve_anchor_code(code)
+            if anchor:
+                anchor_code, anchor_name = anchor
+                guidelines = await self.disease_repo.get_guidelines_by_anchor_code(anchor_code)
+                for gl in guidelines:
+                    candidates.append(
+                        self._create_recommendation_candidate(
+                            recommendation_type=getattr(gl, "category", "general_care"),
+                            source="direct_guideline",
+                            content=getattr(gl, "content", ""),
+                            score=0.93,
+                            guideline_id=getattr(gl, "id", None),
+                            metadata={
+                                "matched_from": normalized,
+                                "original_code": code,
+                                "anchor_code": anchor_code,
+                                "anchor_name": anchor_name,
+                            },
+                        )
+                    )
 
         return candidates
 
@@ -405,48 +455,62 @@ class RecommendationService:
     async def _build_prescription_recommendations(
         self,
         *,
-        diagnosis: str | None,
+        diagnosis_list: list[str],
         drugs: list[str],
     ) -> list[RecommendationCandidate]:
         """
         처방전 scan 결과를 바탕으로 recommendation 후보를 생성한다.
 
+        복수 진단을 지원하며, 각 진단에 대해 가이드라인을 수집한다.
+
         우선순위:
-        1. guideline 직접 매칭 후보
+        1. 각 진단별 guideline 직접 매칭 후보 (코드 매핑 포함)
         2. guideline이 없을 때 vector fallback 후보
         3. 약물명 기반 복약 안내 후보
         """
         candidates: list[RecommendationCandidate] = []
+        has_any_guideline = False
 
-        normalized_diagnosis = self._normalize_diagnosis_text(diagnosis)
+        # 1) 각 진단별 guideline 수집
+        for diag_entry in diagnosis_list:
+            if not isinstance(diag_entry, str) or not diag_entry.strip():
+                continue
 
-        # 1) guideline 직접 매칭 후보
-        guideline_candidates = await self._build_guideline_recommendations(
-            diagnosis=normalized_diagnosis,
+            guideline_candidates = await self._build_guideline_recommendations(
+                diagnosis=diag_entry.strip(),
+            )
+            if guideline_candidates:
+                has_any_guideline = True
+                candidates.extend(guideline_candidates)
+
+        # 2) guideline이 하나도 없으면 vector fallback
+        first_diag = self._normalize_diagnosis_text(
+            diagnosis_list[0] if diagnosis_list else None
         )
-        candidates.extend(guideline_candidates)
-
-        # 2) guideline 후보가 전혀 없을 때만 vector fallback 수행
-        if normalized_diagnosis and not guideline_candidates:
+        if first_diag and not has_any_guideline:
             vector_candidates = await self._search_vector_guidelines(
-                diagnosis=normalized_diagnosis,
+                diagnosis=first_diag,
                 drugs=drugs,
                 clinical_note=None,
                 top_k=3,
             )
             candidates.extend(vector_candidates)
 
-        # 3) 진단은 있지만 guideline / vector 모두 못 만든 경우 임시 안내 문구 추가
-        if not candidates and normalized_diagnosis:
-            candidates.append(
-                self._create_recommendation_candidate(
-                    recommendation_type="followup",
-                    source="scan.diagnosis",
-                    content=f"진단 정보 '{normalized_diagnosis}' 기준으로 생활관리 및 추적 관찰 항목을 확인해보세요.",
-                    score=0.6,
-                    metadata={"matched_from": normalized_diagnosis},
-                )
+        # 3) 진단은 있지만 guideline / vector 모두 못 만든 경우
+        if not candidates and diagnosis_list:
+            diag_summary = ", ".join(
+                d.strip() for d in diagnosis_list[:3] if isinstance(d, str) and d.strip()
             )
+            if diag_summary:
+                candidates.append(
+                    self._create_recommendation_candidate(
+                        recommendation_type="followup",
+                        source="scan.diagnosis",
+                        content=f"진단 정보 '{diag_summary}' 기준으로 생활관리 및 추적 관찰 항목을 확인해보세요.",
+                        score=0.6,
+                        metadata={"matched_from": diag_summary},
+                    )
+                )
 
         # 4) 약물명 기반 복약 주의 후보 추가
         for drug in drugs[:10]:
@@ -472,33 +536,40 @@ class RecommendationService:
     async def _build_medical_record_recommendations(
         self,
         *,
-        diagnosis: str | None,
+        diagnosis_list: list[str],
         clinical_note: str | None,
     ) -> list[RecommendationCandidate]:
         """
         진료기록지 scan 결과를 기반으로 recommendation 후보를 생성한다.
 
-        개선점:
-        - guideline direct match가 없으면
-          diagnosis 또는 clinical_note 기반 vector fallback을 수행한다.
+        복수 진단을 지원하며, 각 진단에 대해 가이드라인을 수집한다.
         """
         candidates: list[RecommendationCandidate] = []
+        has_any_guideline = False
 
-        normalized_diagnosis = self._normalize_diagnosis_text(diagnosis)
         normalized_clinical_note = (
             clinical_note.strip() if isinstance(clinical_note, str) and clinical_note.strip() else None
         )
 
-        # 1) guideline 직접 매칭 후보
-        guideline_candidates = await self._build_guideline_recommendations(
-            diagnosis=normalized_diagnosis,
-        )
-        candidates.extend(guideline_candidates)
+        # 1) 각 진단별 guideline 수집
+        for diag_entry in diagnosis_list:
+            if not isinstance(diag_entry, str) or not diag_entry.strip():
+                continue
 
-        # 2) guideline이 없으면 diagnosis / clinical_note 기반 vector fallback
-        if not guideline_candidates and (normalized_diagnosis or normalized_clinical_note):
+            guideline_candidates = await self._build_guideline_recommendations(
+                diagnosis=diag_entry.strip(),
+            )
+            if guideline_candidates:
+                has_any_guideline = True
+                candidates.extend(guideline_candidates)
+
+        # 2) guideline이 없으면 vector fallback
+        first_diag = self._normalize_diagnosis_text(
+            diagnosis_list[0] if diagnosis_list else None
+        )
+        if not has_any_guideline and (first_diag or normalized_clinical_note):
             vector_candidates = await self._search_vector_guidelines(
-                diagnosis=normalized_diagnosis,
+                diagnosis=first_diag,
                 drugs=[],
                 clinical_note=normalized_clinical_note,
                 top_k=3,
@@ -506,16 +577,20 @@ class RecommendationService:
             candidates.extend(vector_candidates)
 
         # 3) 그래도 없으면 diagnosis 기반 임시 followup 후보
-        if not candidates and normalized_diagnosis:
-            candidates.append(
-                self._create_recommendation_candidate(
-                    recommendation_type="followup",
-                    source="scan.medical_record.diagnosis",
-                    content=f"진단 정보 '{normalized_diagnosis}' 기준으로 증상 변화와 경과를 관찰하고 필요한 추적 진료 일정을 확인해보세요.",
-                    score=0.9,
-                    metadata={"matched_from": normalized_diagnosis},
-                )
+        if not candidates and diagnosis_list:
+            diag_summary = ", ".join(
+                d.strip() for d in diagnosis_list[:3] if isinstance(d, str) and d.strip()
             )
+            if diag_summary:
+                candidates.append(
+                    self._create_recommendation_candidate(
+                        recommendation_type="followup",
+                        source="scan.medical_record.diagnosis",
+                        content=f"진단 정보 '{diag_summary}' 기준으로 증상 변화와 경과를 관찰하고 필요한 추적 진료 일정을 확인해보세요.",
+                        score=0.9,
+                        metadata={"matched_from": diag_summary},
+                    )
+                )
 
         # 4) clinical_note가 있으면 생활관리/주의 문구 추가
         if normalized_clinical_note:
@@ -579,8 +654,15 @@ class RecommendationService:
 
         document_type = self._normalize_document_type(scan.get("document_type"))
 
-        diagnosis_raw = scan.get("diagnosis")
-        diagnosis = diagnosis_raw.strip() if isinstance(diagnosis_raw, str) and diagnosis_raw.strip() else None
+        # diagnosis_list 우선, 하위호환으로 diagnosis(단수)도 지원
+        diagnosis_list_raw = scan.get("diagnosis_list") or []
+        if not diagnosis_list_raw:
+            single = scan.get("diagnosis")
+            if isinstance(single, str) and single.strip():
+                diagnosis_list_raw = [single.strip()]
+        diagnosis_list: list[str] = [
+            d for d in diagnosis_list_raw if isinstance(d, str) and d.strip()
+        ]
 
         clinical_note_raw = scan.get("clinical_note")
         clinical_note = (
@@ -594,7 +676,7 @@ class RecommendationService:
 
         batch = await self.recommendation_repo.create_batch(
             user_id=user_id,
-            retrieval_strategy=f"scan-{document_type}-dedup-v2",
+            retrieval_strategy=f"scan-{document_type}-multi-diag-v3",
         )
 
         candidates: list[RecommendationCandidate] = []
@@ -602,14 +684,14 @@ class RecommendationService:
         if document_type == "medical_record":
             candidates.extend(
                 await self._build_medical_record_recommendations(
-                    diagnosis=diagnosis,
+                    diagnosis_list=diagnosis_list,
                     clinical_note=clinical_note,
                 )
             )
         else:
             candidates.extend(
                 await self._build_prescription_recommendations(
-                    diagnosis=diagnosis,
+                    diagnosis_list=diagnosis_list,
                     drugs=drugs,
                 )
             )
