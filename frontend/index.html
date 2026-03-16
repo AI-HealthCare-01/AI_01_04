@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-text="index.title">당신의 건강을 기원합니다 - 로그인</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+
+    <style>
+        .intro-section {
+            max-width: 600px;
+            width: 100%;
+            padding: 2rem;
+        }
+
+        .auth-section {
+            display: none;
+            max-width: 450px;
+            width: 100%;
+            padding: 1rem;
+        }
+
+        #auth-toggle-btn {
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+
+        .form-container {
+            display: none;
+        }
+
+        .form-container.active {
+            display: block;
+            animation: fadeIn 0.5s ease forwards;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- 1. Intro Quote Section -->
+    <div class="auth-wrapper flex-column" id="intro-view">
+        <div class="intro-section text-center fade-in">
+            <div id="quote-container" class="position-relative w-100 mb-4">
+                <div class="quote-text active pt-4"></div>
+                <div class="quote-text pt-4"></div>
+                <div class="quote-text pt-4"></div>
+                <div class="quote-text pt-4"></div>
+                <div class="quote-text pt-4"></div>
+                <div class="quote-text pt-4"></div>
+                <div class="quote-text pt-4"></div>
+                <div class="quote-text pt-4"></div>
+                <div class="quote-text pt-4"></div>
+                <div class="quote-text pt-4"></div>
+            </div>
+
+            <!-- 2초 등장 시간 구현 -->
+            <div class="mt-5" id="auth-toggle-btn">
+                <button class="btn btn-primary btn-lg rounded-pill px-5 py-3 shadow-sm" onclick="showAuthView()">
+                    <span data-text="index.startButton">서비스 시작하기</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Auth Section (Login / Signup) -->
+    <div class="auth-wrapper" id="auth-view" style="display: none;">
+        <div class="auth-section d-block">
+            <div class="card p-4 p-md-5">
+                <div class="text-center mb-4">
+                    <h3 class="fw-bold text-primary-custom mb-1" id="auth-title" data-text="index.loginTitle">로그인</h3>
+                    <p class="text-soft small" id="auth-subtitle" data-text="index.loginSubtitle">서비스 이용을 위해 로그인해주세요.</p>
+                </div>
+
+                <!-- Login Form -->
+                <form id="login-form" class="form-container active" onsubmit="handleLogin(event)">
+                    <div id="login-error" class="alert alert-danger p-2 small d-none"></div>
+                    <div class="mb-3">
+                        <label class="form-label text-secondary small fw-medium" data-text="index.fields.email">이메일</label>
+                        <input type="email" id="login-email" class="form-control" data-placeholder="index.placeholders.email" placeholder="example@email.com"
+                            required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label text-secondary small fw-medium" data-text="index.fields.password">비밀번호</label>
+                        <input type="password" id="login-pw" class="form-control" data-placeholder="index.placeholders.password" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" id="login-btn" class="btn btn-primary w-100 mb-3 py-2">
+                        <span class="btn-text" data-text="index.buttons.login">로그인</span>
+                        <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                    </button>
+                    <div class="text-center mt-3">
+                        <span class="text-secondary small" data-text="index.prompts.noAccount">계정이 없으신가요?</span>
+                        <button type="button"
+                            class="btn btn-link text-primary-custom text-decoration-none p-0 ms-1 fw-bold"
+                            onclick="toggleAuthMode('signup')" data-text="index.buttons.goSignup">회원가입</button>
+                    </div>
+                </form>
+
+                <!-- Signup Form -->
+                <form id="signup-form" class="form-container" onsubmit="handleSignup(event)">
+                    <div id="signup-error" class="alert alert-danger p-2 small d-none"></div>
+                    <div class="mb-3">
+                        <label class="form-label text-secondary small fw-medium" data-text="index.fields.email">이메일</label>
+                        <input type="email" id="signup-email" class="form-control" data-placeholder="index.placeholders.email" placeholder="example@email.com"
+                            required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-secondary small fw-medium" data-text="index.fields.name">이름</label>
+                        <input type="text" id="signup-name" class="form-control" data-placeholder="index.placeholders.name" placeholder="홍길동" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label text-secondary small fw-medium" data-text="index.fields.passwordSetup">비밀번호 설정</label>
+                        <input type="password" id="signup-pw" class="form-control" data-placeholder="index.placeholders.password" placeholder="••••••••" required
+                            minlength="8">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-secondary small fw-medium" data-text="index.fields.phone">휴대폰 번호 (하이픈 - 포함)</label>
+                        <input type="tel" id="signup-phone" class="form-control" data-placeholder="index.placeholders.phone" placeholder="010-1234-5678" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-secondary small fw-medium" data-text="index.fields.gender">성별</label>
+                        <select id="signup-gender" class="form-select bg-light" required>
+                            <option value="" data-text="index.prompts.genderSelect">선택</option>
+                            <option value="MALE" data-text="index.prompts.genderMale">남성</option>
+                            <option value="FEMALE" data-text="index.prompts.genderFemale">여성</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-secondary small fw-medium" data-text="index.fields.birthday">생년월일 (YYYY-MM-DD)</label>
+                        <input type="date" id="signup-birth" class="form-control" required>
+                    </div>
+                    <button type="submit" id="signup-btn" class="btn btn-primary w-100 mb-3 py-2">
+                        <span class="btn-text" data-text="index.buttons.signup">회원가입 완료</span>
+                        <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                    </button>
+                    <div class="text-center mt-3">
+                        <span class="text-secondary small" data-text="index.prompts.hasAccount">이미 계정이 있으신가요?</span>
+                        <button type="button"
+                            class="btn btn-link text-primary-custom text-decoration-none p-0 ms-1 fw-bold"
+                            onclick="toggleAuthMode('login')" data-text="index.buttons.goLogin">로그인하러 가기</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/texts.js"></script>
+    <script src="js/api.js"></script>
+    <script>
+        // 1. Check if already logged in (Auto bypass)
+        if (localStorage.getItem('access_token')) {
+            window.location.href = 'dashboard.html';
+        }
+
+        // 2. Quote Rotation Logic (3s)
+        document.addEventListener("DOMContentLoaded", () => {
+            applyTextBindings();
+            document.title = getText('index.title', document.title);
+            const quotes = document.querySelectorAll('.quote-text');
+            const quoteTexts = getText('index.quotes', []);
+            quotes.forEach((quote, index) => {
+                quote.innerText = `"${quoteTexts[index] || ''}"`;
+            });
+            let currentQuote = 0;
+            setInterval(() => {
+                quotes[currentQuote].classList.remove('active');
+                currentQuote = (currentQuote + 1) % quotes.length;
+                quotes[currentQuote].classList.add('active');
+            }, 3000);
+
+            // Show Button after 2 seconds
+            setTimeout(() => {
+                const btn = document.getElementById('auth-toggle-btn');
+                if (btn) btn.style.opacity = '1';
+            }, 2000);
+        });
+
+        function showAuthView() {
+            document.getElementById('intro-view').style.display = 'none';
+            document.getElementById('auth-view').style.display = 'flex';
+            document.getElementById('auth-view').classList.add('fade-in');
+        }
+
+        function toggleAuthMode(mode) {
+            const loginForm = document.getElementById('login-form');
+            const signupForm = document.getElementById('signup-form');
+            const title = document.getElementById('auth-title');
+            const subtitle = document.getElementById('auth-subtitle');
+
+            document.getElementById('login-error').classList.add('d-none');
+            document.getElementById('signup-error').classList.add('d-none');
+
+            if (mode === 'signup') {
+                loginForm.classList.remove('active');
+                signupForm.classList.add('active');
+                title.innerText = getText('index.signupTitle', '회원가입');
+                subtitle.innerText = getText('index.signupSubtitle', '가입을 환영합니다.');
+            } else {
+                signupForm.classList.remove('active');
+                loginForm.classList.add('active');
+                title.innerText = getText('index.loginTitle', '로그인');
+                subtitle.innerText = getText('index.reloginSubtitle', '다시 오신 것을 환영합니다.');
+            }
+        }
+
+        // Handle Login API
+        async function handleLogin(event) {
+            event.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const pw = document.getElementById('login-pw').value;
+            const btn = document.getElementById('login-btn');
+            const errBox = document.getElementById('login-error');
+
+            try {
+                btn.disabled = true;
+                btn.querySelector('.btn-text').classList.add('d-none');
+                btn.querySelector('.spinner-border').classList.remove('d-none');
+                errBox.classList.add('d-none');
+
+                const response = await window.api.login(email, pw);
+                localStorage.setItem('access_token', response.access_token);
+
+                // 로그인 성공과 프로필 조회 실패를 분리해 사용자 체감 오류를 줄입니다.
+                try {
+                    const user = await window.api.getUserMe();
+                    localStorage.setItem('user_name', user.name || '사용자');
+                } catch (profileError) {
+                    console.warn('로그인 후 사용자 정보 조회 실패:', profileError);
+                    localStorage.setItem('user_name', '사용자');
+                }
+
+                window.location.href = 'dashboard.html';
+
+            } catch (error) {
+                errBox.innerText = error.message;
+                errBox.classList.remove('d-none');
+            } finally {
+                btn.disabled = false;
+                btn.querySelector('.btn-text').classList.remove('d-none');
+                btn.querySelector('.spinner-border').classList.add('d-none');
+            }
+        }
+
+        // Handle Signup API - Goes back to Login on success
+        async function handleSignup(event) {
+            event.preventDefault();
+            const name = document.getElementById('signup-name').value;
+            const email = document.getElementById('signup-email').value;
+            const gender = document.getElementById('signup-gender').value;
+            const birth = document.getElementById('signup-birth').value;
+            const phone = document.getElementById('signup-phone').value;
+            const pw = document.getElementById('signup-pw').value;
+            const btn = document.getElementById('signup-btn');
+            const errBox = document.getElementById('signup-error');
+
+            try {
+                btn.disabled = true;
+                btn.querySelector('.btn-text').classList.add('d-none');
+                btn.querySelector('.spinner-border').classList.remove('d-none');
+                errBox.classList.add('d-none');
+
+                await window.api.signup(name, email, gender, birth, phone, pw);
+
+                alert(getText('index.prompts.signupSuccess', '가입이 성공적으로 완료되었습니다. 보안을 위해 다시 로그인해주세요.'));
+                toggleAuthMode('login'); // Switch to Login
+                document.getElementById('login-email').value = email; // Pre-fill
+                event.target.reset(); // clear signup
+
+            } catch (error) {
+                errBox.innerText = error.message;
+                errBox.classList.remove('d-none');
+            } finally {
+                btn.disabled = false;
+                btn.querySelector('.btn-text').classList.remove('d-none');
+                btn.querySelector('.spinner-border').classList.add('d-none');
+            }
+        }
+    </script>
+</body>
+
+</html>
