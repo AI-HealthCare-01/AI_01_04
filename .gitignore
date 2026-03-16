@@ -21,4 +21,6 @@ data/
 
 # Amazon Q rules (개인 설정)
 .amazonq/
+
+# 데이터 원본 파일(용량 100MB이상)
 scripts/raw_drug_license_info.xlsx
