@@ -234,6 +234,7 @@ class ScanAnalysisService:
                 diagnosis_list=ai_result.get("diagnosis_list", []),
                 clinical_note=ai_result.get("clinical_note"),
                 drugs=ai_result.get("drugs", []),
+                unrecognized_drugs=ai_result.get("unrecognized_drugs", []),
                 raw_text=ai_result.get("raw_text"),
                 ocr_raw=ai_result.get("ocr_raw"),
             )
@@ -279,6 +280,7 @@ class ScanAnalysisService:
                 diagnosis_list=ai_result.get("diagnosis_list", []),
                 clinical_note=ai_result.get("clinical_note"),
                 drugs=ai_result.get("drugs", []),
+                unrecognized_drugs=ai_result.get("unrecognized_drugs", []),
                 raw_text=ai_result.get("raw_text"),
                 ocr_raw=ai_result.get("ocr_raw"),
             )

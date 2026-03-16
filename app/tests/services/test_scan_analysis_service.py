@@ -186,6 +186,7 @@ class TestScanAnalysisService(TestCase):
             patch.object(service.med_service, "ensure_day_seed", new=AsyncMock(), create=True),
             patch.object(service.health_service, "ensure_day_seed", new=AsyncMock(), create=True),
             patch("app.services.scan_analysis.encode", return_value=[0.1] * 1536),
+            patch.object(service.vector_repo, "search_similar", new=AsyncMock(return_value=[])),
         ):
             result = await service.save_result(user, scan_id=scan["scan_id"])
         assert result["saved"] is True
@@ -208,6 +209,7 @@ class TestScanAnalysisService(TestCase):
             patch.object(service.med_service, "ensure_day_seed", new=AsyncMock(), create=True),
             patch.object(service.health_service, "ensure_day_seed", new=AsyncMock(), create=True),
             patch("app.services.scan_analysis.encode", return_value=[0.1] * 1536),
+            patch.object(service.vector_repo, "search_similar", new=AsyncMock(return_value=[])),
         ):
             first = await service.save_result(user, scan_id=scan["scan_id"])
             second = await service.save_result(user, scan_id=scan["scan_id"])

@@ -33,6 +33,7 @@ def _to_dict(scan: Scan) -> dict[str, Any]:
         "diagnosis": scan.diagnosis_list[0] if scan.diagnosis_list else None,
         "clinical_note": scan.clinical_note,
         "drugs": scan.drugs or [],
+        "unrecognized_drugs": scan.unrecognized_drugs or [],
         "raw_text": scan.raw_text,
         "ocr_raw": scan.ocr_raw,
         "file_path": scan.file_path,

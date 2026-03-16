@@ -24,7 +24,7 @@ PRESCRIPTION_SYSTEM_PROMPT = """
 - document_date: YYYY-MM-DD 또는 null
 - diagnosis_list: 진단명/질병명/질병분류기호(KCD 코드) 배열. 여러 개가 있으면 모두 추출. 예: ["I109 기타 및 상세불명의 원발성 고혈압", "E118 합병증을 동반하지 않은 1형 당뇨병"]. 없으면 []
 - clinical_note: null
-- drugs: 
+- drugs:
     1. 문자열 배열. OCR로 인식된 텍스트를 가장 유사한 한국 약물명으로 보정해라. (없으면 [])
     2. 보정 불가능하면 "인식 불가"를 배열에 포함시켜라.
 - raw_text: 입력 원문 그대로
