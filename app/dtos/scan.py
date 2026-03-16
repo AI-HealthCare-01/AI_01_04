@@ -33,6 +33,7 @@ class ScanResultResponse(BaseModel):
 
     drugs: list[str] = Field(default_factory=list)
     unrecognized_drugs: list[str] = Field(default_factory=list)
+    raw_text: str | None = None
     error_message: str | None = None
 
 

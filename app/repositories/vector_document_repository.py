@@ -143,18 +143,20 @@ class VectorDocumentRepository:
 
         if reference_type:
             sql = """
-            SELECT id, reference_type, reference_id, content, embedding, created_at
+            SELECT id, reference_type, reference_id, content, embedding, created_at,
+                   embedding::vector <=> $1::vector AS distance
             FROM vector_documents
             WHERE reference_type = $2
-            ORDER BY embedding::vector <=> $1::vector
+            ORDER BY distance
             LIMIT $3
             """  # noqa: S608
             params = [vector_str, reference_type, top_k]
         else:
             sql = """
-            SELECT id, reference_type, reference_id, content, embedding, created_at
+            SELECT id, reference_type, reference_id, content, embedding, created_at,
+                   embedding::vector <=> $1::vector AS distance
             FROM vector_documents
-            ORDER BY embedding::vector <=> $1::vector
+            ORDER BY distance
             LIMIT $2
             """  # noqa: S608
             params = [vector_str, top_k]
@@ -171,6 +173,7 @@ class VectorDocumentRepository:
                 embedding=row["embedding"],
                 created_at=row["created_at"],
             )
+            doc._distance = float(row["distance"])  # type: ignore[attr-defined]
             docs.append(doc)
 
         return docs
