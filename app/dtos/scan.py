@@ -5,6 +5,7 @@ class DrugEntry(BaseModel):
     """구조화된 약품 정보."""
 
     name: str
+    edi_code: str | None = None  # 보험코드/EDI코드
     dose_count: int | None = None  # 1일 복용 횟수
     dose_timing: str | None = None  # 식전/식후/자기전 등
     dose_days: int | None = None  # 투약일수

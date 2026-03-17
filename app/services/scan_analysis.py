@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import logging
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any
 
 from fastapi import HTTPException, UploadFile
@@ -374,7 +374,13 @@ class ScanAnalysisService:
         """EDI코드 우선 → 벡터 유사도 → get_or_create 순으로 약물을 매칭한다."""
         edi_code = (drug_entry.get("edi_code") or "").strip()
         if edi_code:
-            drug_obj = await Drug.filter(edi_code__contains=edi_code).first()
+            drug_obj = await Drug.filter(edi_code__contains=f",{edi_code},").first()
+            if not drug_obj:
+                drug_obj = await Drug.filter(edi_code__startswith=f"{edi_code},").first()
+            if not drug_obj:
+                drug_obj = await Drug.filter(edi_code__endswith=f",{edi_code}").first()
+            if not drug_obj:
+                drug_obj = await Drug.filter(edi_code=edi_code).first()
             if drug_obj:
                 return drug_obj
 
@@ -429,8 +435,6 @@ class ScanAnalysisService:
             dose_days = drug_entry.get("dose_days")
             dose_amount = drug_entry.get("dose_amount") or "1"
             dose_unit = drug_entry.get("dose_unit") or "정"
-
-            from datetime import timedelta
 
             end = start + timedelta(days=(dose_days - 1)) if dose_days and dose_days > 0 else start
 
