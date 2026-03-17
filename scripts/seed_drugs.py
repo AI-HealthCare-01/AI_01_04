@@ -13,12 +13,11 @@ from __future__ import annotations
 import asyncio
 import logging
 import sys
+import time
 from pathlib import Path
 
-import time
-
-import tiktoken
 import pandas as pd
+import tiktoken
 from openai import RateLimitError
 from tortoise import Tortoise
 
@@ -131,9 +130,7 @@ async def seed() -> None:
     logger.info("임베딩 배치 수: %d", len(batches))
 
     # 이미 임베딩된 drug_id 조회 — 재실행 시 중복 처리 방지
-    done_ids = set(
-        await VectorDocument.filter(reference_type=REFERENCE_TYPE).values_list("reference_id", flat=True)
-    )
+    done_ids = set(await VectorDocument.filter(reference_type=REFERENCE_TYPE).values_list("reference_id", flat=True))
     logger.info("이미 완료된 임베딩: %d건 스킵", len(done_ids))
 
     # 3) 배치별 임베딩 + vector_documents 적재
@@ -151,7 +148,7 @@ async def seed() -> None:
             try:
                 embeddings = encode_batch(batch_texts)
                 break
-            except RateLimitError as e:
+            except RateLimitError:
                 if attempt == 4:
                     raise
                 wait = 60
@@ -166,7 +163,7 @@ async def seed() -> None:
                     content=text,
                     embedding=emb,
                 )
-                for drug, text, emb in zip(batch_drugs, batch_texts, embeddings)
+                for drug, text, emb in zip(batch_drugs, batch_texts, embeddings, strict=False)
                 if drug.id not in done_ids
             ]
         )
