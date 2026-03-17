@@ -7,22 +7,30 @@
 - user_current_features: 현재 최신 상태만 유지 (1:1)
 """
 
+from typing import TYPE_CHECKING
+
 from tortoise import fields, models
+from tortoise.fields.relational import ForeignKeyRelation
+
+if TYPE_CHECKING:
+    from app.models.users import User
 
 
 class UserFeatureSnapshot(models.Model):
     """
-    사용자 피처 스냅샷 (ERD: user_feature_snapshots)
+    사용자 피처 스냅샷 (ERD: user_feature_snapshots).
 
-    추천 생성 시점의 사용자 상태를 저장
+    추천 생성 시점의 사용자 상태를 feature_json으로 저장하여 복원 가능.
     """
 
     id = fields.IntField(pk=True)
-    user = fields.ForeignKeyField(
+
+    user: ForeignKeyRelation["User"] = fields.ForeignKeyField(
         "models.User",
         on_delete=fields.CASCADE,
         related_name="feature_snapshots",
     )
+
     feature_json = fields.TextField()
     created_at = fields.DatetimeField(auto_now_add=True)
 
@@ -32,17 +40,18 @@ class UserFeatureSnapshot(models.Model):
 
 class UserCurrentFeatures(models.Model):
     """
-    사용자 현재 피처 (ERD: user_current_features)
+    사용자 현재 피처 (ERD: user_current_features).
 
-    user_id가 PK (1:1 관계, 항상 최신만 유지)
+    user_id가 PK인 1:1 관계로 항상 최신 상태만 유지.
     """
 
-    user = fields.OneToOneField(
+    user: ForeignKeyRelation["User"] = fields.OneToOneField(
         "models.User",
         on_delete=fields.CASCADE,
         related_name="current_features",
         pk=True,
     )
+
     feature_json = fields.TextField()
     updated_at = fields.DatetimeField(auto_now=True)
 

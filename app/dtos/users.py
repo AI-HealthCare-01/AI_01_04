@@ -6,13 +6,15 @@ from typing import Annotated
 from pydantic import BaseModel, EmailStr, Field
 
 from app.dtos.base import BaseSerializerModel
-from app.models.users import Gender
+from app.models.users import Gender, User
 from app.validators.common import optional_after_validator
 from app.validators.user_validators import validate_birthday, validate_phone_number
 
 
 class UserUpdateRequest(BaseModel):
-    name: Annotated[str | None, Field(None, min_length=2, max_length=20)]
+    """사용자 프로필 수정 요청 스키마. 모든 필드 선택적."""
+
+    name: Annotated[str | None, Field(None, min_length=2, max_length=100)]
     email: Annotated[EmailStr | None, Field(None, max_length=40)]
     phone_number: Annotated[
         str | None,
@@ -26,20 +28,53 @@ class UserUpdateRequest(BaseModel):
     ]
     gender: Annotated[Gender | None, Field(None, description="'MALE' or 'FEMALE'")]
 
-    # 프로필 이미지 URL도 수정 가능하게
+    # 스키마에 profile_image_url 없음 - 향후 마이그레이션 시 사용
     profile_image_url: Annotated[str | None, Field(None, max_length=500)]
 
 
 class UserInfoResponse(BaseSerializerModel):
+    """
+    User 모델 → API 응답 매핑.
+
+    Attributes:
+        id: 사용자 PK.
+        name: 이름.
+        email: 이메일.
+        phone_number: 전화번호.
+        birthday: 생년월일.
+        gender: 성별.
+        is_active: 활성 여부.
+        is_admin: 관리자 여부.
+        last_login: 마지막 로그인 시각.
+        profile_image_url: 프로필 이미지 URL.
+    """
+
     id: int
     name: str
     email: str
     phone_number: str
-    birthday: date
-    gender: Gender
-    is_active: bool
-    is_admin: bool
+    birthday: date | None = None
+    gender: Gender | None = None
+    is_active: bool = True
+    is_admin: bool = False
     last_login: datetime | None = None
     profile_image_url: str | None = None
     created_at: datetime
     updated_at: datetime
+
+    @classmethod
+    def from_user(cls, user: User) -> UserInfoResponse:
+        return cls(
+            id=user.id,
+            name=user.name,
+            email=user.email,
+            phone_number=user.phone_number,
+            birthday=user.birthday,
+            gender=user.gender,
+            is_active=user.is_active,
+            is_admin=user.is_admin,
+            last_login=user.last_login,
+            profile_image_url=user.profile_image_url,
+            created_at=user.created_at,
+            updated_at=user.updated_at or user.created_at,
+        )

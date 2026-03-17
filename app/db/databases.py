@@ -4,7 +4,6 @@ from tortoise.contrib.fastapi import register_tortoise
 
 from app.core import config
 
-
 TORTOISE_APP_MODELS = [
     "aerich.models",
     "app.models.users",
@@ -13,11 +12,15 @@ TORTOISE_APP_MODELS = [
     "app.models.diseases",  # Disease, DiseaseGuideline
     "app.models.drugs",
     "app.models.prescriptions",  # Prescription, PrescriptionMemo, MedicationIntakeLog
+    "app.models.chat_medication",
+    "app.models.chat_health",
     "app.models.chatbot",  # ChatbotSession, ChatbotMessage, ChatbotSessionSummary
     "app.models.vector_documents",
+    "app.models.scans",
+    "app.models.health",
     "app.models.user_features",  # UserFeatureSnapshot, UserCurrentFeatures
     "app.models.recommendations",  # RecommendationBatch, Recommendation, UserActiveRecommendation, RecommendationFeedback
-    ""
+    "app.models.scans",  # Scan
 ]
 
 
@@ -46,5 +49,11 @@ TORTOISE_ORM = {
 
 
 def initialize_tortoise(app: FastAPI) -> None:
+    """
+    Tortoise ORM을 FastAPI 앱에 등록.
+
+    Args:
+        app (FastAPI): Tortoise ORM을 등록할 FastAPI 앱 인스턴스.
+    """
     Tortoise.init_models(TORTOISE_APP_MODELS, "models")
     register_tortoise(app, config=TORTOISE_ORM)

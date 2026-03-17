@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-text="recommendations.title">AI 맞춤 추천</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/style.css">
+
+    <style>
+        .rec-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border: 1px solid var(--border-color);
+        }
+
+        .rec-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.06);
+            border-color: #ffde82;
+        }
+
+        .badge-type {
+            font-size: 0.75rem;
+            padding: 4px 8px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Mobile Menu Button -->
+    <button class="btn btn-primary d-lg-none position-fixed top-0 end-0 m-3 z-3" type="button"
+        onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <div class="app-wrapper">
+        <!-- Sidebar -->
+        <nav id="sidebar-container" class="sidebar shadow-sm"></nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="fade-in mb-4 pb-2 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div>
+                    <h3 class="fw-bold mb-0" data-text="recommendations.title">AI 맞춤 추천 콘텐츠</h3>
+                    <p class="text-soft mt-1 mb-0" data-text="recommendations.subtitle">입력하신 신체 정보와 처방전/진단서 분석을 바탕으로 AI가 제안합니다.</p>
+                </div>
+                <a href="chatbot.html" class="btn btn-primary rounded-pill">
+                    <i class="bi bi-chat-dots me-1"></i>
+                    <span data-text="recommendations.chatbotButton">AI 상담으로 이어가기</span>
+                </a>
+            </div>
+
+            <!-- Loading State -->
+            <div id="loading" class="text-center py-5">
+                <div class="spinner-border text-primary-custom" role="status"></div>
+            </div>
+
+            <!-- Content Area -->
+            <div id="content-container" class="row g-4 d-none fade-in">
+                <div id="recommendation-list" class="row g-4">
+                    <!-- Javascript items injected here -->
+                </div>
+
+                <div id="empty-state" class="col-12 text-center py-5 d-none">
+                    <i class="bi bi-stars text-warning display-1 opacity-75"></i>
+                    <h5 class="text-soft mt-3" data-text="recommendations.emptyTitle">아직 맞춤 추천 내역이 생성되지 않았습니다.</h5>
+                    <p class="text-secondary small" data-text="recommendations.emptySubtitle">프로필 정보를 채우거나 처방전을 등록하시면 AI가 똑똑하게 분석합니다.</p>
+                    <div class="d-flex justify-content-center flex-wrap gap-2 mt-3">
+                        <a href="scans.html" class="btn btn-primary"><i class="bi bi-camera me-1"></i><span data-text="recommendations.scanButton">처방전 스캔하러 가기</span></a>
+                        <a href="chatbot.html" class="btn btn-outline-primary"><i class="bi bi-chat-dots me-1"></i><span data-text="recommendations.chatbotButton">AI 상담으로 이어가기</span></a>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast for Feedback -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="liveToast" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive"
+            aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body fw-bold">
+                    <span data-text="recommendations.toastThanks">소중한 의견 감사합니다. 추천 알고리즘에 반영되었습니다!</span>
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                    aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/texts.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/components.js"></script>
+
+    <script>
+        function toggleSidebar() { document.querySelector('.sidebar').classList.toggle('show'); }
+
+        async function sendFeedback(recId, type) {
+            try {
+                await window.api.sendFeedback(recId, type);
+                // Show toast
+                const toastEl = document.getElementById('liveToast');
+                const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
+                toast.show();
+
+                // visually hide card if disliked
+                if (type === 'dislike') {
+                    const card = document.getElementById(`rec-card-${recId}`);
+                    if (card) {
+                        card.style.opacity = '0.5';
+                        card.querySelector('.card-body').style.filter = 'grayscale(100%)';
+                        card.querySelector('.reaction-buttons').innerHTML = `<span class="small text-soft text-decoration-line-through">${getText('recommendations.disabledMessage', 'AI가 이 콘텐츠를 더 이상 추천하지 않습니다.')}</span>`;
+                    }
+                } else if (type === 'like') {
+                    const card = document.getElementById(`rec-card-${recId}`);
+                    card.querySelector('.btn-outline-success').classList.replace('btn-outline-success', 'btn-success');
+                    card.querySelector('.btn-outline-danger').disabled = true;
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function loadRecommendations() {
+            document.getElementById('loading').classList.remove('d-none');
+            document.getElementById('content-container').classList.add('d-none');
+
+            try {
+                applyTextBindings();
+                document.title = getText('recommendations.title', document.title);
+                const data = await window.api.getActiveRecommendations();
+                const container = document.getElementById('recommendation-list');
+                container.innerHTML = '';
+
+                if (!data || data.length === 0) {
+                    document.getElementById('empty-state').classList.remove('d-none');
+                    return;
+                }
+
+                data.forEach(rec => {
+                    let badgeClass = 'bg-primary';
+                    let icon = 'bi-info-circle-fill';
+                    switch (rec.recommendation_type) {
+                        case 'medication': badgeClass = 'bg-info bg-opacity-75'; icon = 'bi-capsule-pill'; break;
+                        case 'warning': badgeClass = 'bg-danger bg-opacity-75'; icon = 'bi-exclamation-triangle-fill'; break;
+                        case 'followup': badgeClass = 'bg-success bg-opacity-75'; icon = 'bi-heart-pulse-fill'; break;
+                        case 'lifestyle': badgeClass = 'bg-primary bg-opacity-75'; icon = 'bi-bicycle'; break;
+                        default: badgeClass = 'bg-secondary';
+                    }
+
+                    const html = `
+                <div class="col-md-6 col-lg-4">
+                    <div class="card p-4 h-100 rec-card shadow-sm" id="rec-card-${rec.id}">
+                        <div class="mb-3 d-flex justify-content-between align-items-start">
+                            <span class="badge ${badgeClass} badge-type rounded-pill shadow-sm"><i class="bi ${icon} me-1"></i>${rec.recommendation_type.toUpperCase()}</span>
+                            ${rec.is_selected ? `<span class="badge bg-light text-dark border badge-type"><i class="bi bi-check2-circle me-1"></i>${getText('recommendations.badgeSelected', '활성 추천')}</span>` : ''}
+                        </div>
+                        
+                        <h5 class="fw-bold text-dark mb-2">${getText('recommendations.cardTitle', 'AI 추천')}</h5>
+                        <p class="text-secondary small mb-2 flex-grow-1">${rec.content}</p>
+                        <p class="text-soft small mb-4">${getText('recommendations.scoreLabel', '점수')}: ${rec.score ?? '-'} / ${getText('recommendations.rankLabel', '순위')}: ${rec.rank ?? '-'}</p>
+                        
+                        <div class="d-flex justify-content-between align-items-center mt-auto p-2 bg-light rounded reaction-buttons">
+                            <span class="small text-soft fw-bold">${getText('recommendations.helpful', '도움이 되셨나요?')}</span>
+                            <div>
+                                <button class="btn btn-sm btn-outline-success border-0 rounded-circle me-1" onclick="sendFeedback(${rec.id}, 'like')" title="좋아요">
+                                    <i class="bi bi-hand-thumbs-up-fill"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger border-0 rounded-circle" onclick="sendFeedback(${rec.id}, 'dislike')" title="별로예요">
+                                    <i class="bi bi-hand-thumbs-down-fill"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                `;
+                    container.innerHTML += html;
+                });
+
+            } catch (err) {
+                alert(getText('recommendations.loadError', '데이터를 불러오지 못했습니다: ') + err.message);
+            } finally {
+                document.getElementById('loading').classList.add('d-none');
+                document.getElementById('content-container').classList.remove('d-none');
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", loadRecommendations);
+    </script>
+</body>
+
+</html>

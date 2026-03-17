@@ -13,3 +13,13 @@ wheels/
 *.coverage
 .coverage.*
 .DS_Store
+
+# 업로드 파일 (개인 데이터)
+storage/
+artifacts/uploads/
+
+# Amazon Q rules (개인 설정)
+.amazonq/
+
+# 데이터 원본 파일(용량 100MB이상)
+scripts/raw_drug_license_info.xlsx

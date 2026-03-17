@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>당신의 건강을 기원합니다 - 대시보드</title>
+
+    <!-- Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap 5 CSS & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+
+    <style>
+        .top-nav {
+            background-color: var(--card-bg);
+            border-bottom: 1px solid #eef2f0;
+            padding: 1rem;
+        }
+        .stat-badge {
+            font-size: 0.75rem;
+            padding: 0.3rem 0.75rem;
+            border-radius: 999px;
+        }
+        .rec-card {
+            border-left: 3px solid var(--primary-color);
+            background: #f7faf8;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Top Navigation -->
+    <nav class="top-nav d-flex justify-content-between align-items-center shadow-sm sticky-top">
+        <div class="h5 mb-0 fw-bold text-primary-custom">HealthCare AI</div>
+        <button class="btn btn-outline-primary border-0 fs-4 py-0" type="button" data-bs-toggle="offcanvas"
+            data-bs-target="#rightMenu" aria-controls="rightMenu">
+            <i class="bi bi-list"></i>
+        </button>
+    </nav>
+
+    <!-- Main Content Dashboard -->
+    <div class="container py-4">
+        <div class="row g-4">
+
+            <!-- Top Left: User Profile -->
+            <div class="col-md-5 col-lg-4 fade-in" style="animation-delay: 0.1s;">
+                <div class="card p-4 h-100">
+                    <div class="d-flex align-items-center mb-3">
+                        <img id="profile-img"
+                            src="https://ui-avatars.com/api/?name=사용자&background=6da285&color=fff&size=80"
+                            alt="프로필" class="profile-img-lg me-3 shadow-sm">
+                        <div>
+                            <h5 class="mb-1 text-primary-custom fw-bold" id="profile-name">불러오는 중...</h5>
+                            <p class="text-soft mb-0 small"><i class="bi bi-person me-1"></i><span id="profile-gender">-</span></p>
+                            <p class="text-soft mb-0 small"><i class="bi bi-calendar-event me-1"></i><span id="profile-birthday">-</span></p>
+                        </div>
+                    </div>
+                    <hr class="text-muted opacity-25">
+                    <div class="row text-center my-2">
+                        <div class="col">
+                            <h6 class="fw-bold mb-1" id="stat-medication">
+                                <span class="spinner-border spinner-border-sm text-primary" role="status"></span>
+                            </h6>
+                            <span class="text-soft small">남은 복약일</span>
+                        </div>
+                        <div class="col border-start">
+                            <h6 class="fw-bold mb-1" id="stat-today-med">-</h6>
+                            <span class="text-soft small">오늘 복약</span>
+                        </div>
+                    </div>
+                    <a href="profile.html" class="btn btn-outline-primary btn-sm w-100 mt-3 rounded-pill">상세 정보 수정</a>
+                </div>
+            </div>
+
+            <!-- Top Right: Recent Prescription & Today Status -->
+            <div class="col-md-7 col-lg-8 fade-in" style="animation-delay: 0.2s;">
+                <div class="card p-4 h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold text-primary-custom mb-0"><i class="bi bi-capsule me-2"></i>오늘의 건강 현황</h5>
+                        <div id="health-status-badges" class="d-flex gap-2"></div>
+                    </div>
+
+                    <!-- Recent Prescription -->
+                    <div id="recent-prescription-area">
+                        <p class="text-soft small mb-2 fw-medium">최근 처방전</p>
+                        <div id="recent-prescription" class="text-soft small">불러오는 중...</div>
+                    </div>
+
+                    <hr class="my-3 opacity-25">
+
+                    <!-- Active Recommendations -->
+                    <div>
+                        <p class="text-soft small mb-2 fw-medium">활성 건강 추천</p>
+                        <div id="active-recommendations">
+                            <div class="text-center text-soft small py-2">
+                                <span class="spinner-border spinner-border-sm" role="status"></span>
+                                불러오는 중...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom: Scan Upload shortcut -->
+            <div class="col-12 fade-in" style="animation-delay: 0.3s;">
+                <div class="card p-4">
+                    <div class="mb-3">
+                        <h5 class="fw-bold text-primary-custom mb-1"><i class="bi bi-camera me-2"></i>처방전 및 관련 자료 업로드
+                            <span class="text-soft fs-6 fw-normal">(선택)</span></h5>
+                        <p class="text-soft small mb-0">진료 보신 서류나 약 봉투를 찍어 올리시면 일정을 분석해드립니다.</p>
+                    </div>
+
+                    <div class="upload-area mt-2" onclick="window.location.href='scans.html'" style="cursor:pointer;">
+                        <i class="bi bi-cloud-arrow-up display-4 text-primary-custom mb-2"></i>
+                        <h6 class="fw-bold">클릭하여 처방전 등록하기</h6>
+                        <p class="small text-soft">PNG, JPG, PDF 파일을 지원합니다.</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Right Offcanvas Menu -->
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="rightMenu" aria-labelledby="rightMenuLabel">
+        <div class="offcanvas-header bg-soft-primary pb-4 pt-4 border-bottom-0">
+            <div class="d-flex align-items-center w-100">
+                <img id="menu-profile-img"
+                    src="https://ui-avatars.com/api/?name=사용자&background=6da285&color=fff&size=48"
+                    alt="프로필" class="profile-img-sm me-3 shadow-sm border border-light">
+                <div class="flex-grow-1 text-white">
+                    <h5 class="mb-0 fw-bold" id="menu-user-name">사용자</h5>
+                    <span class="small opacity-75">회원</span>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"
+                    aria-label="Close"></button>
+            </div>
+        </div>
+
+        <div class="offcanvas-body p-4 d-flex flex-column">
+            <h6 class="text-soft fw-bold mb-3 small text-uppercase">주요 서비스</h6>
+
+            <a href="dashboard.html" class="d-flex align-items-center menu-item px-3 py-3 mb-2 text-decoration-none">
+                <div class="bg-soft-primary text-primary-custom rounded p-2 me-3">
+                    <i class="bi bi-house-door-fill fs-5"></i>
+                </div>
+                <span class="fw-medium">홈 (대시보드)</span>
+            </a>
+
+            <a href="profile.html" class="d-flex align-items-center menu-item px-3 py-3 mb-2 text-decoration-none">
+                <div class="bg-soft-primary text-primary-custom rounded p-2 me-3">
+                    <i class="bi bi-person-lines-fill fs-5"></i>
+                </div>
+                <span class="fw-medium">내 건강 프로필</span>
+            </a>
+
+            <a href="medications.html" class="d-flex align-items-center menu-item px-3 py-3 mb-2 text-decoration-none">
+                <div class="bg-soft-primary text-primary-custom rounded p-2 me-3">
+                    <i class="bi bi-capsule-pill fs-5"></i>
+                </div>
+                <span class="fw-medium">전체 복약 기록</span>
+            </a>
+
+            <a href="scans.html" class="d-flex align-items-center menu-item px-3 py-3 mb-2 text-decoration-none">
+                <div class="bg-soft-primary text-primary-custom rounded p-2 me-3">
+                    <i class="bi bi-file-earmark-medical-fill fs-5"></i>
+                </div>
+                <span class="fw-medium">처방전 관리 보관함</span>
+            </a>
+
+            <div class="mt-auto pt-4 border-top">
+                <button onclick="logout()"
+                    class="d-flex align-items-center text-danger text-decoration-none px-3 py-2 menu-item btn btn-link w-100 text-start">
+                    <i class="bi bi-box-arrow-right me-3 fs-5"></i>
+                    <span class="fw-bold">로그아웃</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/api.js"></script>
+    <script>
+        // 인증 체크
+        if (!localStorage.getItem('access_token')) {
+            window.location.href = 'index.html';
+        }
+
+        function logout() {
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('user_name');
+            window.location.href = 'index.html';
+        }
+
+        function formatGender(g) {
+            if (g === 'MALE') return '남성';
+            if (g === 'FEMALE') return '여성';
+            return '-';
+        }
+
+        function formatBirthday(b) {
+            if (!b) return '-';
+            return b.replace(/-/g, '.');
+        }
+
+        function renderRecommendations(items) {
+            const el = document.getElementById('active-recommendations');
+            if (!items || items.length === 0) {
+                el.innerHTML = '<p class="text-soft small mb-0">아직 활성 추천이 없습니다. 처방전을 등록해보세요.</p>';
+                return;
+            }
+            const typeLabel = { lifestyle: '생활관리', medication: '복약', warning: '주의', followup: '추적관찰' };
+            el.innerHTML = items.slice(0, 3).map(r =>
+                `<div class="rec-card">${typeLabel[r.recommendation_type] || r.recommendation_type} · ${r.content}</div>`
+            ).join('');
+            if (items.length > 3) {
+                el.innerHTML += `<a href="recommendations.html" class="small text-primary-custom">+${items.length - 3}개 더 보기</a>`;
+            }
+        }
+
+        function renderPrescription(rx) {
+            const el = document.getElementById('recent-prescription');
+            if (!rx) {
+                el.innerHTML = '<span class="text-soft">등록된 처방전이 없습니다.</span>';
+                return;
+            }
+            el.innerHTML = `
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <span class="badge bg-soft-primary text-primary-custom">${rx.disease_name || '질환명 없음'}</span>
+                    <span class="text-dark fw-medium">${rx.drug_name || '-'}</span>
+                    <span class="text-soft">${rx.start_date || ''} ~ ${rx.end_date || ''}</span>
+                    <span class="text-soft">1일 ${rx.dose_count || 1}회</span>
+                </div>`;
+        }
+
+        async function loadDashboard() {
+            try {
+                // 사용자 정보 로드
+                const user = await window.api.getUserMe();
+                const name = user.name || '사용자';
+                document.getElementById('profile-name').textContent = name + ' 님';
+                document.getElementById('profile-gender').textContent = formatGender(user.gender);
+                document.getElementById('profile-birthday').textContent = formatBirthday(user.birthday);
+                document.getElementById('menu-user-name').textContent = name + ' 님';
+
+                // 프로필 이미지
+                const imgUrl = user.profile_image_url
+                    ? window.api.resolveBackendUrl(user.profile_image_url)
+                    : `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=6da285&color=fff&size=80`;
+                document.getElementById('profile-img').src = imgUrl;
+                document.getElementById('menu-profile-img').src = imgUrl.replace('size=80', 'size=48');
+
+                localStorage.setItem('user_name', name);
+            } catch (e) {
+                document.getElementById('profile-name').textContent = localStorage.getItem('user_name') || '사용자';
+            }
+
+            try {
+                // 대시보드 요약 로드
+                const summary = await window.api.getDashboardSummary();
+
+                // 남은 복약일
+                document.getElementById('stat-medication').textContent = (summary.remaining_medication_days ?? 0) + '일';
+
+                // 오늘 복약 완료 여부
+                document.getElementById('stat-today-med').textContent = summary.today_medication_completed ? '완료 ✓' : '미완료';
+                document.getElementById('stat-today-med').className = 'fw-bold mb-1 ' + (summary.today_medication_completed ? 'text-success' : 'text-danger');
+
+                // 상태 배지
+                const badgesEl = document.getElementById('health-status-badges');
+                badgesEl.innerHTML = `
+                    <span class="stat-badge ${summary.today_medication_completed ? 'bg-success text-white' : 'bg-warning text-dark'}">
+                        복약 ${summary.today_medication_completed ? '완료' : '미완료'}
+                    </span>
+                    <span class="stat-badge ${summary.today_health_completed ? 'bg-success text-white' : 'bg-secondary text-white'}">
+                        건강관리 ${summary.today_health_completed ? '완료' : '미완료'}
+                    </span>`;
+
+                // 최근 처방전
+                renderPrescription(summary.recent_prescription);
+
+                // 활성 추천
+                renderRecommendations(summary.active_recommendations);
+
+            } catch (e) {
+                document.getElementById('stat-medication').textContent = '-';
+                document.getElementById('recent-prescription').textContent = '데이터를 불러올 수 없습니다.';
+                document.getElementById('active-recommendations').innerHTML = '<p class="text-soft small">데이터를 불러올 수 없습니다.</p>';
+            }
+        }
+
+        loadDashboard();
+    </script>
+</body>
+
+</html>

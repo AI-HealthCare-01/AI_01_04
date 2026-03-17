@@ -1,3 +1,9 @@
+"""사용자 도메인 Repository.
+
+사용자 조회/생성/수정/비활성화를 담당하며,
+항상 user_id 스코프로 본인 데이터만 접근 가능하도록 보장한다.
+"""
+
 from __future__ import annotations
 
 from datetime import date, datetime
@@ -6,15 +12,15 @@ from typing import Any
 from pydantic import EmailStr
 
 from app.core import config
-from app.models.users import Gender, User, UserRole
+from app.models.users import Gender, User
 
 ALLOWED_UPDATE_FIELDS = [
     "name",
-    "nickname",
+    "email",
     "phone_number",
     "gender",
-    "birth_date",
-    "profile_image_url",  # 프로필 업로드
+    "birthday",
+    "profile_image_url",
 ]
 
 
@@ -22,48 +28,120 @@ class UserRepository:
     def __init__(self):
         self._model = User
 
-    async def get_all(self):
+    async def get_all(self) -> list[User]:
+        """전체 사용자 목록을 조회한다.
+
+        Returns:
+            list[User]: 전체 User 객체 목록.
+
+        Raises:
+            OperationalError: DB 연결 오류 시.
+        """
         return await self._model.all()
 
     async def get_user(self, user_id: int) -> User | None:
+        """ID로 사용자를 단건 조회한다.
+
+        Args:
+            user_id (int): 조회할 사용자 ID.
+
+        Returns:
+            User | None: User 객체. 존재하지 않으면 None.
+
+        Raises:
+            OperationalError: DB 연결 오류 시.
+        """
         return await self._model.get_or_none(id=user_id)
 
     async def get_user_by_email(self, email: str) -> User | None:
+        """이메일로 사용자를 조회한다.
+
+        Args:
+            email (str): 조회할 이메일 주소.
+
+        Returns:
+            User | None: User 객체. 존재하지 않으면 None.
+
+        Raises:
+            OperationalError: DB 연결 오류 시.
+        """
         return await self._model.get_or_none(email=email)
 
     async def exists_by_email(self, email: str | EmailStr) -> bool:
+        """이메일 중복 여부를 확인한다.
+
+        Args:
+            email (str | EmailStr): 확인할 이메일 주소.
+
+        Returns:
+            bool: 이미 존재하면 True, 아니면 False.
+
+        Raises:
+            OperationalError: DB 연결 오류 시.
+        """
         return await self._model.filter(email=email).exists()
 
     async def exists_by_phone_number(self, phone_number: str) -> bool:
+        """휴대폰 번호 중복 여부를 확인한다.
+
+        Args:
+            phone_number (str): 확인할 휴대폰 번호.
+
+        Returns:
+            bool: 이미 존재하면 True, 아니면 False.
+
+        Raises:
+            OperationalError: DB 연결 오류 시.
+        """
         return await self._model.filter(phone_number=phone_number).exists()
 
     async def create_user(
         self,
         *,
         email: str | EmailStr,
+        hashed_password: str,
         name: str,
         phone_number: str,
-        birth_date: date | None = None,
+        birthday: date,
         gender: Gender | None = None,
-        nickname: str | None = None,
-        role: UserRole = UserRole.USER,
-        # ✅ 만약 init migration에 is_admin이 있으면 여기도 받을 수 있음
-        # is_admin: bool = False,
     ) -> User:
+        """새 사용자를 생성한다.
+
+        Args:
+            email (str | EmailStr): 이메일 주소.
+            name (str): 이름.
+            phone_number (str): 정규화된 휴대폰 번호.
+            birthday (date): 생년월일.
+            gender (Gender | None): 성별. 선택 사항.
+
+        Returns:
+            User: 생성된 User 객체.
+
+        Raises:
+            IntegrityError: 이메일 또는 휴대폰 번호 중복 시.
+            OperationalError: DB 연결 오류 시.
+        """
         return await self._model.create(
             email=email,
+            hashed_password=hashed_password,
             name=name,
-            nickname=nickname,
             phone_number=phone_number,
-            birth_date=birth_date,
+            birthday=birthday,
             gender=gender,
-            role=role,
-            # is_admin=is_admin,
-            is_active=True,  # ✅ 컬럼 존재 시 명시적으로
-            deleted_at=None,  # ✅ 컬럼 존재 시 명시적으로
         )
 
     async def update_instance(self, user: User, data: dict[str, Any]) -> None:
+        """허용된 필드만 선별하여 사용자 정보를 업데이트한다.
+
+        ALLOWED_UPDATE_FIELDS에 없는 필드와 None 값은 무시한다.
+
+        Args:
+            user (User): 업데이트할 User 객체.
+            data (dict[str, Any]): 업데이트할 필드와 값의 딕셔너리.
+
+        Raises:
+            OperationalError: DB 연결 오류 시.
+        """
         update_fields: list[str] = []
 
         for key, value in data.items():
@@ -78,10 +156,25 @@ class UserRepository:
         if update_fields:
             await user.save(update_fields=update_fields)
 
-    async def deactivate_user(self, user_id: int) -> None:
-        # ✅ soft delete 정책: is_active=False + deleted_at 기록
-        now = datetime.now(config.TIMEZONE)
+    async def update_last_login(self, user_id: int) -> None:
+        """마지막 로그인 시간을 현재 시각으로 갱신한다.
 
-        # deleted_at 컬럼이 진짜로 있는 경우에만 update에 포함해야 함
-        # (없으면 migration/모델부터 맞춰야 함)
-        await self._model.filter(id=user_id).update(is_active=False, deleted_at=now)
+        Args:
+            user_id (int): 갱신할 사용자 ID.
+
+        Raises:
+            OperationalError: DB 연결 오류 시.
+        """
+        now = datetime.now(config.TIMEZONE)
+        await self._model.filter(id=user_id).update(last_login=now)
+
+    async def deactivate_user(self, user_id: int) -> None:
+        """사용자를 비활성화한다 (is_active=False, 실제 삭제 없음).
+
+        Args:
+            user_id (int): 비활성화할 사용자 ID.
+
+        Raises:
+            OperationalError: DB 연결 오류 시.
+        """
+        await self._model.filter(id=user_id).update(is_active=False)

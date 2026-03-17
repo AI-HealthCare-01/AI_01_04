@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>당신의 건강을 기원합니다 - 로그인</title>
+
+  <!-- Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="css/style.css">
+
+  <style>
+    body {
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .intro-section {
+      max-width: 600px;
+      width: 100%;
+      padding: 2rem;
+    }
+
+    .auth-section {
+      display: none;
+      max-width: 450px;
+      width: 100%;
+      padding: 1rem;
+    }
+
+    /* Initially hide the switch button */
+    #auth-toggle-btn {
+      opacity: 0;
+      transition: opacity 1s ease;
+    }
+
+    .form-container {
+      display: none;
+    }
+
+    .form-container.active {
+      display: block;
+      animation: fadeIn 0.5s ease forwards;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 1. Intro Quote Section -->
+  <div class="intro-section text-center fade-in" id="intro-view">
+    <div id="quote-container" class="position-relative w-100 mb-4">
+      <div class="quote-text active pt-4">"당신의 건강과 평안을 진심으로 기원합니다."</div>
+      <div class="quote-text pt-4">"오늘 하루도 무사히 이겨내기를 바랍니다."</div>
+      <div class="quote-text pt-4">"아픔은 덜고, 미소는 더하는 하루가 되길 응원합니다."</div>
+      <div class="quote-text pt-4">"힘든 시간을 잘 견뎌내는 당신이 자랑스럽습니다."</div>
+      <div class="quote-text pt-4">"작은 휴식이 모여 큰 치유가 될 것입니다."</div>
+      <div class="quote-text pt-4">"당신의 한 걸음 한 걸음을 늘 응원하겠습니다."</div>
+      <div class="quote-text pt-4">"오늘도 수고 많으셨습니다. 편안한 밤 되세요."</div>
+      <div class="quote-text pt-4">"치유는 시간의 흐름을 믿는 것에서 시작됩니다."</div>
+      <div class="quote-text pt-4">"스스로를 돌보는 것이 가장 위대한 용기입니다."</div>
+      <div class="quote-text pt-4">"당신은 혼자가 아닙니다. 우리가 곁에 있습니다."</div>
+    </div>
+
+    <!-- 2초 뒤에 나타나는 버튼 -->
+    <div class="mt-5" id="auth-toggle-btn">
+      <button class="btn btn-primary btn-lg rounded-pill px-5 py-3 shadow-sm" onclick="showAuthView()">
+        서비스 시작하기
+      </button>
+    </div>
+  </div>
+
+  <!-- 2. Auth Section (Login / Signup) -->
+  <div class="auth-section" id="auth-view">
+    <div class="card p-4 p-md-5">
+      <div class="text-center mb-4">
+        <h3 class="fw-bold text-primary-custom mb-1" id="auth-title">로그인</h3>
+        <p class="text-soft small" id="auth-subtitle">서비스 이용을 위해 로그인해주세요.</p>
+      </div>
+
+      <!-- Error Alert -->
+      <div id="auth-error" class="alert alert-danger py-2 small d-none" role="alert"></div>
+
+      <!-- Login Form -->
+      <form id="login-form" class="form-container active" onsubmit="handleLogin(event)">
+        <div class="mb-3">
+          <label class="form-label text-secondary small fw-medium">이메일</label>
+          <input type="email" id="login-email" class="form-control" placeholder="example@email.com" required>
+        </div>
+        <div class="mb-4">
+          <label class="form-label text-secondary small fw-medium">비밀번호</label>
+          <input type="password" id="login-password" class="form-control" placeholder="••••••••" required>
+        </div>
+        <button type="submit" id="login-btn" class="btn btn-primary w-100 mb-3 py-2">로그인</button>
+        <div class="text-center mt-3">
+          <span class="text-secondary small">계정이 없으신가요?</span>
+          <button type="button" class="btn btn-link text-primary-custom text-decoration-none p-0 ms-1 fw-bold" onclick="toggleAuthMode('signup')">회원가입</button>
+        </div>
+      </form>
+
+      <!-- Signup Form -->
+      <form id="signup-form" class="form-container" onsubmit="handleSignup(event)">
+        <div class="mb-3">
+          <label class="form-label text-secondary small fw-medium">이름</label>
+          <input type="text" id="signup-name" class="form-control" placeholder="홍길동" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label text-secondary small fw-medium">이메일</label>
+          <input type="email" id="signup-email" class="form-control" placeholder="example@email.com" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label text-secondary small fw-medium">비밀번호 설정</label>
+          <input type="password" id="signup-password" class="form-control" placeholder="••••••••" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label text-secondary small fw-medium">전화번호</label>
+          <input type="tel" id="signup-phone" class="form-control" placeholder="010-1234-5678" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label text-secondary small fw-medium">생년월일</label>
+          <input type="date" id="signup-birthday" class="form-control" required>
+        </div>
+        <div class="mb-4">
+          <label class="form-label text-secondary small fw-medium">성별</label>
+          <select id="signup-gender" class="form-select" required>
+            <option value="">선택하세요</option>
+            <option value="MALE">남성</option>
+            <option value="FEMALE">여성</option>
+          </select>
+        </div>
+        <button type="submit" id="signup-btn" class="btn btn-primary w-100 mb-3 py-2">회원가입 완료</button>
+        <div class="text-center mt-3">
+          <span class="text-secondary small">이미 계정이 있으신가요?</span>
+          <button type="button" class="btn btn-link text-primary-custom text-decoration-none p-0 ms-1 fw-bold" onclick="toggleAuthMode('login')">로그인하러 가기</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/api.js"></script>
+  <script>
+    // 이미 로그인된 경우 대시보드로 이동
+    if (localStorage.getItem('access_token')) {
+      window.location.href = 'dashboard.html';
+    }
+
+    // 1. Quote Rotation Logic (3s)
+    document.addEventListener("DOMContentLoaded", () => {
+      const quotes = document.querySelectorAll('.quote-text');
+      let currentQuote = 0;
+
+      setInterval(() => {
+        quotes[currentQuote].classList.remove('active');
+        currentQuote = (currentQuote + 1) % quotes.length;
+        quotes[currentQuote].classList.add('active');
+      }, 3000);
+
+      // 2. Show Button after 2 seconds
+      setTimeout(() => {
+        document.getElementById('auth-toggle-btn').style.opacity = '1';
+      }, 2000);
+    });
+
+    function showError(msg) {
+      const el = document.getElementById('auth-error');
+      el.textContent = msg;
+      el.classList.remove('d-none');
+    }
+
+    function hideError() {
+      document.getElementById('auth-error').classList.add('d-none');
+    }
+
+    // Show Auth Forms, hide Intro
+    function showAuthView() {
+      document.getElementById('intro-view').style.display = 'none';
+      document.getElementById('auth-view').style.display = 'block';
+    }
+
+    // Toggle between Login and Signup
+    function toggleAuthMode(mode) {
+      hideError();
+      const loginForm = document.getElementById('login-form');
+      const signupForm = document.getElementById('signup-form');
+      const title = document.getElementById('auth-title');
+      const subtitle = document.getElementById('auth-subtitle');
+
+      if (mode === 'signup') {
+        loginForm.classList.remove('active');
+        signupForm.classList.add('active');
+        title.innerText = '회원가입';
+        subtitle.innerText = '가입을 환영합니다.';
+      } else {
+        signupForm.classList.remove('active');
+        loginForm.classList.add('active');
+        title.innerText = '로그인';
+        subtitle.innerText = '다시 오신 것을 환영합니다.';
+      }
+    }
+
+    // Handle Login Submit
+    async function handleLogin(event) {
+      event.preventDefault();
+      hideError();
+
+      const email = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-password').value;
+      const btn = document.getElementById('login-btn');
+
+      btn.disabled = true;
+      btn.textContent = '로그인 중...';
+
+      try {
+        const data = await window.api.login(email, password);
+        localStorage.setItem('access_token', data.access_token);
+        localStorage.setItem('user_name', data.name || '');
+        window.location.href = 'dashboard.html';
+      } catch (err) {
+        showError(err.message || '로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '로그인';
+      }
+    }
+
+    // Handle Signup Submit
+    async function handleSignup(event) {
+      event.preventDefault();
+      hideError();
+
+      const name = document.getElementById('signup-name').value.trim();
+      const email = document.getElementById('signup-email').value.trim();
+      const password = document.getElementById('signup-password').value;
+      const phone_number = document.getElementById('signup-phone').value.trim();
+      const birthday = document.getElementById('signup-birthday').value;
+      const gender = document.getElementById('signup-gender').value;
+      const btn = document.getElementById('signup-btn');
+
+      btn.disabled = true;
+      btn.textContent = '가입 중...';
+
+      try {
+        await window.api.signup(name, email, gender, birthday, phone_number, password);
+        alert('회원가입이 완료되었습니다. 로그인해주세요.');
+        toggleAuthMode('login');
+        event.target.reset();
+      } catch (err) {
+        showError(err.message || '회원가입에 실패했습니다. 입력 정보를 확인해주세요.');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '회원가입 완료';
+      }
+    }
+  </script>
+</body>
+</html>

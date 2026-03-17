@@ -6,7 +6,10 @@ from app.main import app
 
 
 class TestUserMeApis(TestCase):
+    """사용자 프로필 API 테스트."""
+
     async def test_get_user_me_success(self):
+        """로그인 사용자 프로필 조회 성공 확인."""
         # 사용자 등록 및 로그인
         email = "me@example.com"
         signup_data = {
@@ -14,7 +17,7 @@ class TestUserMeApis(TestCase):
             "password": "Password123!",
             "name": "내정보테스터",
             "gender": "FEMALE",
-            "birth_date": "1992-02-02",
+            "birthday": "1992-02-02",
             "phone_number": "01055556666",
         }
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
@@ -31,6 +34,7 @@ class TestUserMeApis(TestCase):
         assert response.json()["name"] == "내정보테스터"
 
     async def test_update_user_me_success(self):
+        """사용자 이름 수정 성공 확인."""
         # 사용자 등록 및 로그인
         email = "update_me@example.com"
         signup_data = {
@@ -38,7 +42,7 @@ class TestUserMeApis(TestCase):
             "password": "Password123!",
             "name": "수정전",
             "gender": "MALE",
-            "birth_date": "1990-10-10",
+            "birthday": "1990-10-10",
             "phone_number": "01077778888",
         }
         update_data = {"name": "수정후"}
@@ -55,6 +59,7 @@ class TestUserMeApis(TestCase):
         assert response.json()["name"] == "수정후"
 
     async def test_get_user_me_unauthorized(self):
+        """인증 없이 프로필 조회 시 401 반환 확인."""
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             response = await client.get("/api/v1/users/me")
         assert response.status_code == status.HTTP_401_UNAUTHORIZED

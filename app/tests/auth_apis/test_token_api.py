@@ -6,14 +6,17 @@ from app.main import app
 
 
 class TestJWTTokenRefreshAPI(TestCase):
+    """토큰 갱신 API 테스트."""
+
     async def test_token_refresh_success(self):
+        """유효한 refresh_token으로 새 access_token 발급 확인."""
         # 사용자 등록 및 로그인하여 리프레시 토큰 획득
         signup_data = {
             "email": "refresh@example.com",
             "password": "Password123!",
             "name": "리프레시테스터",
             "gender": "MALE",
-            "birth_date": "1990-01-01",
+            "birthday": "1990-01-01",
             "phone_number": "01099998888",
         }
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
@@ -40,6 +43,7 @@ class TestJWTTokenRefreshAPI(TestCase):
         assert "access_token" in response.json()
 
     async def test_token_refresh_missing_token(self):
+        """refresh_token 누락 시 401 반환 확인."""
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             response = await client.get("/api/v1/auth/token/refresh")
         assert response.status_code == status.HTTP_401_UNAUTHORIZED

@@ -1,0 +1,4772 @@
+{
+  "가정 내 아동안전": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "내전 중족",
+        "candidate_code": "M216",
+        "score": 0.3636
+      },
+      {
+        "candidate_name": "동전병변 NOS",
+        "candidate_code": "R91",
+        "score": 0.3636
+      },
+      {
+        "candidate_name": "가동성 융기",
+        "candidate_code": "K068",
+        "score": 0.3333
+      },
+      {
+        "candidate_name": "급성 및 아급성 간부전",
+        "candidate_code": "K720",
+        "score": 0.3333
+      },
+      {
+        "candidate_name": "내안근마비(완전, 전체)",
+        "candidate_code": "H5250",
+        "score": 0.3333
+      }
+    ]
+  },
+  "가철성 보철": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "가동성 융기",
+        "candidate_code": "K068",
+        "score": 0.4
+      },
+      {
+        "candidate_name": "가성 장 폐색",
+        "candidate_code": "K560",
+        "score": 0.4
+      },
+      {
+        "candidate_name": "가족성 떨림",
+        "candidate_code": "G250",
+        "score": 0.4
+      },
+      {
+        "candidate_name": "강직성 보행",
+        "candidate_code": "R261",
+        "score": 0.4
+      },
+      {
+        "candidate_name": "마비성 보행",
+        "candidate_code": "R261",
+        "score": 0.4
+      }
+    ]
+  },
+  "각막혼탁 및 반흔": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "각막 흉터 및 혼탁",
+        "candidate_code": "H17",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "기타 각막 흉터 및 혼탁",
+        "candidate_code": "H178",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "기타 중심성 각막혼탁",
+        "candidate_code": "H171",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "상세불명의 각막 흉터 및 혼탁",
+        "candidate_code": "H179",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "선천성 각막혼탁",
+        "candidate_code": "Q133",
+        "score": 0.5714
+      }
+    ]
+  },
+  "간의 양성종양(간낭종)": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "간내담낭",
+        "candidate_code": "Q441",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "감염성 음낭수종",
+        "candidate_code": "N431",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "기타 음낭수종",
+        "candidate_code": "N432",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "상세불명의 음낭수종",
+        "candidate_code": "N433",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "간의 단순낭",
+        "candidate_code": "K7681",
+        "score": 0.5
+      }
+    ]
+  },
+  "간의 양성종양(간선종)": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "방선균종",
+        "candidate_code": "B471",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "간혈관종증",
+        "candidate_code": "K764",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "광선육아종",
+        "candidate_code": "L575",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "선종성 폴립",
+        "candidate_code": "D28",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "간모세선충증",
+        "candidate_code": "B838",
+        "score": 0.4444
+      }
+    ]
+  },
+  "간의 양성종양(국소결절증식증)": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "소결절성 (간) 경변증",
+        "candidate_code": "K746",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "소결절성 (간) 경변증,상세불명",
+        "candidate_code": "K7469",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "간의 초점성 결절성 증식증",
+        "candidate_code": "K7688",
+        "score": 0.5556
+      },
+      {
+        "candidate_name": "국소성 결장염, 중증",
+        "candidate_code": "K5012",
+        "score": 0.5333
+      },
+      {
+        "candidate_name": "국소다한증",
+        "candidate_code": "R610",
+        "score": 0.5
+      }
+    ]
+  },
+  "간의 양성종양(담관낭선종)": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "총담관낭",
+        "candidate_code": "Q444",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "담낭의 수종",
+        "candidate_code": "K821",
+        "score": 0.6
+      },
+      {
+        "candidate_name": "급성 담낭염",
+        "candidate_code": "K810",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "기타 담낭염",
+        "candidate_code": "K818",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "담관염",
+        "candidate_code": "K830",
+        "score": 0.5
+      }
+    ]
+  },
+  "갈색세포종": {
+    "manual_alias": "갈색세포종",
+    "candidates": [
+      {
+        "candidate_name": "비만세포종 NOS",
+        "candidate_code": "D470",
+        "score": 0.6
+      },
+      {
+        "candidate_name": "형질세포종, 상세불명",
+        "candidate_code": "C903",
+        "score": 0.6
+      },
+      {
+        "candidate_name": "비만세포육종",
+        "candidate_code": "C962",
+        "score": 0.5455
+      },
+      {
+        "candidate_name": "비만세포종양 NOS",
+        "candidate_code": "D470",
+        "score": 0.5455
+      },
+      {
+        "candidate_name": "상세불명의 B-세포림프종",
+        "candidate_code": "C851",
+        "score": 0.5455
+      }
+    ]
+  },
+  "감염단핵구증": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "감염성 단핵구증",
+        "candidate_code": "B27",
+        "score": 0.9231
+      },
+      {
+        "candidate_name": "기타 감염성 단핵구증",
+        "candidate_code": "B278",
+        "score": 0.8
+      },
+      {
+        "candidate_name": "상세불명의 감염성 단핵구증",
+        "candidate_code": "B279",
+        "score": 0.8
+      },
+      {
+        "candidate_name": "단핵구증가(증상성)",
+        "candidate_code": "D728",
+        "score": 0.7273
+      },
+      {
+        "candidate_name": "감염성 단핵구증(에 의한)수막염(B27.-†)",
+        "candidate_code": "G020",
+        "score": 0.6154
+      }
+    ]
+  },
+  "거부반응과 면역억제제": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "면역제제에 의한 중독",
+        "candidate_code": "T509",
+        "score": 0.4211
+      },
+      {
+        "candidate_name": "항암제 및 면역억제제에 의한 중독",
+        "candidate_code": "T451",
+        "score": 0.4167
+      },
+      {
+        "candidate_name": "Rh부적합반응",
+        "candidate_code": "T804",
+        "score": 0.3529
+      },
+      {
+        "candidate_name": "ABO부적합반응",
+        "candidate_code": "T803",
+        "score": 0.3333
+      },
+      {
+        "candidate_name": "부교감신경차단제[항콜린제 및 항무스카린제] 및 연축억제제",
+        "candidate_code": "Y13",
+        "score": 0.3333
+      }
+    ]
+  },
+  "건강한 체중조절을 위한 식사": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "입양을 위한 검사",
+        "candidate_code": "Z028",
+        "score": 0.4211
+      },
+      {
+        "candidate_name": "난관이나 정관의 중절을 위한 입원",
+        "candidate_code": "Z302",
+        "score": 0.3846
+      },
+      {
+        "candidate_name": "군대 모집을 위한 검사",
+        "candidate_code": "Z023",
+        "score": 0.381
+      },
+      {
+        "candidate_name": "행정목적을 위한 검사",
+        "candidate_code": "Z02",
+        "score": 0.381
+      },
+      {
+        "candidate_name": "행정목적을 위한 기타 검사",
+        "candidate_code": "Z028",
+        "score": 0.381
+      }
+    ]
+  },
+  "건막염(감염성 건막염)": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "감염성 심장막염",
+        "candidate_code": "I301",
+        "score": 0.7692
+      },
+      {
+        "candidate_name": "감염성 근염",
+        "candidate_code": "M600",
+        "score": 0.7273
+      },
+      {
+        "candidate_name": "감염성 비염",
+        "candidate_code": "J00",
+        "score": 0.7273
+      },
+      {
+        "candidate_name": "감염성 근염, 목",
+        "candidate_code": "M6008",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "감염성 근염, 손",
+        "candidate_code": "M6004",
+        "score": 0.6667
+      }
+    ]
+  },
+  "고관절 전치환술": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "고관절증",
+        "candidate_code": "M16",
+        "score": 0.5455
+      },
+      {
+        "candidate_name": "상세불명의 고관절증",
+        "candidate_code": "M169",
+        "score": 0.5455
+      },
+      {
+        "candidate_name": "감염성 근염, 고관절",
+        "candidate_code": "M6005",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "고관절골절 NOS",
+        "candidate_code": "S7209",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "고음고관절",
+        "candidate_code": "R294",
+        "score": 0.5
+      }
+    ]
+  },
+  "고위험 임산부": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "고위험임신의 관리",
+        "candidate_code": "Z35",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "기타 고위험임신의 관리",
+        "candidate_code": "Z358",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "상세불명의 고위험임신의 관리",
+        "candidate_code": "Z359",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "고산병",
+        "candidate_code": "T702",
+        "score": 0.4444
+      },
+      {
+        "candidate_name": "무위산증",
+        "candidate_code": "K3188",
+        "score": 0.4
+      }
+    ]
+  },
+  "고칼슘혈증": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "고칼륨혈증",
+        "candidate_code": "E875",
+        "score": 0.8
+      },
+      {
+        "candidate_name": "고마그네슘혈증",
+        "candidate_code": "E834",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "상세불명의 고혈당증",
+        "candidate_code": "R739",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "기타 신생아저칼슘혈증",
+        "candidate_code": "P711",
+        "score": 0.6154
+      },
+      {
+        "candidate_name": "고발린혈증",
+        "candidate_code": "E711",
+        "score": 0.6
+      }
+    ]
+  },
+  "고혈압심장질환": {
+    "manual_alias": "고혈압성심장질환",
+    "candidates": [
+      {
+        "candidate_name": "고혈압성 심장병",
+        "candidate_code": "I11",
+        "score": 0.8
+      },
+      {
+        "candidate_name": "고혈압성 심장병 NOS",
+        "candidate_code": "I119",
+        "score": 0.8
+      },
+      {
+        "candidate_name": "기타 급성 허혈심장질환",
+        "candidate_code": "I24",
+        "score": 0.7143
+      },
+      {
+        "candidate_name": "기타 폐성 심장질환",
+        "candidate_code": "I27",
+        "score": 0.7143
+      },
+      {
+        "candidate_name": "고혈압성 신장병",
+        "candidate_code": "I12",
+        "score": 0.6667
+      }
+    ]
+  },
+  "골감소증": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "근감소증",
+        "candidate_code": "M625",
+        "score": 0.75
+      },
+      {
+        "candidate_name": "골격불소증",
+        "candidate_code": "M851",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "근감소증, 목",
+        "candidate_code": "M6258",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "근감소증, 손",
+        "candidate_code": "M6254",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "골격불소증, 목",
+        "candidate_code": "M8518",
+        "score": 0.6
+      }
+    ]
+  },
+  "과민성장증후군": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "과민대장증후군",
+        "candidate_code": "K58",
+        "score": 0.8571
+      },
+      {
+        "candidate_name": "과민대장증후군 NOS",
+        "candidate_code": "K588",
+        "score": 0.8571
+      },
+      {
+        "candidate_name": "과가동성 증후군",
+        "candidate_code": "M357",
+        "score": 0.7143
+      },
+      {
+        "candidate_name": "혼합형 과민대장증후군 [IBS-M]",
+        "candidate_code": "K583",
+        "score": 0.7059
+      },
+      {
+        "candidate_name": "기타 및 상세불명 유형의 과민대장 증후군",
+        "candidate_code": "K588",
+        "score": 0.6667
+      }
+    ]
+  },
+  "구역질과 구토": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "구역 및 구토",
+        "candidate_code": "R11",
+        "score": 0.7273
+      },
+      {
+        "candidate_name": "구역",
+        "candidate_code": "R111",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "구토",
+        "candidate_code": "R112",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "임신중 과다구토",
+        "candidate_code": "O21",
+        "score": 0.4615
+      },
+      {
+        "candidate_name": "구개구",
+        "candidate_code": "K0025",
+        "score": 0.4444
+      }
+    ]
+  },
+  "굳은살과 티눈": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "굳은살",
+        "candidate_code": "L84",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "티눈",
+        "candidate_code": "L84",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "티눈 및 굳은살",
+        "candidate_code": "L84",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "매독성 굳은궤양 NOS",
+        "candidate_code": "A510",
+        "score": 0.3077
+      },
+      {
+        "candidate_name": "요스의 굳은궤양",
+        "candidate_code": "A660",
+        "score": 0.3077
+      }
+    ]
+  },
+  "굴절이상(근시, 원시, 난시)": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "기타 치아얼굴이상",
+        "candidate_code": "K078",
+        "score": 0.6
+      },
+      {
+        "candidate_name": "상세불명의 치아얼굴이상",
+        "candidate_code": "K079",
+        "score": 0.6
+      },
+      {
+        "candidate_name": "치아얼굴이상[부정교합포함]",
+        "candidate_code": "K07",
+        "score": 0.6
+      },
+      {
+        "candidate_name": "기타 대변이상",
+        "candidate_code": "R195",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "발한이상[한포(汗疱)]",
+        "candidate_code": "L301",
+        "score": 0.5
+      }
+    ]
+  },
+  "귀의 통증 및 분비물": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "귀통증",
+        "candidate_code": "H920",
+        "score": 0.5455
+      },
+      {
+        "candidate_name": "사지의 통증, 비골",
+        "candidate_code": "M7966",
+        "score": 0.5333
+      },
+      {
+        "candidate_name": "사지의 통증, 상세불명 부분",
+        "candidate_code": "M7969",
+        "score": 0.5333
+      },
+      {
+        "candidate_name": "귀의 이물",
+        "candidate_code": "T16",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "귀통증 및 귀의 삼출액",
+        "candidate_code": "H92",
+        "score": 0.4706
+      }
+    ]
+  },
+  "귀의 형태 이상": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "귀의 선천이상 NOS",
+        "candidate_code": "Q179",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "눈의 형성이상",
+        "candidate_code": "Q112",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "형태이상적혈구 NOS",
+        "candidate_code": "R71",
+        "score": 0.6154
+      },
+      {
+        "candidate_name": "귀의 이물",
+        "candidate_code": "T16",
+        "score": 0.6
+      },
+      {
+        "candidate_name": "치아의 크기와 형태의 이상",
+        "candidate_code": "K002",
+        "score": 0.5882
+      }
+    ]
+  },
+  "귀의 형태 이상(기타)": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "귀의 선천이상 NOS",
+        "candidate_code": "Q179",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "눈의 형성이상",
+        "candidate_code": "Q112",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "형태이상적혈구 NOS",
+        "candidate_code": "R71",
+        "score": 0.6154
+      },
+      {
+        "candidate_name": "귀의 이물",
+        "candidate_code": "T16",
+        "score": 0.6
+      },
+      {
+        "candidate_name": "치아의 크기와 형태의 이상",
+        "candidate_code": "K002",
+        "score": 0.5882
+      }
+    ]
+  },
+  "귀의 형태 이상(돌출귀)": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "돌출된 귀",
+        "candidate_code": "Q175",
+        "score": 0.8571
+      },
+      {
+        "candidate_name": "절구돌출",
+        "candidate_code": "M247",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "귀[모든 부분]",
+        "candidate_code": "T20",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "상악돌출증",
+        "candidate_code": "K0712",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "하악돌출증",
+        "candidate_code": "K0711",
+        "score": 0.5
+      }
+    ]
+  },
+  "근 손실": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "감염성 근염, 손",
+        "candidate_code": "M6004",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "근통, 손",
+        "candidate_code": "M7914",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "기타 근염, 손",
+        "candidate_code": "M6084",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "기타 근통, 손",
+        "candidate_code": "M79148",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "상세불명의 근염, 손",
+        "candidate_code": "M6094",
+        "score": 0.6667
+      }
+    ]
+  },
+  "근관치료": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "감염성 근염, 고관절",
+        "candidate_code": "M6005",
+        "score": 0.4444
+      },
+      {
+        "candidate_name": "근단치주염 NOS",
+        "candidate_code": "K045",
+        "score": 0.4444
+      },
+      {
+        "candidate_name": "급성 근단치주염 NOS",
+        "candidate_code": "K044",
+        "score": 0.4444
+      },
+      {
+        "candidate_name": "기타 근염, 고관절",
+        "candidate_code": "M6085",
+        "score": 0.4444
+      },
+      {
+        "candidate_name": "기타 근통, 고관절",
+        "candidate_code": "M79158",
+        "score": 0.4444
+      }
+    ]
+  },
+  "급성신손상(소아)": {
+    "manual_alias": "급성신손상",
+    "candidates": [
+      {
+        "candidate_name": "급성 신장 손상(비외상성)",
+        "candidate_code": "N17",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "급성 신부전",
+        "candidate_code": "N17",
+        "score": 0.6
+      },
+      {
+        "candidate_name": "급성 신우염",
+        "candidate_code": "N10",
+        "score": 0.6
+      },
+      {
+        "candidate_name": "급성 신장염",
+        "candidate_code": "N00",
+        "score": 0.6
+      },
+      {
+        "candidate_name": "부신의 손상",
+        "candidate_code": "S378",
+        "score": 0.6
+      }
+    ]
+  },
+  "급성호흡기바이러스감염증": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "상세불명의 바이러스감염",
+        "candidate_code": "B349",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "기타 급성 바이러스간염",
+        "candidate_code": "B17",
+        "score": 0.6364
+      },
+      {
+        "candidate_name": "급성 사람면역결핍바이러스감염증후군",
+        "candidate_code": "B230",
+        "score": 0.6207
+      },
+      {
+        "candidate_name": "기타 바이러스장염",
+        "candidate_code": "A083",
+        "score": 0.6
+      },
+      {
+        "candidate_name": "기타 바이러스장염",
+        "candidate_code": "A0838",
+        "score": 0.6
+      }
+    ]
+  },
+  "기관절개술": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "기관절개상태",
+        "candidate_code": "Z930",
+        "score": 0.7273
+      },
+      {
+        "candidate_name": "기관의 골절, 개방성",
+        "candidate_code": "S1281",
+        "score": 0.6154
+      },
+      {
+        "candidate_name": "기관절개 기능부전",
+        "candidate_code": "J950",
+        "score": 0.6154
+      },
+      {
+        "candidate_name": "기관절개도의 폐색",
+        "candidate_code": "J950",
+        "score": 0.6154
+      },
+      {
+        "candidate_name": "기관의 골절",
+        "candidate_code": "S128",
+        "score": 0.6
+      }
+    ]
+  },
+  "기후변화에 의한 폭염": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "새진드기에 의한 피부염",
+        "candidate_code": "B880",
+        "score": 0.5263
+      },
+      {
+        "candidate_name": "간질에 의한 감염",
+        "candidate_code": "B663",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "기구에 의한 손상",
+        "candidate_code": "O71",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "방화에 의한 가해",
+        "candidate_code": "X97",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "요에 의한 복막염",
+        "candidate_code": "K658",
+        "score": 0.5
+      }
+    ]
+  },
+  "남성갱년기": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "남성의 갱년기상태",
+        "candidate_code": "N5080",
+        "score": 0.7692
+      },
+      {
+        "candidate_name": "남성발기장애",
+        "candidate_code": "F522",
+        "score": 0.5455
+      },
+      {
+        "candidate_name": "기타 및 상세불명의 남성생식기관",
+        "candidate_code": "D076",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "남성화(여성)",
+        "candidate_code": "E25",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "폐경 및 여성의 갱년기상태",
+        "candidate_code": "N951",
+        "score": 0.5
+      }
+    ]
+  },
+  "내시경적 역행성 담췌관조영술": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "경화성 담관염",
+        "candidate_code": "K830",
+        "score": 0.4211
+      },
+      {
+        "candidate_name": "상행성 담관염",
+        "candidate_code": "K830",
+        "score": 0.4211
+      },
+      {
+        "candidate_name": "경계성 조현병",
+        "candidate_code": "F21",
+        "score": 0.3158
+      },
+      {
+        "candidate_name": "원발성 담관염",
+        "candidate_code": "K830",
+        "score": 0.3158
+      },
+      {
+        "candidate_name": "이차성 담관염",
+        "candidate_code": "K830",
+        "score": 0.3158
+      }
+    ]
+  },
+  "노인 보행장애": {
+    "manual_alias": "보행장애",
+    "candidates": [
+      {
+        "candidate_name": "기타 행동장애",
+        "candidate_code": "F918",
+        "score": 0.75
+      },
+      {
+        "candidate_name": "상세불명의 행동장애",
+        "candidate_code": "F919",
+        "score": 0.75
+      },
+      {
+        "candidate_name": "행동장애",
+        "candidate_code": "F91",
+        "score": 0.75
+      },
+      {
+        "candidate_name": "기타 틱장애",
+        "candidate_code": "F958",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "상세불명의 틱장애",
+        "candidate_code": "F959",
+        "score": 0.5714
+      }
+    ]
+  },
+  "노인 삼킴장애": {
+    "manual_alias": "삼킴장애",
+    "candidates": [
+      {
+        "candidate_name": "삼첨판장애 NOS",
+        "candidate_code": "I079",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "상세불명의 삼차신경장애",
+        "candidate_code": "G509",
+        "score": 0.6
+      },
+      {
+        "candidate_name": "기타 틱장애",
+        "candidate_code": "F958",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "상세불명의 틱장애",
+        "candidate_code": "F959",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "틱장애",
+        "candidate_code": "F95",
+        "score": 0.5714
+      }
+    ]
+  },
+  "노인 약물복용": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "약물의 오용 NOS",
+        "candidate_code": "F19",
+        "score": 0.5455
+      },
+      {
+        "candidate_name": "노년쇠약",
+        "candidate_code": "R54",
+        "score": 0.4
+      },
+      {
+        "candidate_name": "약물반응 NOS",
+        "candidate_code": "T887",
+        "score": 0.4
+      },
+      {
+        "candidate_name": "약물사용에 관련된 문제",
+        "candidate_code": "Z722",
+        "score": 0.375
+      },
+      {
+        "candidate_name": "과민성 약물 NOS",
+        "candidate_code": "T887",
+        "score": 0.3636
+      }
+    ]
+  },
+  "노인 운동": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "상세불명의 운동실조",
+        "candidate_code": "R270",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "이상운동증",
+        "candidate_code": "G24",
+        "score": 0.4444
+      },
+      {
+        "candidate_name": "이상운동증 NOS",
+        "candidate_code": "G249",
+        "score": 0.4444
+      },
+      {
+        "candidate_name": "기타 운동과다장애",
+        "candidate_code": "F908",
+        "score": 0.4
+      },
+      {
+        "candidate_name": "노년성 동맥염",
+        "candidate_code": "I70",
+        "score": 0.4
+      }
+    ]
+  },
+  "노인 호흡곤란": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "호흡곤란",
+        "candidate_code": "R060",
+        "score": 0.8
+      },
+      {
+        "candidate_name": "성인호흡곤란증후군",
+        "candidate_code": "J80",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "신생아의 기타 호흡곤란",
+        "candidate_code": "P228",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "신생아의 상세불명의 호흡곤란",
+        "candidate_code": "P229",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "신생아의 호흡곤란",
+        "candidate_code": "P22",
+        "score": 0.5714
+      }
+    ]
+  },
+  "노인기능평가": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "노젓기",
+        "candidate_code": "X50",
+        "score": 0.4444
+      },
+      {
+        "candidate_name": "심인성 생리적 기능이상 NOS",
+        "candidate_code": "F59",
+        "score": 0.375
+      },
+      {
+        "candidate_name": "기능성 설사",
+        "candidate_code": "K591",
+        "score": 0.3636
+      },
+      {
+        "candidate_name": "기타 가려움",
+        "candidate_code": "L298",
+        "score": 0.3636
+      },
+      {
+        "candidate_name": "기타 농가진",
+        "candidate_code": "L0108",
+        "score": 0.3636
+      }
+    ]
+  },
+  "노인의 영양": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "기타 외인의 영향",
+        "candidate_code": "T75",
+        "score": 0.6
+      },
+      {
+        "candidate_name": "인두의 기타 농양",
+        "candidate_code": "J391",
+        "score": 0.6
+      },
+      {
+        "candidate_name": "과영양 NOS",
+        "candidate_code": "R632",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "기타 과영양",
+        "candidate_code": "E67",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "성인 학대의 영향 NOS",
+        "candidate_code": "T749",
+        "score": 0.5
+      }
+    ]
+  },
+  "뇌사자 장기기증": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "상세불명의 장기생충증",
+        "candidate_code": "B82",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "상세불명의 장기생충증",
+        "candidate_code": "B829",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "소장기체증(小腸氣滯證)",
+        "candidate_code": "U751",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "신장기증자",
+        "candidate_code": "Z524",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "심장기증자",
+        "candidate_code": "Z527",
+        "score": 0.5
+      }
+    ]
+  },
+  "눈꺼풀속말림과 겉말림": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "눈꺼풀 덧",
+        "candidate_code": "Q103",
+        "score": 0.4286
+      },
+      {
+        "candidate_name": "눈꺼풀결손",
+        "candidate_code": "Q103",
+        "score": 0.4
+      },
+      {
+        "candidate_name": "눈꺼풀의 낭",
+        "candidate_code": "H0281",
+        "score": 0.4
+      },
+      {
+        "candidate_name": "눈꺼풀퇴축",
+        "candidate_code": "H0252",
+        "score": 0.4
+      },
+      {
+        "candidate_name": "눈꺼풀의 기미",
+        "candidate_code": "H027",
+        "score": 0.375
+      }
+    ]
+  },
+  "늘어지는 영아증후군": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "급성 또는 아급성 뇌증후군",
+        "candidate_code": "F05",
+        "score": 0.625
+      },
+      {
+        "candidate_name": "상세불명의 영아돌연사증후군",
+        "candidate_code": "R959",
+        "score": 0.5882
+      },
+      {
+        "candidate_name": "영아돌연사증후군",
+        "candidate_code": "R95",
+        "score": 0.5882
+      },
+      {
+        "candidate_name": "촤지 증후군",
+        "candidate_code": "Q878",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "디죠지증후군",
+        "candidate_code": "D821",
+        "score": 0.5333
+      }
+    ]
+  },
+  "다래끼와 콩다래끼": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "콩다래끼",
+        "candidate_code": "H001",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "맥립종 및 콩다래끼",
+        "candidate_code": "H00",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "내부다래끼",
+        "candidate_code": "H0001",
+        "score": 0.4615
+      },
+      {
+        "candidate_name": "외부다래끼",
+        "candidate_code": "H0000",
+        "score": 0.4615
+      },
+      {
+        "candidate_name": "기타 골다공증, 아래다리",
+        "candidate_code": "M8186",
+        "score": 0.375
+      }
+    ]
+  },
+  "다제내성균감염증": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "다약제내성 결핵",
+        "candidate_code": "U8430",
+        "score": 0.5333
+      },
+      {
+        "candidate_name": "기타 임균감염",
+        "candidate_code": "A548",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "상세불명의 세균감염",
+        "candidate_code": "A499",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "상세불명의 이감염증",
+        "candidate_code": "B852",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "상세불명의 임균감염",
+        "candidate_code": "A549",
+        "score": 0.5
+      }
+    ]
+  },
+  "담낭 용종": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "담낭의 수종",
+        "candidate_code": "K821",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "급성 담낭염",
+        "candidate_code": "K810",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "기타 담낭염",
+        "candidate_code": "K818",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "담낭염",
+        "candidate_code": "K81",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "담도낭",
+        "candidate_code": "K835",
+        "score": 0.5714
+      }
+    ]
+  },
+  "당뇨병성 족부병증": {
+    "manual_alias": "당뇨병성족부병증",
+    "candidates": [
+      {
+        "candidate_name": "당뇨병성 관절병증(4단위 및 5단위 숫자 .60에 해당되는 E10-E14†)",
+        "candidate_code": "M142",
+        "score": 0.75
+      },
+      {
+        "candidate_name": "당뇨병성 망막병증(4단위 및 5단위 숫자 .30, .31, .32, .33에 해당되는 E10-E14+)",
+        "candidate_code": "H360",
+        "score": 0.75
+      },
+      {
+        "candidate_name": "당뇨병성 다발신경병증(4단위 및 5단위 숫자 .41에 해당되는 E10-E14†)",
+        "candidate_code": "G632",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "당뇨병성 단일신경병증(4단위 및 5단위 숫자 .40에 해당되는 E10-E14†)",
+        "candidate_code": "G590",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "당뇨병성 말초맥관병증(4단위 및 5단위 숫자 .50, .51에 해당되는 E10-E14+)",
+        "candidate_code": "I792",
+        "score": 0.6667
+      }
+    ]
+  },
+  "대사증후군": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "기타 학대증후군",
+        "candidate_code": "T748",
+        "score": 0.8
+      },
+      {
+        "candidate_name": "상세불명의 학대증후군",
+        "candidate_code": "T749",
+        "score": 0.8
+      },
+      {
+        "candidate_name": "학대증후군",
+        "candidate_code": "T74",
+        "score": 0.8
+      },
+      {
+        "candidate_name": "대정맥증후군(하, 상)",
+        "candidate_code": "I871",
+        "score": 0.7273
+      },
+      {
+        "candidate_name": "과민대장증후군",
+        "candidate_code": "K58",
+        "score": 0.6667
+      }
+    ]
+  },
+  "대장용종": {
+    "manual_alias": "결장폴립",
+    "candidates": [
+      {
+        "candidate_name": "결장의 폴립",
+        "candidate_code": "K635",
+        "score": 0.8889
+      },
+      {
+        "candidate_name": "직장폴립",
+        "candidate_code": "K621",
+        "score": 0.75
+      },
+      {
+        "candidate_name": "긴결장",
+        "candidate_code": "Q438",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "상세불명의 코폴립",
+        "candidate_code": "J339",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "코폴립",
+        "candidate_code": "J33",
+        "score": 0.5714
+      }
+    ]
+  },
+  "대퇴골두 무혈성 괴사": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "골의 무혈관성 괴사",
+        "candidate_code": "M87",
+        "score": 0.7059
+      },
+      {
+        "candidate_name": "대퇴골두의 골절, 개방성",
+        "candidate_code": "S72081",
+        "score": 0.5263
+      },
+      {
+        "candidate_name": "대퇴골두의 골절, 폐쇄성",
+        "candidate_code": "S72080",
+        "score": 0.5263
+      },
+      {
+        "candidate_name": "골괴사",
+        "candidate_code": "M87",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "기타 골괴사",
+        "candidate_code": "M878",
+        "score": 0.5
+      }
+    ]
+  },
+  "뎅기열, 치쿤구니야열": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "치쿤군야(출혈)열",
+        "candidate_code": "A920",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "뎅기열 [DF] NOS",
+        "candidate_code": "A979",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "상세불명의 뎅기열",
+        "candidate_code": "A979",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "심한 뎅기열",
+        "candidate_code": "A972",
+        "score": 0.4286
+      },
+      {
+        "candidate_name": "심한 뎅기출혈열",
+        "candidate_code": "A972",
+        "score": 0.375
+      }
+    ]
+  },
+  "독극물 섭취": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "독액성 물림 NOS",
+        "candidate_code": "X29",
+        "score": 0.4
+      },
+      {
+        "candidate_name": "(자기무시에 의한) 음식 및 물의 불충분한 섭취",
+        "candidate_code": "R636",
+        "score": 0.375
+      },
+      {
+        "candidate_name": "음식 및 물의 불충분한 섭취",
+        "candidate_code": "R636",
+        "score": 0.375
+      },
+      {
+        "candidate_name": "음식물 섭취의 성분불균형",
+        "candidate_code": "E631",
+        "score": 0.375
+      },
+      {
+        "candidate_name": "자극물접촉습진",
+        "candidate_code": "L24",
+        "score": 0.3333
+      }
+    ]
+  },
+  "동맥관 개존증": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "동맥관개존",
+        "candidate_code": "Q250",
+        "score": 0.9091
+      },
+      {
+        "candidate_name": "동맥관존속",
+        "candidate_code": "Q250",
+        "score": 0.7273
+      },
+      {
+        "candidate_name": "동맥간존속",
+        "candidate_code": "Q200",
+        "score": 0.5455
+      },
+      {
+        "candidate_name": "동맥경화증",
+        "candidate_code": "I70",
+        "score": 0.5455
+      },
+      {
+        "candidate_name": "요막관개존",
+        "candidate_code": "Q644",
+        "score": 0.5455
+      }
+    ]
+  },
+  "동물 및 곤충에 의한 응급상황": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "자동차충돌에 의한 가해",
+        "candidate_code": "Y03",
+        "score": 0.4545
+      },
+      {
+        "candidate_name": "방사선에 의한 급성 폐증상",
+        "candidate_code": "J700",
+        "score": 0.4348
+      },
+      {
+        "candidate_name": "약물에 의한 골괴사, 상완골",
+        "candidate_code": "M8712",
+        "score": 0.4348
+      },
+      {
+        "candidate_name": "자동차충돌에 의한 가해, 상세불명 장소",
+        "candidate_code": "Y039",
+        "score": 0.4286
+      },
+      {
+        "candidate_name": "기구에 의한 손상",
+        "candidate_code": "O71",
+        "score": 0.4211
+      }
+    ]
+  },
+  "드림렌즈의 효과와 부작용": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "자일렌[디메칠벤젠]의 독성효과",
+        "candidate_code": "T522",
+        "score": 0.4211
+      },
+      {
+        "candidate_name": "염화메틸렌의 독성효과",
+        "candidate_code": "T534",
+        "score": 0.381
+      },
+      {
+        "candidate_name": "과염화에틸렌의 독성효과",
+        "candidate_code": "T533",
+        "score": 0.3636
+      },
+      {
+        "candidate_name": "사염화에틸렌의 독성효과",
+        "candidate_code": "T533",
+        "score": 0.3636
+      },
+      {
+        "candidate_name": "포름알데히드의 독성효과",
+        "candidate_code": "T592",
+        "score": 0.3636
+      }
+    ]
+  },
+  "레진치료(치아 레진치료)": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "치아치조 농양 NOS",
+        "candidate_code": "K047",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "치아위치의 상세불명 이상",
+        "candidate_code": "K0739",
+        "score": 0.4615
+      },
+      {
+        "candidate_name": "치아위치의 이상",
+        "candidate_code": "K073",
+        "score": 0.4615
+      },
+      {
+        "candidate_name": "치아의 치약마모",
+        "candidate_code": "K0310",
+        "score": 0.4615
+      },
+      {
+        "candidate_name": "치외치[교합면 이상결절]",
+        "candidate_code": "K0024",
+        "score": 0.4444
+      }
+    ]
+  },
+  "렙토스피라증": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "렙토스피라병",
+        "candidate_code": "A27",
+        "score": 0.8333
+      },
+      {
+        "candidate_name": "상세불명의 렙토스피라병",
+        "candidate_code": "A279",
+        "score": 0.8333
+      },
+      {
+        "candidate_name": "기타 형태의 렙토스피라병",
+        "candidate_code": "A278",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "렙토스피라병(~에서의) 수막염(A27.-†)",
+        "candidate_code": "G01",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "황달출혈성 렙토스피라병",
+        "candidate_code": "A270",
+        "score": 0.5882
+      }
+    ]
+  },
+  "만성피로증후군": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "피로증후군",
+        "candidate_code": "F480",
+        "score": 0.8333
+      },
+      {
+        "candidate_name": "만성 신염증후군",
+        "candidate_code": "N03",
+        "score": 0.7143
+      },
+      {
+        "candidate_name": "로베증후군",
+        "candidate_code": "E720",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "로빈 증후군",
+        "candidate_code": "Q870",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "로터증후군",
+        "candidate_code": "E806",
+        "score": 0.6667
+      }
+    ]
+  },
+  "모호한 외부생식기 및 성 발달 이...": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "모호한 생식기",
+        "candidate_code": "Q564",
+        "score": 0.5455
+      },
+      {
+        "candidate_name": "외부생식기관의 외상성 절단",
+        "candidate_code": "S382",
+        "score": 0.4286
+      },
+      {
+        "candidate_name": "외부 여성생식기의 악성 신생물 NOS",
+        "candidate_code": "C519",
+        "score": 0.4138
+      },
+      {
+        "candidate_name": "외부생식기관의 타박상",
+        "candidate_code": "S302",
+        "score": 0.3846
+      },
+      {
+        "candidate_name": "외부생식기의 출산손상",
+        "candidate_code": "P155",
+        "score": 0.3846
+      }
+    ]
+  },
+  "무릎 관절 주위의 골절": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "관절주위염 NOS, 발의 기타 관절",
+        "candidate_code": "M7797",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "무릎뼈의 골절",
+        "candidate_code": "S820",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "관절돌기의 골절 NOS",
+        "candidate_code": "S4245",
+        "score": 0.625
+      },
+      {
+        "candidate_name": "관절주위염 NOS, 경골",
+        "candidate_code": "M7796",
+        "score": 0.625
+      },
+      {
+        "candidate_name": "관절주위염 NOS, 골반",
+        "candidate_code": "M7795",
+        "score": 0.625
+      }
+    ]
+  },
+  "무릎관절염, 올바로 운동하기": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "무릎관절증",
+        "candidate_code": "M17",
+        "score": 0.4706
+      },
+      {
+        "candidate_name": "상세불명의 무릎관절증",
+        "candidate_code": "M179",
+        "score": 0.4706
+      },
+      {
+        "candidate_name": "감염성 근염, 무릎관절",
+        "candidate_code": "M6006",
+        "score": 0.4444
+      },
+      {
+        "candidate_name": "기타 근염, 무릎관절",
+        "candidate_code": "M6086",
+        "score": 0.4444
+      },
+      {
+        "candidate_name": "기타 근통, 무릎관절",
+        "candidate_code": "M79168",
+        "score": 0.4444
+      }
+    ]
+  },
+  "물에 빠짐": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "물로 떨어짐 NOS",
+        "candidate_code": "W74",
+        "score": 0.4444
+      },
+      {
+        "candidate_name": "물체에 부딪쳐서 넘어짐",
+        "candidate_code": "W18",
+        "score": 0.4286
+      },
+      {
+        "candidate_name": "구토물[역류하는 음식물]에 의한 질식",
+        "candidate_code": "W78",
+        "score": 0.3333
+      },
+      {
+        "candidate_name": "귓물",
+        "candidate_code": "H921",
+        "score": 0.3333
+      },
+      {
+        "candidate_name": "눈물길에서의 기타 변화",
+        "candidate_code": "H046",
+        "score": 0.3333
+      }
+    ]
+  },
+  "바이러스성 간염": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "기타 급성 바이러스간염",
+        "candidate_code": "B17",
+        "score": 0.9231
+      },
+      {
+        "candidate_name": "기타 만성 바이러스간염",
+        "candidate_code": "B188",
+        "score": 0.9231
+      },
+      {
+        "candidate_name": "만성 바이러스간염",
+        "candidate_code": "B18",
+        "score": 0.9231
+      },
+      {
+        "candidate_name": "바이러스간염 NOS",
+        "candidate_code": "B199",
+        "score": 0.9231
+      },
+      {
+        "candidate_name": "상세불명의 급성 바이러스간염",
+        "candidate_code": "B179",
+        "score": 0.9231
+      }
+    ]
+  },
+  "보툴리눔독소증": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "보틀리눔중독",
+        "candidate_code": "A051",
+        "score": 0.6154
+      },
+      {
+        "candidate_name": "만성 요독증 NOS",
+        "candidate_code": "N189",
+        "score": 0.4
+      },
+      {
+        "candidate_name": "소구증(小口症)",
+        "candidate_code": "Q185",
+        "score": 0.4
+      },
+      {
+        "candidate_name": "소뇌증",
+        "candidate_code": "Q02",
+        "score": 0.4
+      },
+      {
+        "candidate_name": "소두증",
+        "candidate_code": "Q02",
+        "score": 0.4
+      }
+    ]
+  },
+  "복부 팽만": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "복부의 가스팽만",
+        "candidate_code": "R14",
+        "score": 0.7273
+      },
+      {
+        "candidate_name": "기타 복부탈장",
+        "candidate_code": "K45",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "복부 압통 NOS",
+        "candidate_code": "R104",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "복부경직",
+        "candidate_code": "R193",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "복부탈장 NOS",
+        "candidate_code": "K469",
+        "score": 0.5
+      }
+    ]
+  },
+  "부신부전증": {
+    "manual_alias": "부신기능저하증",
+    "candidates": [
+      {
+        "candidate_name": "기타 부갑상선기능저하증",
+        "candidate_code": "E208",
+        "score": 0.75
+      },
+      {
+        "candidate_name": "부갑상선기능저하증",
+        "candidate_code": "E20",
+        "score": 0.75
+      },
+      {
+        "candidate_name": "상세불명의 부갑상선기능저하증",
+        "candidate_code": "E209",
+        "score": 0.75
+      },
+      {
+        "candidate_name": "비장기능저하증",
+        "candidate_code": "D730",
+        "score": 0.7143
+      },
+      {
+        "candidate_name": "거짓 부갑상선기능저하증",
+        "candidate_code": "E201",
+        "score": 0.6667
+      }
+    ]
+  },
+  "불규칙한 월경주기와 월경전증후군": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "불규칙월경주기 NOS",
+        "candidate_code": "N926",
+        "score": 0.6364
+      },
+      {
+        "candidate_name": "월경전긴장증후군",
+        "candidate_code": "N943",
+        "score": 0.5217
+      },
+      {
+        "candidate_name": "상세불명의 불규칙월경",
+        "candidate_code": "N926",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "경색전증후군",
+        "candidate_code": "I200",
+        "score": 0.4762
+      },
+      {
+        "candidate_name": "불규칙과다월경",
+        "candidate_code": "N921",
+        "score": 0.4545
+      }
+    ]
+  },
+  "비뇨기계 외상": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "비뇨계통의 선천이상 NOS",
+        "candidate_code": "Q649",
+        "score": 0.5333
+      },
+      {
+        "candidate_name": "비뇨 및 골반 기관의 손상",
+        "candidate_code": "S37",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "비뇨계통의 기타 증상 및 징후",
+        "candidate_code": "R39",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "기타 및 상세불명의 비뇨생식기계 편모충증",
+        "candidate_code": "A5908",
+        "score": 0.4706
+      },
+      {
+        "candidate_name": "내부비뇨생식기관의 화상",
+        "candidate_code": "T283",
+        "score": 0.4706
+      }
+    ]
+  },
+  "비문증(날파리증)": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "파과증",
+        "candidate_code": "F201",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "파치증",
+        "candidate_code": "K024",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "알칼리증",
+        "candidate_code": "E873",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "알칼리증 NOS",
+        "candidate_code": "E873",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "파브리(-앤더슨)병",
+        "candidate_code": "E752",
+        "score": 0.5
+      }
+    ]
+  },
+  "비정상 자궁출혈": {
+    "manual_alias": "이상자궁출혈",
+    "candidates": [
+      {
+        "candidate_name": "기타 이상 자궁 및 질 출혈",
+        "candidate_code": "N93",
+        "score": 0.8571
+      },
+      {
+        "candidate_name": "상세불명의 이상 자궁 및 질 출혈",
+        "candidate_code": "N939",
+        "score": 0.8571
+      },
+      {
+        "candidate_name": "기타 명시된 이상 자궁 및 질 출혈",
+        "candidate_code": "N938",
+        "score": 0.7059
+      },
+      {
+        "candidate_name": "부정자궁출혈",
+        "candidate_code": "N921",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "이상자세",
+        "candidate_code": "R293",
+        "score": 0.6
+      }
+    ]
+  },
+  "사람 브루셀라증": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "기타 브루셀라병",
+        "candidate_code": "A238",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "브루셀라병",
+        "candidate_code": "A23",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "상세불명의 브루셀라병",
+        "candidate_code": "A239",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "브루셀라척추염(A23.-†)",
+        "candidate_code": "M491",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "브루셀라척추염(A23.-†), 경부",
+        "candidate_code": "M4912",
+        "score": 0.5
+      }
+    ]
+  },
+  "사랑니": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "사타구니백선",
+        "candidate_code": "B356",
+        "score": 0.4444
+      },
+      {
+        "candidate_name": "사타구니탈장",
+        "candidate_code": "K40",
+        "score": 0.4444
+      },
+      {
+        "candidate_name": "사타구니탈장 NOS",
+        "candidate_code": "K40",
+        "score": 0.4444
+      },
+      {
+        "candidate_name": "사타구니탈장(한쪽) NOS",
+        "candidate_code": "K409",
+        "score": 0.4444
+      },
+      {
+        "candidate_name": "감염성 (신생아의) 설사 NOS",
+        "candidate_code": "A090",
+        "score": 0.4
+      }
+    ]
+  },
+  "상부위장관 촬영": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "상복부 탈장",
+        "candidate_code": "K436",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "상세불명 부위의 혈관종",
+        "candidate_code": "D1809",
+        "score": 0.4706
+      },
+      {
+        "candidate_name": "기타 부위의 혈관종",
+        "candidate_code": "D1808",
+        "score": 0.4615
+      },
+      {
+        "candidate_name": "이상심장음영",
+        "candidate_code": "R931",
+        "score": 0.4615
+      },
+      {
+        "candidate_name": "갑상선부위의 염좌 및 긴장",
+        "candidate_code": "S135",
+        "score": 0.4444
+      }
+    ]
+  },
+  "생리통": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "생리적 황달(심한, 지연성) NOS",
+        "candidate_code": "P599",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "옆구리 통증",
+        "candidate_code": "R1044",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "옆구리통증",
+        "candidate_code": "M545",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "격리",
+        "candidate_code": "Z290",
+        "score": 0.4
+      },
+      {
+        "candidate_name": "근육의 분리, 몸통",
+        "candidate_code": "M6208",
+        "score": 0.4
+      }
+    ]
+  },
+  "생활 속의 다중화학물질과민증": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "미로의 과민증",
+        "candidate_code": "H832",
+        "score": 0.4211
+      },
+      {
+        "candidate_name": "속화증(速話症)",
+        "candidate_code": "F986",
+        "score": 0.375
+      },
+      {
+        "candidate_name": "두개골의 과다골화증",
+        "candidate_code": "M852",
+        "score": 0.3636
+      },
+      {
+        "candidate_name": "통 속의 뜨거운 물과 접촉",
+        "candidate_code": "X11",
+        "score": 0.3478
+      },
+      {
+        "candidate_name": "약물 및 화학물질로 유발된 전신경화증",
+        "candidate_code": "M342",
+        "score": 0.3448
+      }
+    ]
+  },
+  "생활 속의 수은(Hg)": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "IgA 신장병증",
+        "candidate_code": "N02",
+        "score": 0.2222
+      },
+      {
+        "candidate_name": "H54.- 에 분류되는 병태",
+        "candidate_code": "Z821",
+        "score": 0.1538
+      },
+      {
+        "candidate_name": "각막염(H19.1*)",
+        "candidate_code": "B0051",
+        "score": 0.1538
+      },
+      {
+        "candidate_name": "결막염(H13.1*)",
+        "candidate_code": "B0052",
+        "score": 0.1538
+      },
+      {
+        "candidate_name": "출산시 체중 500g 미만",
+        "candidate_code": "P0700",
+        "score": 0.1538
+      }
+    ]
+  },
+  "석면과 건강장해": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "건강염려증성 장애",
+        "candidate_code": "F452",
+        "score": 0.4
+      },
+      {
+        "candidate_name": "석면증",
+        "candidate_code": "J61",
+        "score": 0.4
+      },
+      {
+        "candidate_name": "강박장애",
+        "candidate_code": "F42",
+        "score": 0.3636
+      },
+      {
+        "candidate_name": "건강검진 NOS",
+        "candidate_code": "Z000",
+        "score": 0.3636
+      },
+      {
+        "candidate_name": "과민결장",
+        "candidate_code": "K58",
+        "score": 0.3636
+      }
+    ]
+  },
+  "선천갑상샘저하증": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "선천성 갑상선기능저하증 NOS",
+        "candidate_code": "E031",
+        "score": 0.7368
+      },
+      {
+        "candidate_name": "기타 갑상선기능저하증",
+        "candidate_code": "E03",
+        "score": 0.625
+      },
+      {
+        "candidate_name": "상세불명의 갑상선기능저하증",
+        "candidate_code": "E039",
+        "score": 0.625
+      },
+      {
+        "candidate_name": "기타 부갑상선기능저하증",
+        "candidate_code": "E208",
+        "score": 0.5882
+      },
+      {
+        "candidate_name": "부갑상선기능저하증",
+        "candidate_code": "E20",
+        "score": 0.5882
+      }
+    ]
+  },
+  "성공적인 모유 수유": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "신생아 모유수유의 어려움",
+        "candidate_code": "P925",
+        "score": 0.4211
+      },
+      {
+        "candidate_name": "성인유리질막병",
+        "candidate_code": "J80",
+        "score": 0.4
+      },
+      {
+        "candidate_name": "원발성 부적절수축",
+        "candidate_code": "O620",
+        "score": 0.375
+      },
+      {
+        "candidate_name": "기타 성인골연화증, 수근골",
+        "candidate_code": "M8384",
+        "score": 0.3529
+      },
+      {
+        "candidate_name": "기타 성인골연화증, 중수골",
+        "candidate_code": "M8384",
+        "score": 0.3529
+      }
+    ]
+  },
+  "성대결절": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "성대의 소결절",
+        "candidate_code": "J382",
+        "score": 0.8
+      },
+      {
+        "candidate_name": "고립성 폐결절",
+        "candidate_code": "J9840",
+        "score": 0.6
+      },
+      {
+        "candidate_name": "독성거대결장",
+        "candidate_code": "K593",
+        "score": 0.6
+      },
+      {
+        "candidate_name": "결절종",
+        "candidate_code": "M674",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "성대염(피브린성)(결절성)",
+        "candidate_code": "J382",
+        "score": 0.5714
+      }
+    ]
+  },
+  "성조숙증": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "악성 조직구증",
+        "candidate_code": "C968",
+        "score": 0.6
+      },
+      {
+        "candidate_name": "경조증",
+        "candidate_code": "F300",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "경조증(硬爪症)(선천성)",
+        "candidate_code": "Q845",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "무조증(無爪症)",
+        "candidate_code": "Q843",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "상세불명의 조충증",
+        "candidate_code": "B689",
+        "score": 0.5714
+      }
+    ]
+  },
+  "성폭력": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "신체적 폭력",
+        "candidate_code": "R456",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "신경성 폭식증",
+        "candidate_code": "F502",
+        "score": 0.4444
+      },
+      {
+        "candidate_name": "감각성 청력소실 NOS",
+        "candidate_code": "H905",
+        "score": 0.4
+      },
+      {
+        "candidate_name": "귀독성 청력소실",
+        "candidate_code": "H910",
+        "score": 0.4
+      },
+      {
+        "candidate_name": "돌발성 청력소실 NOS",
+        "candidate_code": "H912",
+        "score": 0.4
+      }
+    ]
+  },
+  "소변이상(농뇨)": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "농설(弄舌)",
+        "candidate_code": "R258",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "농흉",
+        "candidate_code": "J86",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "농흉(膿胸)",
+        "candidate_code": "J86",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "다뇨",
+        "candidate_code": "R35",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "당뇨",
+        "candidate_code": "R81",
+        "score": 0.5
+      }
+    ]
+  },
+  "소아 청소년의 혈변 및 흑혈변": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "소아기와 청소년기의 회피장애",
+        "candidate_code": "F932",
+        "score": 0.48
+      },
+      {
+        "candidate_name": "소아기와 청소년기의 운동과다반응 NOS",
+        "candidate_code": "F909",
+        "score": 0.4444
+      },
+      {
+        "candidate_name": "전립선의 울혈 및 출혈",
+        "candidate_code": "N421",
+        "score": 0.381
+      },
+      {
+        "candidate_name": "소아기 및 청소년기에 주로 발병하는 상세불명의 행동 및 정서 장애",
+        "candidate_code": "F989",
+        "score": 0.359
+      },
+      {
+        "candidate_name": "소아기 및 청소년기에 주로 발병하는 기타 행동 및 정서장애",
+        "candidate_code": "F98",
+        "score": 0.3529
+      }
+    ]
+  },
+  "소아발진": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "발진열(벼룩매개)",
+        "candidate_code": "A752",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "돌발발진[제6병]",
+        "candidate_code": "B082",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "영아습진",
+        "candidate_code": "L208",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "혈청발진",
+        "candidate_code": "T806",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "가려움발진 NOS",
+        "candidate_code": "L282",
+        "score": 0.4444
+      }
+    ]
+  },
+  "소아의 대소변 가리기": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "과량의 대변",
+        "candidate_code": "R195",
+        "score": 0.4286
+      },
+      {
+        "candidate_name": "치아의 박리(완전탈구)",
+        "candidate_code": "S0322",
+        "score": 0.4286
+      },
+      {
+        "candidate_name": "소아기의 분리불안장애",
+        "candidate_code": "F930",
+        "score": 0.4211
+      },
+      {
+        "candidate_name": "뇌의 기타 축소변형",
+        "candidate_code": "Q043",
+        "score": 0.4
+      },
+      {
+        "candidate_name": "뼈의 비대, 머리",
+        "candidate_code": "M8938",
+        "score": 0.4
+      }
+    ]
+  },
+  "소아청소년기고혈압": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "소아기와 청소년기의 회피장애",
+        "candidate_code": "F932",
+        "score": 0.5455
+      },
+      {
+        "candidate_name": "신생아고혈압",
+        "candidate_code": "P292",
+        "score": 0.5333
+      },
+      {
+        "candidate_name": "고혈압",
+        "candidate_code": "I10",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "고혈압(동맥성)(본태성)(원발성)(전신)",
+        "candidate_code": "I109",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "소아기와 청소년기의 운동과다반응 NOS",
+        "candidate_code": "F909",
+        "score": 0.5
+      }
+    ]
+  },
+  "수근굴(수근관) 증후군": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "맹관증후군 NOS",
+        "candidate_code": "K902",
+        "score": 0.7273
+      },
+      {
+        "candidate_name": "수술후맹관증후군(K91.2)",
+        "candidate_code": "K912",
+        "score": 0.7143
+      },
+      {
+        "candidate_name": "극상근증후군",
+        "candidate_code": "M751",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "기타 척수성 근위축 및 관련 증후군",
+        "candidate_code": "G128",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "척수성 근위축 및 관련 증후군",
+        "candidate_code": "G12",
+        "score": 0.6667
+      }
+    ]
+  },
+  "수두와 대상포진": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "대상포진",
+        "candidate_code": "B02",
+        "score": 0.7273
+      },
+      {
+        "candidate_name": "대상포진 NOS",
+        "candidate_code": "B029",
+        "score": 0.7273
+      },
+      {
+        "candidate_name": "대상포진뇌염(G05.1*)",
+        "candidate_code": "B020",
+        "score": 0.6154
+      },
+      {
+        "candidate_name": "대상포진눈병",
+        "candidate_code": "B023",
+        "score": 0.6154
+      },
+      {
+        "candidate_name": "대상포진 각막염(H19.2*)",
+        "candidate_code": "B023",
+        "score": 0.5714
+      }
+    ]
+  },
+  "수면무호흡증": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "수면무호흡",
+        "candidate_code": "G473",
+        "score": 0.9091
+      },
+      {
+        "candidate_name": "기타 및 상세불명 수면무호흡",
+        "candidate_code": "G4738",
+        "score": 0.8333
+      },
+      {
+        "candidate_name": "중추성 수면무호흡",
+        "candidate_code": "G4731",
+        "score": 0.7143
+      },
+      {
+        "candidate_name": "폐색성 수면무호흡",
+        "candidate_code": "G4730",
+        "score": 0.7143
+      },
+      {
+        "candidate_name": "혼합형 수면무호흡",
+        "candidate_code": "G4732",
+        "score": 0.7143
+      }
+    ]
+  },
+  "스포츠 손상과 안전": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "폐손상과 관련된 전자담배",
+        "candidate_code": "U070",
+        "score": 0.4211
+      },
+      {
+        "candidate_name": "상세불명의 손상",
+        "candidate_code": "T149",
+        "score": 0.4
+      },
+      {
+        "candidate_name": "귀손상 NOS",
+        "candidate_code": "S099",
+        "score": 0.3636
+      },
+      {
+        "candidate_name": "뇌손상 NOS",
+        "candidate_code": "S069",
+        "score": 0.3636
+      },
+      {
+        "candidate_name": "눈손상 NOS",
+        "candidate_code": "S059",
+        "score": 0.3636
+      }
+    ]
+  },
+  "스포츠 손상과 안전(견관절(어깨 ...": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "외상후 관절증 NOS, 어깨관절",
+        "candidate_code": "M1911",
+        "score": 0.3571
+      },
+      {
+        "candidate_name": "외상후 관절증 NOS, 어깨부분",
+        "candidate_code": "M1911",
+        "score": 0.3571
+      },
+      {
+        "candidate_name": "상세불명 상세불명의 류마티스관절염, 어깨관절",
+        "candidate_code": "M06919",
+        "score": 0.3448
+      },
+      {
+        "candidate_name": "상세불명 상세불명의 류마티스관절염, 어깨부분",
+        "candidate_code": "M06919",
+        "score": 0.3448
+      },
+      {
+        "candidate_name": "상세불명의 류마티스관절염, 어깨관절",
+        "candidate_code": "M0691",
+        "score": 0.3448
+      }
+    ]
+  },
+  "스포츠 손상과 안전(슬관절(무릎 ...": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "외상후 관절증 NOS, 무릎관절",
+        "candidate_code": "M1916",
+        "score": 0.3571
+      },
+      {
+        "candidate_name": "상세불명 상세불명의 류마티스관절염, 무릎관절",
+        "candidate_code": "M06969",
+        "score": 0.3448
+      },
+      {
+        "candidate_name": "상세불명의 류마티스관절염, 무릎관절",
+        "candidate_code": "M0696",
+        "score": 0.3448
+      },
+      {
+        "candidate_name": "외상성 관절병증, 무릎관절",
+        "candidate_code": "M1256",
+        "score": 0.3448
+      },
+      {
+        "candidate_name": "일과성 관절병증, 무릎관절",
+        "candidate_code": "M1286",
+        "score": 0.3448
+      }
+    ]
+  },
+  "스포츠 손상과 안전(족관절(발목 ...": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "외상후 관절증 NOS, 발목 및 발",
+        "candidate_code": "M1917",
+        "score": 0.3571
+      },
+      {
+        "candidate_name": "외상후 관절증 NOS, 발목관절",
+        "candidate_code": "M1917",
+        "score": 0.3571
+      },
+      {
+        "candidate_name": "상세불명 상세불명의 류마티스관절염, 발목 및 발",
+        "candidate_code": "M06979",
+        "score": 0.3448
+      },
+      {
+        "candidate_name": "상세불명 상세불명의 류마티스관절염, 발목관절",
+        "candidate_code": "M06979",
+        "score": 0.3448
+      },
+      {
+        "candidate_name": "상세불명의 류마티스관절염, 발목 및 발",
+        "candidate_code": "M0697",
+        "score": 0.3448
+      }
+    ]
+  },
+  "슬관절 전치환술": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "감염성 관절염 NOS",
+        "candidate_code": "M009",
+        "score": 0.4
+      },
+      {
+        "candidate_name": "감염성 관절염 NOS, 팔꿈치관절",
+        "candidate_code": "M0092",
+        "score": 0.4
+      },
+      {
+        "candidate_name": "관절루",
+        "candidate_code": "M251",
+        "score": 0.4
+      },
+      {
+        "candidate_name": "관절루, 팔꿈치관절",
+        "candidate_code": "M2512",
+        "score": 0.4
+      },
+      {
+        "candidate_name": "관절통",
+        "candidate_code": "M255",
+        "score": 0.4
+      }
+    ]
+  },
+  "시린이(치아지각과민)": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "감각과민",
+        "candidate_code": "R203",
+        "score": 0.6
+      },
+      {
+        "candidate_name": "청각과민",
+        "candidate_code": "H932",
+        "score": 0.6
+      },
+      {
+        "candidate_name": "과민성 NOS",
+        "candidate_code": "T784",
+        "score": 0.4444
+      },
+      {
+        "candidate_name": "신생아대뇌과민성",
+        "candidate_code": "P913",
+        "score": 0.4286
+      },
+      {
+        "candidate_name": "각상치아",
+        "candidate_code": "K0058",
+        "score": 0.4
+      }
+    ]
+  },
+  "식이영양": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "과영양 NOS",
+        "candidate_code": "R632",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "기타 과영양",
+        "candidate_code": "E67",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "기타 영양결핍",
+        "candidate_code": "E63",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "상세불명의 영양결핍",
+        "candidate_code": "E639",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "영양실조 NOS",
+        "candidate_code": "E46",
+        "score": 0.5
+      }
+    ]
+  },
+  "식이영양(소아/청소년)": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "과영양 NOS",
+        "candidate_code": "R632",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "기타 과영양",
+        "candidate_code": "E67",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "기타 영양결핍",
+        "candidate_code": "E63",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "상세불명의 영양결핍",
+        "candidate_code": "E639",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "영양실조 NOS",
+        "candidate_code": "E46",
+        "score": 0.5
+      }
+    ]
+  },
+  "식이영양(영유아)": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "영아증 NOS",
+        "candidate_code": "R628",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "과민영아",
+        "candidate_code": "R681",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "영아 산통",
+        "candidate_code": "R104",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "영아습진",
+        "candidate_code": "L208",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "영아연축",
+        "candidate_code": "G404",
+        "score": 0.5714
+      }
+    ]
+  },
+  "식이영양(임산부)": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "임신부종",
+        "candidate_code": "O120",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "기타 난산",
+        "candidate_code": "O66",
+        "score": 0.4
+      },
+      {
+        "candidate_name": "기타 유산",
+        "candidate_code": "O05",
+        "score": 0.4
+      },
+      {
+        "candidate_name": "난산 NOS",
+        "candidate_code": "O669",
+        "score": 0.4
+      },
+      {
+        "candidate_name": "둔부",
+        "candidate_code": "L023",
+        "score": 0.4
+      }
+    ]
+  },
+  "신증후군출혈열(한타바이러스감염증)": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "상세불명의 바이러스감염",
+        "candidate_code": "B349",
+        "score": 0.8
+      },
+      {
+        "candidate_name": "한타바이러스(심)-폐증후군(J17.1*)",
+        "candidate_code": "B334",
+        "score": 0.7368
+      },
+      {
+        "candidate_name": "기타 바이러스장염",
+        "candidate_code": "A083",
+        "score": 0.7059
+      },
+      {
+        "candidate_name": "기타 바이러스장염",
+        "candidate_code": "A0838",
+        "score": 0.7059
+      },
+      {
+        "candidate_name": "로타바이러스장염",
+        "candidate_code": "A080",
+        "score": 0.7059
+      }
+    ]
+  },
+  "심낭염(급성 심낭염)": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "급성 누낭염",
+        "candidate_code": "H0431",
+        "score": 0.8
+      },
+      {
+        "candidate_name": "급성 담낭염",
+        "candidate_code": "K810",
+        "score": 0.8
+      },
+      {
+        "candidate_name": "급성 심근염",
+        "candidate_code": "I40",
+        "score": 0.8
+      },
+      {
+        "candidate_name": "급성 심장막염",
+        "candidate_code": "I30",
+        "score": 0.7273
+      },
+      {
+        "candidate_name": "급성 비염",
+        "candidate_code": "J00",
+        "score": 0.6667
+      }
+    ]
+  },
+  "심방중격결손증": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "기타 심방중격결손",
+        "candidate_code": "Q2118",
+        "score": 0.9231
+      },
+      {
+        "candidate_name": "상세불명의 심방중격결손",
+        "candidate_code": "Q2119",
+        "score": 0.9231
+      },
+      {
+        "candidate_name": "심방중격결손",
+        "candidate_code": "Q211",
+        "score": 0.9231
+      },
+      {
+        "candidate_name": "기타 심실중격결손",
+        "candidate_code": "Q2108",
+        "score": 0.7692
+      },
+      {
+        "candidate_name": "방실중격결손",
+        "candidate_code": "Q212",
+        "score": 0.7692
+      }
+    ]
+  },
+  "심실중격결손증": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "기타 심실중격결손",
+        "candidate_code": "Q2108",
+        "score": 0.9231
+      },
+      {
+        "candidate_name": "상세불명의 심실중격결손",
+        "candidate_code": "Q2109",
+        "score": 0.9231
+      },
+      {
+        "candidate_name": "심실중격결손",
+        "candidate_code": "Q210",
+        "score": 0.9231
+      },
+      {
+        "candidate_name": "심실중격결손 NOS",
+        "candidate_code": "Q2108",
+        "score": 0.9231
+      },
+      {
+        "candidate_name": "다발심실중격결손 NOS",
+        "candidate_code": "Q2108",
+        "score": 0.8
+      }
+    ]
+  },
+  "심장 판막 질환": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "심장막의 기타 질환",
+        "candidate_code": "I31",
+        "score": 0.8333
+      },
+      {
+        "candidate_name": "심장막의 상세불명의 질환",
+        "candidate_code": "I319",
+        "score": 0.8333
+      },
+      {
+        "candidate_name": "기타 급성 허혈심장질환",
+        "candidate_code": "I24",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "기타 다발판막질환",
+        "candidate_code": "I088",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "기타 폐성 심장질환",
+        "candidate_code": "I27",
+        "score": 0.6667
+      }
+    ]
+  },
+  "심장박동조율기": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "심박조율기의 존재",
+        "candidate_code": "Z950",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "느린 심장박동",
+        "candidate_code": "R001",
+        "score": 0.6154
+      },
+      {
+        "candidate_name": "빠른 심장박동",
+        "candidate_code": "R000",
+        "score": 0.6154
+      },
+      {
+        "candidate_name": "기타 및 상세불명의 심장박동이상",
+        "candidate_code": "R008",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "심장박동의 감지",
+        "candidate_code": "R002",
+        "score": 0.5714
+      }
+    ]
+  },
+  "아동학대": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "기타 학대",
+        "candidate_code": "Y07",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "성적 학대",
+        "candidate_code": "T742",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "성적 학대",
+        "candidate_code": "Y07",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "기타 학대증후군",
+        "candidate_code": "T748",
+        "score": 0.4444
+      },
+      {
+        "candidate_name": "상세불명의 학대증후군",
+        "candidate_code": "T749",
+        "score": 0.4444
+      }
+    ]
+  },
+  "아말감 및 인레이(아말감)": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "감병(疳病)",
+        "candidate_code": "E46",
+        "score": 0.4
+      },
+      {
+        "candidate_name": "감염(피부) NOS",
+        "candidate_code": "B889",
+        "score": 0.4
+      },
+      {
+        "candidate_name": "기아",
+        "candidate_code": "T730",
+        "score": 0.4
+      },
+      {
+        "candidate_name": "기타 감염",
+        "candidate_code": "B88",
+        "score": 0.4
+      },
+      {
+        "candidate_name": "상세불명의 감염",
+        "candidate_code": "B889",
+        "score": 0.4
+      }
+    ]
+  },
+  "아토피피부염": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "기타 아토피성 피부염",
+        "candidate_code": "L208",
+        "score": 0.9231
+      },
+      {
+        "candidate_name": "기타 아토피성 피부염",
+        "candidate_code": "L2088",
+        "score": 0.9231
+      },
+      {
+        "candidate_name": "상세불명의 아토피성 피부염",
+        "candidate_code": "L209",
+        "score": 0.9231
+      },
+      {
+        "candidate_name": "아토피성 피부염",
+        "candidate_code": "L20",
+        "score": 0.9231
+      },
+      {
+        "candidate_name": "아토피성 신경피부염",
+        "candidate_code": "L208",
+        "score": 0.8
+      }
+    ]
+  },
+  "안면홍조": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "홍조",
+        "candidate_code": "R232",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "안면마비 NOS",
+        "candidate_code": "G510",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "안면통증 NOS",
+        "candidate_code": "R51",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "안구건조증 NOS",
+        "candidate_code": "E507",
+        "score": 0.4444
+      },
+      {
+        "candidate_name": "안면근파동",
+        "candidate_code": "G514",
+        "score": 0.4444
+      }
+    ]
+  },
+  "안외상(각막화상)": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "각막상피염(H19.1*)",
+        "candidate_code": "B0051",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "각막찰과상",
+        "candidate_code": "S0500",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "화상 NOS",
+        "candidate_code": "T300",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "각막 및 결막낭의 화상",
+        "candidate_code": "T261",
+        "score": 0.6154
+      },
+      {
+        "candidate_name": "각막상피내생",
+        "candidate_code": "H1871",
+        "score": 0.6
+      }
+    ]
+  },
+  "안외상(안와골절)": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "안와의 골절 NOS",
+        "candidate_code": "S0284",
+        "score": 0.8889
+      },
+      {
+        "candidate_name": "안와내벽의 골절",
+        "candidate_code": "S0284",
+        "score": 0.7273
+      },
+      {
+        "candidate_name": "안와바닥의 골절",
+        "candidate_code": "S023",
+        "score": 0.7273
+      },
+      {
+        "candidate_name": "안와천장의 골절",
+        "candidate_code": "S021",
+        "score": 0.7273
+      },
+      {
+        "candidate_name": "골절 NOS",
+        "candidate_code": "T142",
+        "score": 0.6667
+      }
+    ]
+  },
+  "안외상(외상성 망막박리)": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "기타 망막박리",
+        "candidate_code": "H335",
+        "score": 0.7273
+      },
+      {
+        "candidate_name": "망막박리 NOS",
+        "candidate_code": "H332",
+        "score": 0.7273
+      },
+      {
+        "candidate_name": "삼출성 망막박리",
+        "candidate_code": "H332",
+        "score": 0.7143
+      },
+      {
+        "candidate_name": "장액성 망막박리",
+        "candidate_code": "H332",
+        "score": 0.7143
+      },
+      {
+        "candidate_name": "전체 망막박리",
+        "candidate_code": "H3304",
+        "score": 0.6154
+      }
+    ]
+  },
+  "알레르기결막염": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "기타 알레르기비염",
+        "candidate_code": "J303",
+        "score": 0.7692
+      },
+      {
+        "candidate_name": "상세불명의 알레르기비염",
+        "candidate_code": "J304",
+        "score": 0.7692
+      },
+      {
+        "candidate_name": "상세불명의 알레르기",
+        "candidate_code": "T784",
+        "score": 0.7273
+      },
+      {
+        "candidate_name": "(외인성) 알레르기폐포염 NOS",
+        "candidate_code": "J679",
+        "score": 0.7143
+      },
+      {
+        "candidate_name": "알레르기 중이염",
+        "candidate_code": "H659",
+        "score": 0.7143
+      }
+    ]
+  },
+  "알코올 간질환": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "상세불명의 알코올성 간질환",
+        "candidate_code": "K709",
+        "score": 0.9231
+      },
+      {
+        "candidate_name": "알코올성 간질환",
+        "candidate_code": "K70",
+        "score": 0.9231
+      },
+      {
+        "candidate_name": "비알코올성 지방간질환",
+        "candidate_code": "K760",
+        "score": 0.75
+      },
+      {
+        "candidate_name": "상세불명의 간질환",
+        "candidate_code": "K769",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "알코올 NOS",
+        "candidate_code": "Y15",
+        "score": 0.6667
+      }
+    ]
+  },
+  "액취증": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "구취증",
+        "candidate_code": "R196",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "골취약증",
+        "candidate_code": "Q780",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "땀악취증",
+        "candidate_code": "L750",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "모취약증",
+        "candidate_code": "L678",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "진액병증(津液病證)",
+        "candidate_code": "U63",
+        "score": 0.5714
+      }
+    ]
+  },
+  "야뇨증(소아)": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "기타 야간뇨",
+        "candidate_code": "R352",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "야경증(夜痙症)",
+        "candidate_code": "F514",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "야맹증",
+        "candidate_code": "H536",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "유뇨증 NOS",
+        "candidate_code": "R32",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "야간다뇨",
+        "candidate_code": "R351",
+        "score": 0.5714
+      }
+    ]
+  },
+  "야토병": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "상세불명의 야생토끼병",
+        "candidate_code": "A219",
+        "score": 0.75
+      },
+      {
+        "candidate_name": "야생토끼병",
+        "candidate_code": "A21",
+        "score": 0.75
+      },
+      {
+        "candidate_name": "눈야생토끼병",
+        "candidate_code": "A211",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "폐야생토끼병",
+        "candidate_code": "A212",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "복부야생토끼병",
+        "candidate_code": "A213",
+        "score": 0.6
+      }
+    ]
+  },
+  "양전자방출단층촬영술": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "전방출혈",
+        "candidate_code": "H210",
+        "score": 0.4286
+      },
+      {
+        "candidate_name": "전자궁탈출 NOS",
+        "candidate_code": "N813",
+        "score": 0.4
+      },
+      {
+        "candidate_name": "완전방실차단",
+        "candidate_code": "I442",
+        "score": 0.375
+      },
+      {
+        "candidate_name": "완전자궁질탈출",
+        "candidate_code": "N813",
+        "score": 0.3529
+      },
+      {
+        "candidate_name": "외상성 전방출혈",
+        "candidate_code": "S051",
+        "score": 0.3529
+      }
+    ]
+  },
+  "언어장애(성인 언어 및 말장애의 ...": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "언어장애 및 실어증(失語症)",
+        "candidate_code": "R470",
+        "score": 0.4
+      },
+      {
+        "candidate_name": "언어장애 NOS",
+        "candidate_code": "F809",
+        "score": 0.381
+      },
+      {
+        "candidate_name": "기타 및 상세불명의 언어장애",
+        "candidate_code": "R478",
+        "score": 0.3636
+      },
+      {
+        "candidate_name": "신장 및 요관 장애의 가족력",
+        "candidate_code": "Z841",
+        "score": 0.3571
+      },
+      {
+        "candidate_name": "표현언어장애",
+        "candidate_code": "F801",
+        "score": 0.3478
+      }
+    ]
+  },
+  "언어장애(아동 언어장애의 진단과 ...": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "언어장애 및 실어증(失語症)",
+        "candidate_code": "R470",
+        "score": 0.3846
+      },
+      {
+        "candidate_name": "언어장애 NOS",
+        "candidate_code": "F809",
+        "score": 0.3636
+      },
+      {
+        "candidate_name": "기타 및 상세불명의 언어장애",
+        "candidate_code": "R478",
+        "score": 0.3478
+      },
+      {
+        "candidate_name": "표현언어장애",
+        "candidate_code": "F801",
+        "score": 0.3333
+      },
+      {
+        "candidate_name": "성장장애(소아기의) NOS",
+        "candidate_code": "R628",
+        "score": 0.3226
+      }
+    ]
+  },
+  "얼굴마비(말초성 마비)": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "기타 뇌성마비",
+        "candidate_code": "G808",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "뇌성마비",
+        "candidate_code": "G80",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "뇌성마비 NOS",
+        "candidate_code": "G809",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "상세불명의 뇌성마비",
+        "candidate_code": "G809",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "성문마비",
+        "candidate_code": "J380",
+        "score": 0.6667
+      }
+    ]
+  },
+  "얼굴마비(중추성 마비)": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "기타 뇌성마비",
+        "candidate_code": "G808",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "뇌성마비",
+        "candidate_code": "G80",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "뇌성마비 NOS",
+        "candidate_code": "G809",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "상세불명의 뇌성마비",
+        "candidate_code": "G809",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "성문마비",
+        "candidate_code": "J380",
+        "score": 0.6667
+      }
+    ]
+  },
+  "완전도재관": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "기타 전도장애",
+        "candidate_code": "I45",
+        "score": 0.4444
+      },
+      {
+        "candidate_name": "상세불명의 전도장애",
+        "candidate_code": "I459",
+        "score": 0.4444
+      },
+      {
+        "candidate_name": "완전색맹",
+        "candidate_code": "H535",
+        "score": 0.4444
+      },
+      {
+        "candidate_name": "골전도청력장치의 존재",
+        "candidate_code": "Z9628",
+        "score": 0.4
+      },
+      {
+        "candidate_name": "근전도 이상",
+        "candidate_code": "R941",
+        "score": 0.4
+      }
+    ]
+  },
+  "왜소음경(소아)": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "왜소치",
+        "candidate_code": "K0021",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "과소월경 NOS",
+        "candidate_code": "N915",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "소양경증(少陽經證)",
+        "candidate_code": "U54",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "소음병증(少陰病證)",
+        "candidate_code": "U56",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "왜소조충(감염)",
+        "candidate_code": "B710",
+        "score": 0.5
+      }
+    ]
+  },
+  "외상성 고막 천공": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "지속성 외상후 고막천공",
+        "candidate_code": "H72",
+        "score": 0.7059
+      },
+      {
+        "candidate_name": "고막의 기타 천공",
+        "candidate_code": "H728",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "고막의 상세불명 천공",
+        "candidate_code": "H729",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "고막의 천공",
+        "candidate_code": "H72",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "고막의 다발천공",
+        "candidate_code": "H728",
+        "score": 0.5714
+      }
+    ]
+  },
+  "외상성 척수손상": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "외상성 혈척수 NOS",
+        "candidate_code": "T144",
+        "score": 0.7692
+      },
+      {
+        "candidate_name": "경부척수의 손상 NOS",
+        "candidate_code": "S141",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "외상성 척추병증",
+        "candidate_code": "M483",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "경부척수의 기타 및 상세불명의 손상",
+        "candidate_code": "S141",
+        "score": 0.5333
+      },
+      {
+        "candidate_name": "외상성 골화근염, 손",
+        "candidate_code": "M6104",
+        "score": 0.5333
+      }
+    ]
+  },
+  "외이도염(알레르기외이도염)": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "알레르기 중이염",
+        "candidate_code": "H659",
+        "score": 0.8
+      },
+      {
+        "candidate_name": "만성 알레르기성 중이염",
+        "candidate_code": "H6540",
+        "score": 0.75
+      },
+      {
+        "candidate_name": "기타 알레르기비염",
+        "candidate_code": "J303",
+        "score": 0.7143
+      },
+      {
+        "candidate_name": "기타 외이도염",
+        "candidate_code": "H608",
+        "score": 0.7143
+      },
+      {
+        "candidate_name": "기타 외이도염",
+        "candidate_code": "H6088",
+        "score": 0.7143
+      }
+    ]
+  },
+  "요로전환술(방광창냄술)": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "급성 방광염",
+        "candidate_code": "N300",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "기타 만성 방광염",
+        "candidate_code": "N302",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "기타 방광염",
+        "candidate_code": "N308",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "방광류",
+        "candidate_code": "N811",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "방광염",
+        "candidate_code": "N30",
+        "score": 0.5
+      }
+    ]
+  },
+  "요로전환술(정위성 인공방광 대치술...": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "전위성 골절 NOS, 개방성",
+        "candidate_code": "T1421",
+        "score": 0.2963
+      },
+      {
+        "candidate_name": "기타 요로의 인공개구상태",
+        "candidate_code": "Z936",
+        "score": 0.2857
+      },
+      {
+        "candidate_name": "(후천성) 방광경부협착",
+        "candidate_code": "N320",
+        "score": 0.2667
+      },
+      {
+        "candidate_name": "위축방광",
+        "candidate_code": "N328",
+        "score": 0.2609
+      },
+      {
+        "candidate_name": "요로의 악성 신생물의 개인력",
+        "candidate_code": "Z855",
+        "score": 0.2581
+      }
+    ]
+  },
+  "요로전환술(콩팥창냄술)": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "고창(복부성)(장성)",
+        "candidate_code": "R14",
+        "score": 0.2857
+      },
+      {
+        "candidate_name": "독창(禿瘡)",
+        "candidate_code": "B350",
+        "score": 0.2857
+      },
+      {
+        "candidate_name": "동창",
+        "candidate_code": "T691",
+        "score": 0.2857
+      },
+      {
+        "candidate_name": "모창",
+        "candidate_code": "L738",
+        "score": 0.2857
+      },
+      {
+        "candidate_name": "욕창",
+        "candidate_code": "L89",
+        "score": 0.2857
+      }
+    ]
+  },
+  "요로전환술(회장도관술)": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "종말 회장염, 경도",
+        "candidate_code": "K5000",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "국소성 회장염, 경도",
+        "candidate_code": "K5000",
+        "score": 0.4615
+      },
+      {
+        "candidate_name": "종말 회장염, 중등도",
+        "candidate_code": "K5001",
+        "score": 0.4615
+      },
+      {
+        "candidate_name": "회장의 크론병[국소성 장염], 경도",
+        "candidate_code": "K5000",
+        "score": 0.4615
+      },
+      {
+        "candidate_name": "난관술낭",
+        "candidate_code": "Q504",
+        "score": 0.4444
+      }
+    ]
+  },
+  "우울감": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "우울증 NOS",
+        "candidate_code": "F329",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "우울장애 NOS",
+        "candidate_code": "F329",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "항우울제",
+        "candidate_code": "Y11",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "불안우울증(경도이거나 지속되지 않음)",
+        "candidate_code": "F412",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "우울신경증",
+        "candidate_code": "F341",
+        "score": 0.5
+      }
+    ]
+  },
+  "위내시경": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "내반경골",
+        "candidate_code": "M925",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "시신경염",
+        "candidate_code": "H46",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "위신경증",
+        "candidate_code": "F453",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "간헐성 내사시",
+        "candidate_code": "H5030",
+        "score": 0.4
+      },
+      {
+        "candidate_name": "시신경유두염",
+        "candidate_code": "H46",
+        "score": 0.4
+      }
+    ]
+  },
+  "위식도역류질환": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "위-식도역류병",
+        "candidate_code": "K21",
+        "score": 0.7692
+      },
+      {
+        "candidate_name": "식도역류 NOS",
+        "candidate_code": "K219",
+        "score": 0.7273
+      },
+      {
+        "candidate_name": "식도의 기타 질환",
+        "candidate_code": "K22",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "식도의 상세불명 질환",
+        "candidate_code": "K229",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "신생아식도역류",
+        "candidate_code": "P788",
+        "score": 0.5714
+      }
+    ]
+  },
+  "유루증": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "유루",
+        "candidate_code": "O926",
+        "score": 0.8
+      },
+      {
+        "candidate_name": "유뇨증 NOS",
+        "candidate_code": "R32",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "유분증 NOS",
+        "candidate_code": "R15",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "간섬유증",
+        "candidate_code": "K740",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "혀유착증",
+        "candidate_code": "Q381",
+        "score": 0.5714
+      }
+    ]
+  },
+  "유방종괴": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "유방의 큰종기",
+        "candidate_code": "N61",
+        "score": 0.6
+      },
+      {
+        "candidate_name": "(급성)(아급성)(비산후기성) 유방염 NOS",
+        "candidate_code": "N61",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "감염성 (급성)(아급성)(비산후기성) 유방염",
+        "candidate_code": "N61",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "부유방",
+        "candidate_code": "Q831",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "유방통",
+        "candidate_code": "N644",
+        "score": 0.5714
+      }
+    ]
+  },
+  "유행각결막염": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "유행성 각막결막염(B30.0+)",
+        "candidate_code": "H192",
+        "score": 0.8571
+      },
+      {
+        "candidate_name": "유행성 각막결막염(H19.2*)",
+        "candidate_code": "B300",
+        "score": 0.8571
+      },
+      {
+        "candidate_name": "각막결막염",
+        "candidate_code": "H162",
+        "score": 0.7273
+      },
+      {
+        "candidate_name": "각막결막염 NOS",
+        "candidate_code": "H162",
+        "score": 0.7273
+      },
+      {
+        "candidate_name": "각막결막염(H19.1*)",
+        "candidate_code": "B0051",
+        "score": 0.7273
+      }
+    ]
+  },
+  "이 사면발이 감염증": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "사면발이감염",
+        "candidate_code": "B853",
+        "score": 0.8571
+      },
+      {
+        "candidate_name": "사면발이증",
+        "candidate_code": "B853",
+        "score": 0.7692
+      },
+      {
+        "candidate_name": "상세불명의 이감염증",
+        "candidate_code": "B852",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "이감염증 및 사면발이증",
+        "candidate_code": "B85",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "혼합 이감염증 및 사면발이증",
+        "candidate_code": "B854",
+        "score": 0.6
+      }
+    ]
+  },
+  "이상지질혈증 식사요법": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "기타 고지질혈증",
+        "candidate_code": "E784",
+        "score": 0.5333
+      },
+      {
+        "candidate_name": "상세불명의 고지질혈증",
+        "candidate_code": "E785",
+        "score": 0.5333
+      },
+      {
+        "candidate_name": "고지질혈증, A군",
+        "candidate_code": "E7808",
+        "score": 0.4706
+      },
+      {
+        "candidate_name": "고지질혈증, B군",
+        "candidate_code": "E781",
+        "score": 0.4706
+      },
+      {
+        "candidate_name": "고지질혈증, C군",
+        "candidate_code": "E782",
+        "score": 0.4706
+      }
+    ]
+  },
+  "이유기보충식(이유식)": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "간이식상태",
+        "candidate_code": "Z944",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "골이식상태",
+        "candidate_code": "Z946",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "성인이식증(異食症)",
+        "candidate_code": "F508",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "장 이식 상태",
+        "candidate_code": "Z948",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "폐이식상태",
+        "candidate_code": "Z942",
+        "score": 0.5
+      }
+    ]
+  },
+  "일자목(거북목)증후군": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "유리체(접촉)증후군",
+        "candidate_code": "H590",
+        "score": 0.4762
+      },
+      {
+        "candidate_name": "젤웨거 증후군",
+        "candidate_code": "Q878",
+        "score": 0.4706
+      },
+      {
+        "candidate_name": "(포스터-)케네디 증후군",
+        "candidate_code": "H470",
+        "score": 0.4545
+      },
+      {
+        "candidate_name": "부베레(-호프만)증후군",
+        "candidate_code": "I479",
+        "score": 0.4545
+      },
+      {
+        "candidate_name": "가임고자증후군",
+        "candidate_code": "E230",
+        "score": 0.4444
+      }
+    ]
+  },
+  "입냄새": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "냄새비염",
+        "candidate_code": "J310",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "가래의 냄새이상",
+        "candidate_code": "R093",
+        "score": 0.4
+      },
+      {
+        "candidate_name": "입술",
+        "candidate_code": "T20",
+        "score": 0.4
+      },
+      {
+        "candidate_name": "물틈새",
+        "candidate_code": "H250",
+        "score": 0.3333
+      },
+      {
+        "candidate_name": "새가슴",
+        "candidate_code": "Q677",
+        "score": 0.3333
+      }
+    ]
+  },
+  "입덧": {
+    "manual_alias": "임신중 구토",
+    "candidates": [
+      {
+        "candidate_name": "임신중 과다구토",
+        "candidate_code": "O21",
+        "score": 0.8333
+      },
+      {
+        "candidate_name": "임신중 만기구토",
+        "candidate_code": "O212",
+        "score": 0.8333
+      },
+      {
+        "candidate_name": "임신의 상세불명의 구토",
+        "candidate_code": "O219",
+        "score": 0.8
+      },
+      {
+        "candidate_name": "경도 임신과다구토",
+        "candidate_code": "O210",
+        "score": 0.6154
+      },
+      {
+        "candidate_name": "임신에 합병된 기타 구토",
+        "candidate_code": "O218",
+        "score": 0.6154
+      }
+    ]
+  },
+  "자궁경부암 백신": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "자궁경부 임신",
+        "candidate_code": "O008",
+        "score": 0.7692
+      },
+      {
+        "candidate_name": "자궁경부의 백반",
+        "candidate_code": "N880",
+        "score": 0.7143
+      },
+      {
+        "candidate_name": "상세불명의 자궁경부의 악성 신생물",
+        "candidate_code": "C539",
+        "score": 0.5882
+      },
+      {
+        "candidate_name": "상세불명의 자궁경부의 제자리암종",
+        "candidate_code": "D069",
+        "score": 0.5882
+      },
+      {
+        "candidate_name": "자궁경부의 기타 양성 신생물",
+        "candidate_code": "D260",
+        "score": 0.5882
+      }
+    ]
+  },
+  "자연분만과정": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "자연분만 NOS",
+        "candidate_code": "O809",
+        "score": 0.8
+      },
+      {
+        "candidate_name": "기타 단일자연분만",
+        "candidate_code": "O808",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "단일자연분만",
+        "candidate_code": "O80",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "상세불명의 단일자연분만",
+        "candidate_code": "O809",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "상세불명의 분만 결과",
+        "candidate_code": "Z379",
+        "score": 0.6
+      }
+    ]
+  },
+  "장결핵": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "장(대, 소)의 결핵(K93.0*)",
+        "candidate_code": "A1831",
+        "score": 0.8571
+      },
+      {
+        "candidate_name": "결핵 NOS",
+        "candidate_code": "A169",
+        "score": 0.8
+      },
+      {
+        "candidate_name": "장결(臟結)",
+        "candidate_code": "R1049",
+        "score": 0.8
+      },
+      {
+        "candidate_name": "신장의 결핵(N29.1*)",
+        "candidate_code": "A1810",
+        "score": 0.75
+      },
+      {
+        "candidate_name": "심장의 결핵",
+        "candidate_code": "A1883",
+        "score": 0.75
+      }
+    ]
+  },
+  "저시력": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "상세불명의 시력장애(양안의)",
+        "candidate_code": "H549",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "돌발시력상실",
+        "candidate_code": "H531",
+        "score": 0.4444
+      },
+      {
+        "candidate_name": "근시",
+        "candidate_code": "H521",
+        "score": 0.4
+      },
+      {
+        "candidate_name": "기타 명시된 청력소실",
+        "candidate_code": "H918",
+        "score": 0.4
+      },
+      {
+        "candidate_name": "기타 사시",
+        "candidate_code": "H50",
+        "score": 0.4
+      }
+    ]
+  },
+  "저신장": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "급성 신장병 NOS",
+        "candidate_code": "N00",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "급성 신장염",
+        "candidate_code": "N00",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "만성 신장병",
+        "candidate_code": "N18",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "만성 신장병(1기)",
+        "candidate_code": "N181",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "만성 신장병(2기)",
+        "candidate_code": "N182",
+        "score": 0.6667
+      }
+    ]
+  },
+  "전신질환과 치주치료": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "정신질환 NOS",
+        "candidate_code": "F99",
+        "score": 0.4615
+      },
+      {
+        "candidate_name": "심신성 질환",
+        "candidate_code": "I13",
+        "score": 0.4286
+      },
+      {
+        "candidate_name": "라이터질환, 척주",
+        "candidate_code": "M0238",
+        "score": 0.375
+      },
+      {
+        "candidate_name": "전갈과 접촉, 주택",
+        "candidate_code": "X220",
+        "score": 0.375
+      },
+      {
+        "candidate_name": "(전신)자가면역질환 NOS",
+        "candidate_code": "M359",
+        "score": 0.3636
+      }
+    ]
+  },
+  "전해질 이상": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "근전도 이상",
+        "candidate_code": "R941",
+        "score": 0.6
+      },
+      {
+        "candidate_name": "심전도[ECG][EKG] 이상",
+        "candidate_code": "R943",
+        "score": 0.6
+      },
+      {
+        "candidate_name": "안전도 이상",
+        "candidate_code": "R941",
+        "score": 0.6
+      },
+      {
+        "candidate_name": "망막전도 이상",
+        "candidate_code": "R941",
+        "score": 0.5455
+      },
+      {
+        "candidate_name": "결장의 회전이상",
+        "candidate_code": "Q433",
+        "score": 0.5
+      }
+    ]
+  },
+  "정상 월경의 이해": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "(하)(상)대정맥의 이상 NOS",
+        "candidate_code": "Q269",
+        "score": 0.4615
+      },
+      {
+        "candidate_name": "기타 정상임신의 관리",
+        "candidate_code": "Z348",
+        "score": 0.4286
+      },
+      {
+        "candidate_name": "상세불명의 정상임신의 관리",
+        "candidate_code": "Z349",
+        "score": 0.4286
+      },
+      {
+        "candidate_name": "정상임신의 관리",
+        "candidate_code": "Z34",
+        "score": 0.4286
+      },
+      {
+        "candidate_name": "정액의 기타 이상소견",
+        "candidate_code": "R868",
+        "score": 0.4286
+      }
+    ]
+  },
+  "정상노화의 이해": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "상부소화관의 선천이상 NOS",
+        "candidate_code": "Q409",
+        "score": 0.4706
+      },
+      {
+        "candidate_name": "(하)(상)대정맥의 이상 NOS",
+        "candidate_code": "Q269",
+        "score": 0.4615
+      },
+      {
+        "candidate_name": "기타 정상임신의 관리",
+        "candidate_code": "Z348",
+        "score": 0.4286
+      },
+      {
+        "candidate_name": "방화에 의한 가해",
+        "candidate_code": "X97",
+        "score": 0.4286
+      },
+      {
+        "candidate_name": "상세불명의 정상임신의 관리",
+        "candidate_code": "Z349",
+        "score": 0.4286
+      }
+    ]
+  },
+  "정상소아의 성장": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "소아기의 조현성 장애",
+        "candidate_code": "F845",
+        "score": 0.625
+      },
+      {
+        "candidate_name": "소아기의 성주체성장애",
+        "candidate_code": "F642",
+        "score": 0.5882
+      },
+      {
+        "candidate_name": "기타 소아기 붕괴성 장애",
+        "candidate_code": "F843",
+        "score": 0.5333
+      },
+      {
+        "candidate_name": "소아의 만성 수포성 질환",
+        "candidate_code": "L122",
+        "score": 0.5333
+      },
+      {
+        "candidate_name": "정낭의 염증성 장애",
+        "candidate_code": "N490",
+        "score": 0.5333
+      }
+    ]
+  },
+  "제왕절개술": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "반복적 제왕절개 NOS",
+        "candidate_code": "O820",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "제왕절개상처의 파열",
+        "candidate_code": "O900",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "제왕절개에 의한 상세불명의 분만",
+        "candidate_code": "O829",
+        "score": 0.5714
+      },
+      {
+        "candidate_name": "응급제왕절개에 의한 분만",
+        "candidate_code": "O821",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "이전의 제왕절개후 질분만",
+        "candidate_code": "O757",
+        "score": 0.5
+      }
+    ]
+  },
+  "조갑감입(파고드는 발톱_감입발톱)": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "감입태반",
+        "candidate_code": "O432",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "결장(의) 감입",
+        "candidate_code": "K564",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "대변(의) 감입",
+        "candidate_code": "K564",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "손발톱염",
+        "candidate_code": "L030",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "장의 기타 감입",
+        "candidate_code": "K564",
+        "score": 0.5
+      }
+    ]
+  },
+  "조기난소부전": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "원발성 난소부전",
+        "candidate_code": "E283",
+        "score": 0.6154
+      },
+      {
+        "candidate_name": "처치후 난소부전",
+        "candidate_code": "E894",
+        "score": 0.6154
+      },
+      {
+        "candidate_name": "기관부전",
+        "candidate_code": "R651",
+        "score": 0.6
+      },
+      {
+        "candidate_name": "신장기능부전 NOS",
+        "candidate_code": "N19",
+        "score": 0.5
+      },
+      {
+        "candidate_name": "정맥기능부전(만성)(말초성)",
+        "candidate_code": "I872",
+        "score": 0.5
+      }
+    ]
+  },
+  "족저근막염": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "근막염 NOS, 목",
+        "candidate_code": "M72980",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "근막염 NOS, 손",
+        "candidate_code": "M72940",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "미만성(호산구성) 근막염",
+        "candidate_code": "M354",
+        "score": 0.6667
+      },
+      {
+        "candidate_name": "근막염 NOS, 경골",
+        "candidate_code": "M72960",
+        "score": 0.6
+      },
+      {
+        "candidate_name": "근막염 NOS, 골반",
+        "candidate_code": "M72950",
+        "score": 0.6
+      }
+    ]
+  },
+  "중환자실 치료": {
+    "manual_alias": null,
+    "candidates": [
+      {
+        "candidate_name": "분만중 자간",
+        "candidate_code": "O151",
+        "score": 0.3636
+      },
+      {
+        "candidate_name": "임신중 자간",
+        "candidate_code": "O150",
+        "score": 0.3636
+      },
+      {
+        "candidate_name": "임신중 치핵",
+        "candidate_code": "O224",
+        "score": 0.3636
+      },
+      {
+        "candidate_name": "정중과잉치",
+        "candidate_code": "K0010",
+        "score": 0.3636
+      },
+      {
+        "candidate_name": "중증 전자간",
+        "candidate_code": "O141",
+        "score": 0.3636
+      }
+    ]
+  }
+}

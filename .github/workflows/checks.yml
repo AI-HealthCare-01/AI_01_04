@@ -52,8 +52,13 @@ jobs:
           POSTGRES_DB: test
         ports:
           - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     env:
-      DB_HOST: postgres
+      DB_HOST: localhost
       DB_PORT: 5432
       DB_USER: postgres
       DB_PASSWORD: postgres
@@ -77,9 +82,16 @@ jobs:
 
       - name: Init PostgreSQL (pgvector extension)
         run: |
+          set -euo pipefail
           sudo apt-get update && sudo apt-get install -y postgresql-client
-          PGPASSWORD=postgres psql -h postgres -U postgres -d test -c "CREATE EXTENSION IF NOT EXISTS vector;"
+          
+          # postgres DB에 먼저 붙어서 test DB가 없으면 생성
+          PGPASSWORD=postgres psql -h localhost -p 5432 -U postgres -d postgres -tc "SELECT 1 FROM pg_database WHERE datname = 'test'" | grep -q 1 || \
+          PGPASSWORD=postgres psql -h localhost -p 5432 -U postgres -d postgres -c "CREATE DATABASE test;"
 
+          # test DB에 vector 확장 설치
+          PGPASSWORD=postgres psql -h localhost -p 5432 -U postgres -d test -c "CREATE EXTENSION IF NOT EXISTS vector;"
+          
       - name: Check if tests exist
         id: check_tests
         # tests 폴더나 test_*.py 파일이 있는지 확인

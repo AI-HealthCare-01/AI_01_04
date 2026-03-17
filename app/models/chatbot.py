@@ -6,16 +6,26 @@
 - sender: 'user' 또는 'assistant' (누가 보냈는지)
 """
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from tortoise import fields, models
+from tortoise.fields.relational import ForeignKeyRelation
+
+if TYPE_CHECKING:
+    from app.models.users import User
 
 
 class ChatbotSession(models.Model):
     """
-    챗봇 대화 세션 (ERD: chatbot_sessions)
+    챗봇 대화 세션 (ERD: chatbot_sessions).
+
+    한 세션에 여러 메시지(1:N)가 속함.
     """
 
     id = fields.IntField(pk=True)
-    user = fields.ForeignKeyField(
+    user: ForeignKeyRelation[User] = fields.ForeignKeyField(
         "models.User",
         on_delete=fields.CASCADE,
         related_name="chatbot_sessions",
@@ -29,15 +39,20 @@ class ChatbotSession(models.Model):
 
 class ChatbotMessage(models.Model):
     """
-    챗봇 메시지 (ERD: chatbot_messages)
+    챗봇 메시지 (ERD: chatbot_messages).
+
+    Attributes:
+        sender: ``user`` 또는 ``assistant``.
+        message: 메시지 본문.
     """
 
     id = fields.IntField(pk=True)
-    session = fields.ForeignKeyField(
+    session: ForeignKeyRelation[ChatbotSession] = fields.ForeignKeyField(
         "models.ChatbotSession",
         on_delete=fields.CASCADE,
         related_name="messages",
     )
+
     sender = fields.CharField(max_length=20)  # user, assistant
     message = fields.TextField()
     created_at = fields.DatetimeField(auto_now_add=True)
@@ -48,17 +63,18 @@ class ChatbotMessage(models.Model):
 
 class ChatbotSessionSummary(models.Model):
     """
-    세션 요약 (ERD: chatbot_session_summaries)
+    세션 요약 (ERD: chatbot_session_summaries).
 
-    대화 종료 후 AI가 생성한 요약
+    대화 종료 후 AI가 생성한 요약 텍스트 저장.
     """
 
     id = fields.IntField(pk=True)
-    session = fields.ForeignKeyField(
+    session: ForeignKeyRelation[ChatbotSession] = fields.ForeignKeyField(
         "models.ChatbotSession",
         on_delete=fields.CASCADE,
         related_name="summaries",
     )
+
     summary = fields.TextField()
     created_at = fields.DatetimeField(auto_now_add=True)
 

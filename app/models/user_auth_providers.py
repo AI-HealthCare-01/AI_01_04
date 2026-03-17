@@ -6,22 +6,32 @@ OAuth/소셜 로그인 제공자 정보 (ERD 기반)
 - 예: 같은 사용자가 Google, Kakao 둘 다로 로그인 가능
 """
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from tortoise import fields, models
+from tortoise.fields.relational import ForeignKeyRelation
+
+if TYPE_CHECKING:
+    from app.models.users import User
 
 
 class UserAuthProvider(models.Model):
     """
-    소셜 로그인 연동 정보 (ERD: user_auth_providers)
+    소셜 로그인 연동 정보 (ERD: user_auth_providers).
 
-    users 테이블과 N:1 관계 (한 사용자 → 여러 provider)
+    users 테이블과 N:1 관계. 한 사용자가 Google, Kakao 등 여러 provider를 가질 수 있음.
     """
 
     id = fields.IntField(pk=True)
-    user = fields.ForeignKeyField(
+
+    user: ForeignKeyRelation[User] = fields.ForeignKeyField(
         "models.User",
         on_delete=fields.CASCADE,
         related_name="auth_providers",
     )
+
     provider = fields.CharField(max_length=50)  # google, kakao, naver 등
     provider_user_id = fields.CharField(max_length=255)
     created_at = fields.DatetimeField(auto_now_add=True)

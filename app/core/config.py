@@ -9,13 +9,21 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Env(StrEnum):
+    """애플리케이션 실행 환경 열거형."""
+
     LOCAL = "local"
     DEV = "dev"
     PROD = "prod"
 
 
 class Config(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="allow")
+    """
+    애플리케이션 설정 클래스 (pydantic-settings 기반).
+
+    .env 파일에서 환경변수를 자동 로드하며 타입 검증을 제공.
+    """
+
+    model_config = SettingsConfigDict(env_file="envs/.local.env", env_file_encoding="utf-8", extra="ignore")
 
     ENV: Env = Env.LOCAL
     SECRET_KEY: str = f"default-secret-key{uuid.uuid4().hex}"
@@ -39,3 +47,8 @@ class Config(BaseSettings):
 
     NAVER_OCR_SECRET_KEY: str = ""
     NAVER_OCR_API_URL: str = ""
+    OPENAI_API_KEY: str = ""
+    OPENAI_MODEL: str = "gpt-4o-mini"
+
+    # ENABLE_LLM_REFINEMENT=False로 검증 그다음 LLM refinement 켜서 비교
+    ENABLE_LLM_REFINEMENT: bool = False
