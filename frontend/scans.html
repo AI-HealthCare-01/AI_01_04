@@ -438,10 +438,18 @@
             const btn = document.getElementById('analyze-btn');
             btn.disabled = true;
             btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>${getText('scans.analyzeActionLoading', 'AI가 꼼꼼히 읽고 있습니다...')}`;
-            setWarning(getText('scans.analysisPending', '분석을 시작했습니다. 완료될 때까지 잠시만 기다려 주세요.'));
+            const existingStatus = currentScanResult?.status || '';
+
+            if (existingStatus === 'processing') {
+                setWarning(getText('scans.analysisAlreadyRunning', '이미 분석이 진행 중입니다. 새 요청을 보내지 않고 최신 결과를 다시 확인합니다.'));
+            } else {
+                setWarning(getText('scans.analysisPending', '분석을 시작했습니다. 완료될 때까지 잠시만 기다려 주세요.'));
+            }
 
             try {
-                await window.api.analyzeScan(currentScanId);
+                if (existingStatus !== 'processing') {
+                    await window.api.analyzeScan(currentScanId);
+                }
                 const res = await pollScanResult(currentScanId);
 
                 if (res.status === 'done') {
@@ -459,23 +467,30 @@
                 }
             } catch (err) {
                 const warningMessage = err.message;
+                const friendlyWarning = warningMessage.includes('OCR 호출 한도를 초과')
+                    || warningMessage.includes('OCR 서버 요청이 잠시 몰려')
+                    ? getText('scans.ocrRateLimitHint', 'OCR 서버 요청이 몰려 있어 잠시 대기 중입니다. 몇 초 후 다시 결과를 확인해 주세요.')
+                    : warningMessage;
+
                 try {
                     const res = await window.api.getScanResult(currentScanId);
-                    renderAnalysisResult(res, warningMessage);
+                    renderAnalysisResult(res, friendlyWarning);
                 } catch (reloadErr) {
                     document.getElementById('result-empty').classList.add('d-none');
                     document.getElementById('result-content').classList.remove('d-none');
                     document.getElementById('analysis-text-container').innerHTML = `
                         <div class="alert alert-warning mb-0">
                             ${escapeHtml(getText('scans.analyzeErrorPrefix', '분석 중 오류가 발생했습니다.'))}<br>
-                            ${escapeHtml(warningMessage)}
+                            ${escapeHtml(friendlyWarning)}
                         </div>
                     `;
-                    setWarning(warningMessage);
+                    setWarning(friendlyWarning);
                 }
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = getText('scans.reanalyzeButton', '재분석 하기');
+                btn.innerHTML = currentScanResult?.status === 'processing'
+                    ? getText('scans.refreshAnalyzeButton', '분석 결과 다시 확인하기')
+                    : getText('scans.reanalyzeButton', '재분석 하기');
                 btn.classList.add('btn-outline-primary');
                 btn.classList.remove('btn-primary');
             }

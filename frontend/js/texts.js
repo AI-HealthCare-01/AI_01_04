@@ -271,9 +271,12 @@ window.APP_TEXTS = {
         updateError: '수정 반영 실패: ',
         analyzeErrorPrefix: '분석 중 오류가 발생했습니다.',
         analyzeActionLoading: 'AI가 꼼꼼히 읽고 있습니다...',
+        analysisAlreadyRunning: '이미 분석이 진행 중입니다. 새 요청을 보내지 않고 최신 결과를 다시 확인합니다.',
         reanalyzeButton: '재분석 하기',
+        refreshAnalyzeButton: '분석 결과 다시 확인하기',
         uploadFirst: '먼저 파일을 정상적으로 업로드해주세요.',
         saveLoading: '저장 중...',
+        ocrRateLimitHint: 'OCR 서버 요청이 몰려 있어 잠시 대기 중입니다. 몇 초 후 다시 결과를 확인해 주세요.',
     },
 };
 

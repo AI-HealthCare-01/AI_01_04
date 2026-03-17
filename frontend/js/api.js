@@ -69,7 +69,7 @@ function formatHttpStatusMessage(status) {
         case 422:
             return '입력값을 다시 확인해주세요.';
         case 429:
-            return '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.';
+            return 'OCR 서버 요청이 잠시 몰려 있습니다. 잠깐 기다린 뒤 다시 확인해주세요.';
         case 500:
             return '서버 내부 오류가 발생했습니다.';
         case 502:
