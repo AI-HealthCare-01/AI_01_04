@@ -44,11 +44,15 @@
 
         <!-- Main Content -->
         <main class="main-content">
-            <div class="fade-in mb-4 pb-2 border-bottom d-flex justify-content-between align-items-center">
+            <div class="fade-in mb-4 pb-2 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-3">
                 <div>
                     <h3 class="fw-bold mb-0" data-text="recommendations.title">AI 맞춤 추천 콘텐츠</h3>
                     <p class="text-soft mt-1 mb-0" data-text="recommendations.subtitle">입력하신 신체 정보와 처방전/진단서 분석을 바탕으로 AI가 제안합니다.</p>
                 </div>
+                <a href="chatbot.html" class="btn btn-primary rounded-pill">
+                    <i class="bi bi-chat-dots me-1"></i>
+                    <span data-text="recommendations.chatbotButton">AI 상담으로 이어가기</span>
+                </a>
             </div>
 
             <!-- Loading State -->
@@ -66,7 +70,10 @@
                     <i class="bi bi-stars text-warning display-1 opacity-75"></i>
                     <h5 class="text-soft mt-3" data-text="recommendations.emptyTitle">아직 맞춤 추천 내역이 생성되지 않았습니다.</h5>
                     <p class="text-secondary small" data-text="recommendations.emptySubtitle">프로필 정보를 채우거나 처방전을 등록하시면 AI가 똑똑하게 분석합니다.</p>
-                    <a href="scans.html" class="btn btn-primary mt-3"><i class="bi bi-camera me-1"></i><span data-text="recommendations.scanButton">처방전 스캔하러 가기</span></a>
+                    <div class="d-flex justify-content-center flex-wrap gap-2 mt-3">
+                        <a href="scans.html" class="btn btn-primary"><i class="bi bi-camera me-1"></i><span data-text="recommendations.scanButton">처방전 스캔하러 가기</span></a>
+                        <a href="chatbot.html" class="btn btn-outline-primary"><i class="bi bi-chat-dots me-1"></i><span data-text="recommendations.chatbotButton">AI 상담으로 이어가기</span></a>
+                    </div>
                 </div>
             </div>
         </main>

@@ -27,10 +27,20 @@
 
         <!-- Main Content -->
         <main class="main-content">
-            <div class="fade-in mb-4 pb-2 border-bottom d-flex justify-content-between align-items-center">
+            <div class="fade-in mb-4 pb-2 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-3">
                 <div>
                     <h3 class="fw-bold mb-0" data-text="dashboard.title">건강 대시보드 요약</h3>
                     <p class="text-soft mt-1 mb-0" data-text="dashboard.subtitle">당신의 지난 건강 상태와 오늘의 할 일을 확인하세요.</p>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="recommendations.html" class="btn btn-outline-primary rounded-pill">
+                        <i class="bi bi-stars me-1"></i>
+                        <span data-text="dashboard.goRecommendationButton">AI 추천 보기</span>
+                    </a>
+                    <a href="chatbot.html" class="btn btn-primary rounded-pill">
+                        <i class="bi bi-chat-dots me-1"></i>
+                        <span data-text="dashboard.goChatbotButton">AI 상담 시작</span>
+                    </a>
                 </div>
             </div>
 

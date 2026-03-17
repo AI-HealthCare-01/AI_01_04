@@ -533,13 +533,17 @@
                     summaryHtml += `<p class="small mb-3">${getText('scans.recommendationEmpty', '추천은 아직 활성 저장되지 않았습니다.')}</p>`;
                 }
 
+                summaryHtml += `<p class="small mb-3">${getText('scans.chatbotHint', '저장된 추천을 확인한 뒤 AI 상담에서 복약 질문까지 바로 이어갈 수 있습니다.')}</p>`;
+
                 summaryHtml += `<div class="d-flex flex-wrap gap-2">`;
                 if (documentType === 'prescription') {
                     summaryHtml += `<a href="medications.html" class="btn btn-success btn-sm">${getText('scans.goMedicationButton', '복약 관리로 이동')}</a>`;
                     summaryHtml += `<a href="recommendations.html" class="btn btn-outline-success btn-sm">${getText('scans.goRecommendationButton', 'AI 추천 보러 가기')}</a>`;
+                    summaryHtml += `<a href="chatbot.html" class="btn btn-outline-primary btn-sm">${getText('scans.goChatbotButton', 'AI 상담으로 이어가기')}</a>`;
                 } else {
                     summaryHtml += `<a href="health.html" class="btn btn-success btn-sm">${getText('scans.goHealthButton', '건강 기록 보러 가기')}</a>`;
                     summaryHtml += `<a href="recommendations.html" class="btn btn-outline-success btn-sm">${getText('scans.goRecommendationButton', 'AI 추천 보러 가기')}</a>`;
+                    summaryHtml += `<a href="chatbot.html" class="btn btn-outline-primary btn-sm">${getText('scans.goChatbotButton', 'AI 상담으로 이어가기')}</a>`;
                 }
                 summaryHtml += `</div></div>`;
 
