@@ -164,5 +164,8 @@ window.api = {
     saveRecommendationsForScan: (scanId) => fetchAPI(`/recommendations/scans/${scanId}/save`, { method: 'POST' }),
     searchDrugs: (q, limit = 10) => fetchAPI(`/drugs/search?q=${encodeURIComponent(q)}&limit=${limit}`),
     getActiveRecommendations: () => fetchAPI('/recommendations/active'),
-    sendFeedback: (recId, type) => fetchAPI(`/recommendations/${recId}/feedback?feedback_type=${type}`, { method: 'POST' })
+    sendFeedback: (recId, type) => fetchAPI(`/recommendations/${recId}/feedback?feedback_type=${type}`, { method: 'POST' }),
+    checkChatbotPatient: (patientId) => fetchAPI(`/chatbot/check-patient/${encodeURIComponent(patientId)}`),
+    getChatbotHistory: (patientId) => fetchAPI(`/chatbot/history/${encodeURIComponent(patientId)}`),
+    sendChatMessage: (body) => fetchAPI('/chatbot/chat', { method: 'POST', body })
 };
