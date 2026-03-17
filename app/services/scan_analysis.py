@@ -178,6 +178,11 @@ class ScanAnalysisService:
                 raw_text=parsed.get("raw_text") or "",
                 ocr_raw=raw,
                 document_type=document_type,
+                parser_hints={
+                    "candidate_dates": parsed.get("candidate_dates", []),
+                    "candidate_diagnosis_codes": parsed.get("candidate_diagnosis_codes", []),
+                    "candidate_drugs": parsed.get("candidate_drugs", []),
+                },
             )
             if not isinstance(ai_result, dict):
                 raise ValueError("invalid AI response type")

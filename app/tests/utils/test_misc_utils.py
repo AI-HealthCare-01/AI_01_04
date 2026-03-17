@@ -2,7 +2,14 @@ from __future__ import annotations
 
 import pytest
 
-from app.integrations.ocr.parser import extract_document_date, extract_full_text, parse_ocr_result
+from app.integrations.ocr.parser import (
+    extract_document_date,
+    extract_drug_candidates,
+    extract_full_text,
+    extract_kcd_codes,
+    extract_partial_document_dates,
+    parse_ocr_result,
+)
 from app.utils.common import normalize_phone_number
 from app.utils.files import FileValidationError, sanitize_filename, validate_extension
 
@@ -153,17 +160,47 @@ class TestOCRParser:
     def test_extract_document_date_found(self):
         assert extract_document_date("처방일: 2024.01.15") == "2024-01-15"
 
+    def test_extract_document_date_korean_label_found(self):
+        assert extract_document_date("진료일 2024년 3월 5일") == "2024-03-05"
+
     def test_extract_document_date_not_found(self):
         assert extract_document_date("날짜 없음") is None
 
+    def test_extract_partial_document_dates(self):
+        assert extract_partial_document_dates("처방일 2024-03 / 재방문 2024년 4월") == ["2024-03", "2024-04"]
+
+    def test_extract_kcd_codes(self):
+        assert extract_kcd_codes("질병분류 I109, 상병코드 l219") == ["I109", "I219"]
+
+    def test_extract_drug_candidates(self):
+        raw = {
+            "images": [
+                {
+                    "fields": [
+                        {"inferText": "타이레놀정"},
+                        {"inferText": "병원"},
+                        {"inferText": "코푸시럽"},
+                    ]
+                }
+            ]
+        }
+        result = extract_drug_candidates(raw, "약품명: 타이레놀정 코푸시럽")
+        assert "타이레놀정" in result
+        assert "코푸시럽" in result
+
     def test_parse_ocr_result(self):
-        raw = {"images": [{"fields": [{"inferText": "2024.03.01 아스피린"}]}]}
+        raw = {"images": [{"fields": [{"inferText": "2024.03.01 아스피린정"}, {"inferText": "질병분류 I109"}]}]}
         result = parse_ocr_result(raw)
         assert result["document_date"] == "2024-03-01"
         assert result["raw_text"] is not None
         assert result["ocr_raw"] is raw
+        assert "candidate_drugs" in result
+        assert "candidate_diagnosis_codes" in result
+        assert "I109" in result["candidate_diagnosis_codes"]
 
     def test_parse_ocr_result_empty(self):
         result = parse_ocr_result({})
         assert result["document_date"] is None
         assert result["raw_text"] is None
+        assert result["candidate_drugs"] == []
+        assert result["candidate_diagnosis_codes"] == []

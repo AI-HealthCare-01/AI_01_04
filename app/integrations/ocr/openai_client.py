@@ -69,14 +69,21 @@ async def ai_postprocess(
     raw_text: str,
     ocr_raw: dict,
     document_type: str = "prescription",
+    parser_hints: dict | None = None,
 ) -> dict:
     """OCR 결과를 OpenAI로 후처리하여 구조화된 dict를 반환한다."""
     client = get_openai_client()
     system_prompt = _get_system_prompt(document_type)
+    parser_hints = parser_hints or {}
 
     user_payload = {
         "document_type": document_type,
         "raw_text": raw_text,
+        "parser_hints": {
+            "candidate_dates": parser_hints.get("candidate_dates", []),
+            "candidate_diagnosis_codes": parser_hints.get("candidate_diagnosis_codes", []),
+            "candidate_drugs": parser_hints.get("candidate_drugs", []),
+        },
     }
 
     response = await client.responses.create(
@@ -109,12 +116,49 @@ async def ai_postprocess(
     if not isinstance(result["drugs"], list):
         result["drugs"] = []
 
+    result = _merge_parser_hints(result, parser_hints)
+
     result["unrecognized_drugs"] = [d for d in result["drugs"] if d == "인식 불가"]
     result["drugs"] = [d for d in result["drugs"] if d != "인식 불가"]
 
     # AI가 못 잡은 KCD 코드를 raw_text에서 직접 추출하여 보완
     if not result["diagnosis_list"]:
         result["diagnosis_list"] = _extract_kcd_codes(raw_text)
+
+    return result
+
+
+def _dedupe_keep_order(items: list[str]) -> list[str]:
+    seen: set[str] = set()
+    result: list[str] = []
+    for item in items:
+        text = item.strip()
+        if not text or text in seen:
+            continue
+        seen.add(text)
+        result.append(text)
+    return result
+
+
+def _merge_parser_hints(result: dict, parser_hints: dict) -> dict:
+    """AI 결과가 빈약할 때 parser 후보를 최소한으로 보완한다."""
+    candidate_codes = [
+        item for item in parser_hints.get("candidate_diagnosis_codes", []) if isinstance(item, str) and item.strip()
+    ]
+    candidate_drugs = [item for item in parser_hints.get("candidate_drugs", []) if isinstance(item, str) and item.strip()]
+
+    diagnosis_list = [item for item in result.get("diagnosis_list", []) if isinstance(item, str) and item.strip()]
+    drugs = [item for item in result.get("drugs", []) if isinstance(item, str) and item.strip()]
+
+    if not diagnosis_list and candidate_codes:
+        result["diagnosis_list"] = _dedupe_keep_order(candidate_codes[:5])
+    else:
+        result["diagnosis_list"] = _dedupe_keep_order(diagnosis_list)
+
+    if not drugs and candidate_drugs:
+        result["drugs"] = _dedupe_keep_order(candidate_drugs[:10])
+    else:
+        result["drugs"] = _dedupe_keep_order(drugs)
 
     return result
 
