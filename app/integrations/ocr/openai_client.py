@@ -145,7 +145,9 @@ def _merge_parser_hints(result: dict, parser_hints: dict) -> dict:
     candidate_codes = [
         item for item in parser_hints.get("candidate_diagnosis_codes", []) if isinstance(item, str) and item.strip()
     ]
-    candidate_drugs = [item for item in parser_hints.get("candidate_drugs", []) if isinstance(item, str) and item.strip()]
+    candidate_drugs = [
+        item for item in parser_hints.get("candidate_drugs", []) if isinstance(item, str) and item.strip()
+    ]
 
     diagnosis_list = [item for item in result.get("diagnosis_list", []) if isinstance(item, str) and item.strip()]
     drugs = [item for item in result.get("drugs", []) if isinstance(item, str) and item.strip()]

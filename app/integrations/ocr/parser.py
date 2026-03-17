@@ -21,9 +21,7 @@ _KCD_LABEL_RE = re.compile(
     r"(?:질병분류|상병코드|질병코드|질병\s*분류|상병\s*기호|분류기호)\s*[:：]?\s*([A-Za-z1l]\d{2,4}[0-9A-Z]?)"
 )
 _DRUG_FORM_RE = re.compile(r"[가-힣A-Za-z0-9\-]{2,40}(?:정|정\d+mg|캡슐|시럽|액|주|산|연질캡슐|현탁액|크림|겔|패취)")
-_DRUG_LABEL_RE = re.compile(
-    r"(?:약품명|약명|처방약|투약명|복용약)\s*[:：]?\s*([^\n\r]+)"
-)
+_DRUG_LABEL_RE = re.compile(r"(?:약품명|약명|처방약|투약명|복용약)\s*[:：]?\s*([^\n\r]+)")
 _NOISE_KEYWORDS = (
     "주민",
     "보험",
