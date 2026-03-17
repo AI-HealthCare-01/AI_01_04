@@ -660,9 +660,13 @@ class RecommendationService:
         )
 
         drugs_raw = scan.get("drugs") or []
-        drugs: list[str] = (
-            [d for d in drugs_raw if isinstance(d, str) and d.strip()] if isinstance(drugs_raw, list) else []
-        )
+        drugs: list[str] = []
+        if isinstance(drugs_raw, list):
+            for d in drugs_raw:
+                if isinstance(d, str) and d.strip():
+                    drugs.append(d.strip())
+                elif isinstance(d, dict) and d.get("name", "").strip():
+                    drugs.append(d["name"].strip())
 
         batch = await self.recommendation_repo.create_batch(
             user_id=user_id,
