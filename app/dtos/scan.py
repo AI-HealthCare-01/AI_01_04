@@ -28,16 +28,19 @@ class ScanResultResponse(BaseModel):
 
     document_date: str | None = None
     diagnosis: str | None = None
+    diagnosis_list: list[str] = Field(default_factory=list)
     clinical_note: str | None = None
 
     drugs: list[str] = Field(default_factory=list)
+    unrecognized_drugs: list[str] = Field(default_factory=list)
+    error_message: str | None = None
 
 
 class ScanResultUpdateRequest(BaseModel):
     """스캔 OCR 결과 수정 요청 스키마."""
 
     document_date: str | None = None
-    diagnosis: str | None = None
+    diagnosis: str | list[str] | None = None
     clinical_note: str | None = None
     drugs: list[str] | None = None
 

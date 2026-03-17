@@ -44,10 +44,13 @@ class Scan(models.Model):
     document_type = fields.CharField(max_length=30, default="prescription")  # [ADD]
 
     document_date = fields.CharField(max_length=10, null=True)
-    diagnosis = fields.TextField(null=True)
+    diagnosis = fields.TextField(null=True)  # 하위호환: 단일 진단명 (레거시)
+    diagnosis_list: list[str] = fields.JSONField(default=list)  # type: ignore[assignment]
     clinical_note = fields.TextField(null=True)  # [ADD]
+    error_message = fields.TextField(null=True)
 
     drugs: list[str] = fields.JSONField(default=list)  # type: ignore[assignment]
+    unrecognized_drugs: list[str] = fields.JSONField(default=list)  # type: ignore[assignment]
 
     raw_text = fields.TextField(null=True)
     ocr_raw: dict = fields.JSONField(null=True)  # type: ignore[assignment]

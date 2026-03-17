@@ -119,7 +119,9 @@
 
                 document.getElementById('profile-email').innerText = user.email || '';
 
-                const avUrl = user.profile_image_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || 'User')}&background=random&color=fff&size=120`;
+                const avUrl = user.profile_image_url
+                    ? window.api.resolveBackendUrl(user.profile_image_url)
+                    : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || 'User')}&background=random&color=fff&size=120`;
                 document.getElementById('profile-img-preview').src = avUrl;
 
             } catch (err) {
@@ -182,7 +184,7 @@
                 // fetch wrapper defaults to JSON unless formData is used
                 const res = await window.api.fetchAPI('/users/me/profile-image', { method: 'POST', body: formData });
 
-                document.getElementById('profile-img-preview').src = res.profile_image_url;
+                document.getElementById('profile-img-preview').src = window.api.resolveBackendUrl(res.profile_image_url);
                 box.className = 'alert alert-success p-2 small';
                 box.innerText = getText('profile.uploadSuccess', '사진이 업데이트 되었습니다.');
 

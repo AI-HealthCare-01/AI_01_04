@@ -12,6 +12,8 @@ from app.core import config
 from app.db.databases import initialize_tortoise
 from app.models.health import HealthChecklistTemplate
 
+from .ui import chatbot
+
 logger = logging.getLogger(__name__)
 
 
@@ -62,6 +64,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(chatbot.router)
 app.include_router(v1_routers)
 initialize_tortoise(app)
 

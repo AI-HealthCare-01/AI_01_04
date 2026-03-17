@@ -36,6 +36,7 @@ class User(models.Model):
     id = fields.IntField(pk=True)
 
     email = fields.CharField(max_length=40, unique=True)
+    hashed_password = fields.CharField(max_length=128, null=True)
     name = fields.CharField(max_length=100)
     phone_number = fields.CharField(max_length=11)
     birthday = fields.DateField()

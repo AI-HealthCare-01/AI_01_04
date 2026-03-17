@@ -99,6 +99,7 @@ class UserRepository:
         self,
         *,
         email: str | EmailStr,
+        hashed_password: str,
         name: str,
         phone_number: str,
         birthday: date,
@@ -123,6 +124,7 @@ class UserRepository:
         """
         return await self._model.create(
             email=email,
+            hashed_password=hashed_password,
             name=name,
             phone_number=phone_number,
             birthday=birthday,

@@ -1,6 +1,11 @@
 // api.js - Core API Client
 
-const API_BASE_URL = `${window.location.origin}/api/v1`;
+const BACKEND_ORIGIN =
+    window.location.port === '8000'
+        ? window.location.origin
+        : `${window.location.protocol}//${window.location.hostname}:8000`;
+const API_BASE_URL = `${BACKEND_ORIGIN}/api/v1`;
+const STATIC_BASE_URL = BACKEND_ORIGIN;
 
 const getAccessToken = () => localStorage.getItem('access_token');
 const setAccessToken = (token) => localStorage.setItem('access_token', token);
@@ -8,6 +13,16 @@ const clearAuth = () => {
     localStorage.removeItem('access_token');
     window.location.href = 'index.html';
 };
+
+function resolveBackendUrl(path) {
+    if (!path) {
+        return '';
+    }
+    if (/^https?:\/\//.test(path)) {
+        return path;
+    }
+    return `${STATIC_BASE_URL}${path.startsWith('/') ? '' : '/'}${path}`;
+}
 
 function formatErrorDetail(detail) {
     if (!detail) {
@@ -89,18 +104,20 @@ async function fetchAPI(endpoint, options = {}) {
     }
 
     try {
-        let response = await fetch(url, { ...options, headers });
+        let response = await fetch(url, { ...options, headers, credentials: 'include' });
 
         if (response.status === 401 && !endpoint.startsWith('/auth/login')) {
             // Try refreshing token
             console.log("Token expired, attempting refresh...");
-            const refreshRes = await fetch(`${API_BASE_URL}/auth/token/refresh`);
+            const refreshRes = await fetch(`${API_BASE_URL}/auth/token/refresh`, {
+                credentials: 'include',
+            });
             if (refreshRes.ok) {
                 const data = await refreshRes.json();
                 setAccessToken(data.access_token);
                 // Retry original request with new token
                 headers.set('Authorization', `Bearer ${data.access_token}`);
-                response = await fetch(url, { ...options, headers });
+                response = await fetch(url, { ...options, headers, credentials: 'include' });
             } else {
                 // Refresh failed, clear and logout
                 clearAuth();
@@ -129,6 +146,7 @@ async function fetchAPI(endpoint, options = {}) {
 // Named exports/global functions
 window.api = {
     fetchAPI,
+    resolveBackendUrl,
     login: (email, password) => fetchAPI('/auth/login', { method: 'POST', body: { email, password } }),
     signup: (name, email, gender, birthday, phone_number, password) => fetchAPI('/auth/signup', { method: 'POST', body: { name, email, gender, birthday, phone_number, password } }),
     logout: clearAuth,

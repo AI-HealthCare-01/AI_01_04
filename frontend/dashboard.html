@@ -182,7 +182,9 @@
                 document.getElementById('dash-birth').innerText = user.birthday || getText('dashboard.emptyValue', '미입력');
 
                 // Set DP
-                const avUrl = user.profile_image_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(uName)}&background=random&color=fff&size=80`;
+                const avUrl = user.profile_image_url
+                    ? window.api.resolveBackendUrl(user.profile_image_url)
+                    : `https://ui-avatars.com/api/?name=${encodeURIComponent(uName)}&background=random&color=fff&size=80`;
                 document.getElementById('dash-profile-img').src = avUrl;
 
                 // Render Medication Fields

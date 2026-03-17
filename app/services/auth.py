@@ -51,6 +51,7 @@ class AuthService:
         async with in_transaction():
             user = await self.user_repo.create_user(
                 email=data.email,
+                hashed_password=password_hash,
                 name=data.name,
                 phone_number=normalized_phone_number,
                 birthday=data.birthday,

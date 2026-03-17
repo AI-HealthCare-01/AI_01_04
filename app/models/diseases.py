@@ -47,3 +47,21 @@ class DiseaseGuideline(models.Model):
 
     class Meta:
         table = "disease_guidelines"
+
+
+class DiseaseCodeMapping(models.Model):
+    """
+    상세 KCD 코드 → 추천 anchor 코드 매핑 테이블.
+
+    예: E1180(합병증을 동반하지 않은 2형 당뇨병) → E14(당뇨병)
+    """
+
+    id = fields.IntField(pk=True)
+    code = fields.CharField(max_length=20, unique=True)  # 상세 KCD 코드
+    name = fields.CharField(max_length=255)  # 상세 코드 한글명
+    mapped_code = fields.CharField(max_length=20, index=True)  # anchor 코드
+    mapped_name = fields.CharField(max_length=255)  # anchor 코드 한글명
+    is_anchor = fields.BooleanField(default=False)  # 자기 자신이 anchor인지
+
+    class Meta:
+        table = "disease_code_mappings"
