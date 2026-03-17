@@ -155,6 +155,7 @@ window.api = {
     getMedicationHistory: (params = '') => fetchAPI(`/medications/history${params}`),
     updateMedicationLog: (logId, status) => fetchAPI(`/medications/logs/${logId}`, { method: 'PATCH', body: { status } }),
     getHealthHistory: (params = '') => fetchAPI(`/health/history${params}`),
+    updateHealthLog: (logId, status) => fetchAPI(`/health/logs/${logId}`, { method: 'PATCH', body: { status } }),
     uploadScan: (formData) => fetchAPI('/scans/upload', { method: 'POST', body: formData }),
     analyzeScan: (scanId) => fetchAPI(`/scans/${scanId}/analyze`, { method: 'POST' }),
     getScanResult: (scanId) => fetchAPI(`/scans/${scanId}`),
