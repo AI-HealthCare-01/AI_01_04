@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 
 from openai import AsyncOpenAI
 
@@ -23,6 +24,8 @@ PRESCRIPTION_SYSTEM_PROMPT = """
 키는 정확히 document_date, diagnosis_list, clinical_note, drugs, raw_text, ocr_raw.
 - document_date: YYYY-MM-DD 또는 null
 - diagnosis_list: 진단명/질병명/질병분류기호(KCD 코드) 배열. 여러 개가 있으면 모두 추출. 예: ["I109 기타 및 상세불명의 원발성 고혈압", "E118 합병증을 동반하지 않은 1형 당뇨병"]. 없으면 []
+  OCR 오인식 주의: KCD 코드 첫 글자는 반드시 영문 대문자다. '1', 'l' 로 인식된 경우 'I'로, '0'으로 인식된 경우 'O'로 보정하라. 예: "1219" → "I219", "l109" → "I109"
+  한국 첫 방문 질병분류기호 위치: 첫 방문 질병분류기호는 주로 '질병분류', '상병코드', '질병코드' 등의 라벨 근처에 위치한다. 해당 라벨 근처에 영문자+숫자 또는 숫자만으로 된 3~5자리 코드가 있으면 KCD 코드로 간주하고 영문자 보정 후 diagnosis_list에 추가하라.
 - clinical_note: null
 - drugs:
     1. 문자열 배열. OCR로 인식된 텍스트를 가장 유사한 한국 약물명으로 보정해라. (없으면 [])
@@ -74,7 +77,6 @@ async def ai_postprocess(
     user_payload = {
         "document_type": document_type,
         "raw_text": raw_text,
-        "ocr_raw": ocr_raw,
     }
 
     response = await client.responses.create(
@@ -100,7 +102,7 @@ async def ai_postprocess(
     result.setdefault("clinical_note", None)
     result.setdefault("drugs", [])
     result.setdefault("raw_text", raw_text)
-    result.setdefault("ocr_raw", ocr_raw)
+    result["ocr_raw"] = ocr_raw  # LLM 응답과 무관하게 원본 그대로 저장
 
     if not isinstance(result["diagnosis_list"], list):
         result["diagnosis_list"] = []
@@ -110,4 +112,31 @@ async def ai_postprocess(
     result["unrecognized_drugs"] = [d for d in result["drugs"] if d == "인식 불가"]
     result["drugs"] = [d for d in result["drugs"] if d != "인식 불가"]
 
+    # AI가 못 잡은 KCD 코드를 raw_text에서 직접 추출하여 보완
+    if not result["diagnosis_list"]:
+        result["diagnosis_list"] = _extract_kcd_codes(raw_text)
+
     return result
+
+
+_KCD_PATTERN = re.compile(
+    r"(?:질병분류|상병코드|질병코드|질병\s*분류|상병\s*기호|분류기호|분류)\s{0,10}([1lI][0-9]{3}[0-9A-Z]?|[A-Z][0-9]{2,3}[0-9A-Z]?)"
+)
+_KCD_LABEL_PATTERN = re.compile(
+    r"(?:질병분류|상병코드|질병코드|질병\s*분류|상병\s*기호|분류기호)\s*([1lIA-Z][0-9]{2,4}[0-9A-Z]?)"
+)
+
+
+def _normalize_kcd(code: str) -> str:
+    """OCR 오인식된 KCD 코드 첫 글자를 영문 대문자로 보정한다."""
+    if code[0] in ("1", "l"):
+        return "I" + code[1:]
+    return code
+
+
+def _extract_kcd_codes(raw_text: str) -> list[str]:
+    """raw_text에서 KCD 코드를 추출한다."""
+    label_matches = _KCD_LABEL_PATTERN.findall(raw_text)
+    if label_matches:
+        return [_normalize_kcd(c) for c in label_matches]
+    return [normalized for c in _KCD_PATTERN.findall(raw_text) if (normalized := _normalize_kcd(c))[0].isalpha()]
