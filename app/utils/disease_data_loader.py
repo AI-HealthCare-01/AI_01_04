@@ -1,6 +1,6 @@
 import os
 
-import pandas as pd
+import pandas as pd  # type: ignore[import-untyped]
 
 # 파일 경로 설정
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))

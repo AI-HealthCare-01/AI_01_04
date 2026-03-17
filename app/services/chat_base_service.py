@@ -8,7 +8,7 @@ _medi_cache = {}
 
 class ChatBaseService:
     async def check_user_exists(self, patient_id: str) -> bool:
-        exists = User.filter(id=patient_id).exists
+        exists = await User.filter(id=patient_id).exists()
         return exists
 
     # 복약 이력과 건강 상담 이력을 모두 가져와 통합 관리

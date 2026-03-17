@@ -91,6 +91,9 @@ ignore = ["UP046", "E501"]
 "__init__.py" = ["F401"]
 "db/migrations/*" = ["ALL"]
 
+[tool.mypy]
+exclude = ["scripts/"]
+
 [tool.ruff.format]
 # 포매터 설정
 quote-style = "double"
