@@ -37,6 +37,6 @@ async def chat_endpoint(request: ChatRequest):
     if request.mode == "medication":
         medi_service = ChatMediService()
         return await medi_service.process_medical_chat(request)
-    else:
-        health_service = ChatHealthService()
-        return await health_service.process_health_chat(request)
+
+    health_service = ChatHealthService()
+    return await health_service.process_health_chat(request)
