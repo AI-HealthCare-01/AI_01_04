@@ -5,8 +5,8 @@ RUN_IN_TRANSACTION = True
 
 async def upgrade(db: BaseDBAsyncClient) -> str:
     return """
-        ALTER TABLE "users" ADD "hashed_password" VARCHAR(128);
-        ALTER TABLE "scans" ADD "unrecognized_drugs" JSONB NOT NULL DEFAULT '[]';"""
+        ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "hashed_password" VARCHAR(128);
+        ALTER TABLE "scans" ADD COLUMN IF NOT EXISTS "unrecognized_drugs" JSONB NOT NULL DEFAULT '[]';"""
 
 
 async def downgrade(db: BaseDBAsyncClient) -> str:
