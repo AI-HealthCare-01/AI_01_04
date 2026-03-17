@@ -29,12 +29,13 @@ PRESCRIPTION_SYSTEM_PROMPT = """
 - clinical_note: null
 - drugs: 객체 배열. 각 약품에 대해 다음 필드를 추출한다. (없으면 [])
     - name: 약품명 (OCR 텍스트를 가장 유사한 한국 약물명으로 보정. 보정 불가능하면 "인식 불가")
+    - edi_code: 보험코드/EDI코드/약품코드 (9자리 숫자). 처방전에 "코드", "보험코드", "EDI", "약품코드" 라벨 근처 숫자가 있으면 추출. 없으면 null
     - dose_amount: 1회 투여량 문자열 (예: "1"). 없으면 null
     - dose_unit: 단위 (정, ml, 캡슐 등). 없으면 null
     - dose_count: 1일 투여횟수 정수 (예: 2). 없으면 null
     - dose_timing: 복용 시점 (식전, 식후, 식후30분, 자기전, 공복 등). 없으면 null
     - dose_days: 투약일수 정수 (예: 30). 없으면 null
-  예시: {"name": "노바스크정5mg", "dose_amount": "1", "dose_unit": "정", "dose_count": 1, "dose_timing": "식후", "dose_days": 30}
+  예시: {"name": "노바스크정5mg", "edi_code": "670600380", "dose_amount": "1", "dose_unit": "정", "dose_count": 1, "dose_timing": "식후", "dose_days": 30}
 - raw_text: 입력 원문 그대로
 - ocr_raw: 입력 원본 JSON 그대로
 

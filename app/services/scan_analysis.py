@@ -375,6 +375,29 @@ class ScanAnalysisService:
             disease_obj = await Disease.get_or_none(name=name)
         return disease_obj or await Disease.create(name=name, kcd_code=kcd_code)
 
+    async def _match_drug(self, drug_entry: dict[str, Any], drug_name: str) -> Drug:
+        """EDI코드 우선 → 벡터 유사도 → get_or_create 순으로 약물을 매칭한다."""
+        edi_code = (drug_entry.get("edi_code") or "").strip()
+        if edi_code:
+            drug_obj = await Drug.filter(edi_code__contains=edi_code).first()
+            if drug_obj:
+                return drug_obj
+
+        query_vector = encode(drug_name)
+        similar = await self.vector_repo.search_similar(
+            query_vector,
+            reference_type="drug",
+            top_k=1,
+        )
+        _drug_similarity_threshold = 0.15
+        if similar and getattr(similar[0], "_distance", 1.0) <= _drug_similarity_threshold:
+            drug_obj = await Drug.get_or_none(id=similar[0].reference_id)
+            if drug_obj:
+                return drug_obj
+
+        drug_obj, _ = await Drug.get_or_create(name=drug_name)
+        return drug_obj
+
     async def _create_prescriptions(
         self,
         user: Any,
@@ -416,19 +439,7 @@ class ScanAnalysisService:
 
             end = start + timedelta(days=(dose_days - 1)) if dose_days and dose_days > 0 else start
 
-            query_vector = encode(drug_name)
-            similar = await self.vector_repo.search_similar(
-                query_vector,
-                reference_type="drug",
-                top_k=1,
-            )
-            _drug_similarity_threshold = 0.15
-            if similar and getattr(similar[0], "_distance", 1.0) <= _drug_similarity_threshold:
-                drug_obj = await Drug.get_or_none(id=similar[0].reference_id)
-                if not drug_obj:
-                    drug_obj, _ = await Drug.get_or_create(name=drug_name)
-            else:
-                drug_obj, _ = await Drug.get_or_create(name=drug_name)
+            drug_obj = await self._match_drug(drug_entry, drug_name)
 
             disease_obj = disease_objects[0]
 
