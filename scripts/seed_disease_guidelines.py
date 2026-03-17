@@ -1,169 +1,129 @@
+"""
+질병 가이드라인 임베딩 seed 스크립트.
+
+disease_guidelines 테이블 → vector_documents 임베딩 생성
+(OpenAI text-embedding-3-small, 1536차원).
+
+실행:
+    uv run python scripts/seed_disease_guidelines.py
+"""
+
 from __future__ import annotations
 
 import asyncio
-import json
+import logging
+import sys
+import time
 from pathlib import Path
-from typing import Any
 
+import tiktoken
+from openai import RateLimitError
 from tortoise import Tortoise
 
-from app.core.config import Config
-from app.models.diseases import Disease, DiseaseGuideline
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
-BASE_DIR = Path(__file__).resolve().parents[1]
-DEFAULT_JSON_PATH = BASE_DIR / "scripts" / "init-db" / "03-seed-recommendations.json"
+from app.db.databases import TORTOISE_ORM
+from app.models.diseases import DiseaseGuideline
+from app.models.vector_documents import VectorDocument
+from app.services.embedding import encode_batch
 
-config = Config()
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
+REFERENCE_TYPE = "disease_guideline"
+MAX_TOKENS_PER_REQUEST = 250_000
+MAX_TOKENS_PER_TEXT = 8000
 
-# 로컬용. 실제 운영 환경에서는 환경변수로 DB 연결 정보가 주어질 것으로 예상되므로, config에서 값을 읽도록 구현
-def build_db_url() -> str:
-    return f"postgres://{config.DB_USER}:{config.DB_PASSWORD}@{config.DB_HOST}:{config.DB_PORT}/{config.DB_NAME}"
-
-
-async def init_db() -> None:
-    await Tortoise.init(
-        config={
-            "connections": {"default": build_db_url()},
-            "apps": {
-                "models": {
-                    "models": [
-                        "app.models.users",
-                        "app.models.diseases",
-                        "app.models.recommendations",
-                        "app.models.user_features",
-                        "app.models.vector_documents",
-                        "aerich.models",
-                    ],
-                    "default_connection": "default",
-                }
-            },
-        }
-    )
+_tokenizer = tiktoken.get_encoding("cl100k_base")
 
 
-def load_json(path: Path) -> list[dict[str, Any]]:
-    with path.open("r", encoding="utf-8") as f:
-        data = json.load(f)
-
-    if not isinstance(data, list):
-        raise ValueError("seed JSON 최상위 구조는 list 여야 합니다.")
-
-    return data
+def _truncate_to_tokens(text: str) -> str:
+    tokens = _tokenizer.encode(text)
+    if len(tokens) <= MAX_TOKENS_PER_TEXT:
+        return text
+    return _tokenizer.decode(tokens[:MAX_TOKENS_PER_TEXT])
 
 
-async def get_or_create_disease(
-    *,
-    disease_name: str,
-    disease_code: str | None,
-    original_disease_name: str | None,
-) -> Disease:
-    disease = None
-
-    if disease_code:
-        disease = await Disease.get_or_none(kcd_code=disease_code)
-
-    if disease is None:
-        disease = await Disease.get_or_none(name=disease_name)
-
-    if disease:
-        updated = False
-
-        if not disease.kcd_code and disease_code:
-            disease.kcd_code = disease_code
-            updated = True
-
-        if not disease.description and original_disease_name:
-            disease.description = f"original_name={original_disease_name}"
-            updated = True
-
-        if updated:
-            await disease.save()
-
-        return disease
-
-    description = f"original_name={original_disease_name}" if original_disease_name else None
-
-    return await Disease.create(
-        name=disease_name,
-        kcd_code=disease_code,
-        description=description,
-    )
+def _make_batches(texts: list[str]) -> list[list[str]]:
+    """토큰 수 기준으로 텍스트를 동적 배치로 분할한다."""
+    batches: list[list[str]] = []
+    current: list[str] = []
+    current_tokens = 0
+    for text in texts:
+        token_count = len(_tokenizer.encode(text))
+        if current and current_tokens + token_count > MAX_TOKENS_PER_REQUEST:
+            batches.append(current)
+            current = []
+            current_tokens = 0
+        current.append(text)
+        current_tokens += token_count
+    if current:
+        batches.append(current)
+    return batches
 
 
-async def create_guideline_if_not_exists(
-    *,
-    disease_id: int,
-    category: str,
-    content: str,
-) -> bool:
-    exists = await DiseaseGuideline.get_or_none(
-        disease_id=disease_id,
-        category=category,
-        content=content,
-    )
-    if exists:
-        return False
+async def seed() -> None:
+    await Tortoise.init(config=TORTOISE_ORM)
 
-    await DiseaseGuideline.create(
-        disease_id=disease_id,
-        category=category,
-        content=content,
-    )
-    return True
+    # disease_guidelines + disease 이름 함께 조회
+    guidelines = await DiseaseGuideline.all().select_related("disease")
+    total = len(guidelines)
+    logger.info("총 %d건 처리 시작", total)
 
+    # 이미 임베딩된 id 조회 — 재실행 시 스킵
+    done_ids = set(await VectorDocument.filter(reference_type=REFERENCE_TYPE).values_list("reference_id", flat=True))
+    logger.info("이미 완료된 임베딩: %d건 스킵", len(done_ids))
 
-async def seed_disease_guidelines(json_path: Path) -> None:
-    rows = load_json(json_path)
+    # 임베딩 텍스트 구성
+    all_texts = [
+        _truncate_to_tokens(
+            f"질병명: {g.disease.name}\n"
+            f"질병코드(KCD): {g.disease.kcd_code or '없음'}\n"
+            f"카테고리: {g.category}\n"
+            f"내용: {g.content}"
+        )
+        for g in guidelines
+    ]
 
-    disease_count = 0
-    guideline_created = 0
-    guideline_skipped = 0
-    invalid_rows = 0
+    batches = _make_batches(all_texts)
+    logger.info("임베딩 배치 수: %d", len(batches))
 
-    for row in rows:
-        disease_code = str(row.get("disease_code", "")).strip() or None
-        disease_name = str(row.get("disease_name", "")).strip()
-        original_disease_name = str(row.get("original_disease_name", "")).strip() or None
-        category = str(row.get("category", "")).strip()
-        content = str(row.get("content", "")).strip()
+    processed = 0
+    for batch_texts in batches:
+        batch_guidelines = guidelines[processed : processed + len(batch_texts)]
+        processed += len(batch_texts)
 
-        if not disease_name or not category or not content:
-            invalid_rows += 1
-            print(f"[SKIP] 필수값 누락: {row}")
+        if all(g.id in done_ids for g in batch_guidelines):
             continue
 
-        disease = await get_or_create_disease(
-            disease_name=disease_name,
-            disease_code=disease_code,
-            original_disease_name=original_disease_name,
+        for attempt in range(5):
+            try:
+                embeddings = encode_batch(batch_texts)
+                break
+            except RateLimitError:
+                if attempt == 4:
+                    raise
+                wait = 60
+                logger.warning("Rate limit 초과, %d초 대기 후 재시도 (%d/5)...", wait, attempt + 1)
+                time.sleep(wait)
+
+        await VectorDocument.bulk_create(
+            [
+                VectorDocument(
+                    reference_type=REFERENCE_TYPE,
+                    reference_id=g.id,
+                    content=text,
+                    embedding=emb,
+                )
+                for g, text, emb in zip(batch_guidelines, batch_texts, embeddings, strict=False)
+                if g.id not in done_ids
+            ]
         )
-        disease_count += 1
+        logger.info("임베딩 진행: %d / %d", processed, total)
 
-        created = await create_guideline_if_not_exists(
-            disease_id=disease.id,
-            category=category,
-            content=content,
-        )
-        if created:
-            guideline_created += 1
-        else:
-            guideline_skipped += 1
-
-    print("=== Seed 완료 ===")
-    print(f"Disease 처리 건수: {disease_count}")
-    print(f"Guideline 생성 수: {guideline_created}")
-    print(f"Guideline 중복 skip 수: {guideline_skipped}")
-    print(f"잘못된 row 수: {invalid_rows}")
-
-
-async def main() -> None:
-    await init_db()
-    try:
-        await seed_disease_guidelines(DEFAULT_JSON_PATH)
-    finally:
-        await Tortoise.close_connections()
+    await Tortoise.close_connections()
+    logger.info("seed 완료")
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.run(seed())
