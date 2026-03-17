@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 
 from openai import AsyncOpenAI
 
@@ -62,6 +63,31 @@ def _get_system_prompt(document_type: str) -> str:
     return PRESCRIPTION_SYSTEM_PROMPT
 
 
+def _extract_json_object(text: str) -> dict:
+    """모델 출력에서 JSON 객체만 최대한 복구해서 파싱한다."""
+    cleaned = text.strip()
+    if cleaned.startswith("```"):
+        cleaned = re.sub(r"^```(?:json)?\s*", "", cleaned)
+        cleaned = re.sub(r"\s*```$", "", cleaned)
+
+    try:
+        result = json.loads(cleaned)
+        if isinstance(result, dict):
+            return result
+    except json.JSONDecodeError:
+        pass
+
+    start = cleaned.find("{")
+    end = cleaned.rfind("}")
+    if start != -1 and end != -1 and end > start:
+        candidate = cleaned[start : end + 1]
+        result = json.loads(candidate)
+        if isinstance(result, dict):
+            return result
+
+    raise ValueError("AI postprocess result must be a valid JSON object")
+
+
 async def ai_postprocess(
     raw_text: str,
     ocr_raw: dict,
@@ -74,7 +100,6 @@ async def ai_postprocess(
     user_payload = {
         "document_type": document_type,
         "raw_text": raw_text,
-        "ocr_raw": ocr_raw,
     }
 
     response = await client.responses.create(
@@ -83,17 +108,18 @@ async def ai_postprocess(
             {"role": "system", "content": system_prompt},
             {
                 "role": "user",
-                "content": f"다음 데이터를 스키마에 맞춰 정규화하여 json으로 반환:\n{json.dumps(user_payload, ensure_ascii=False)}",
+                "content": (
+                    "다음 데이터를 스키마에 맞춰 정규화하여 json으로 반환:\n"
+                    f"{json.dumps(user_payload, ensure_ascii=False)}\n"
+                    "반드시 JSON 객체만 반환하고, raw_text와 ocr_raw는 생략해도 된다."
+                ),
             },
         ],
         text={"format": {"type": "json_object"}},
     )
 
     text = response.output_text
-    result = json.loads(text)
-
-    if not isinstance(result, dict):
-        raise ValueError("AI postprocess result must be a dict")
+    result = _extract_json_object(text)
 
     result.setdefault("document_date", None)
     result.setdefault("diagnosis_list", [])
