@@ -35,8 +35,8 @@ async def get_history(patient_id: str):
 async def chat_endpoint(request: ChatRequest):
     print(f">>> chat_endpoint: \n{request} \n<<<")
     if request.mode == "medication":
-        service = ChatMediService()
-        return await service.process_medical_chat(request)
-    else:
-        service = ChatHealthService()
-        return await service.process_health_chat(request)
+        medi_service = ChatMediService()
+        return await medi_service.process_medical_chat(request)
+
+    health_service = ChatHealthService()
+    return await health_service.process_health_chat(request)

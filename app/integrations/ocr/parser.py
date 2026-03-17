@@ -4,15 +4,15 @@ import re
 from typing import Any
 
 DATE_PATTERNS = [
-    r"\b(20\d{2})[.\-/](0?[1-9]|1[0-2])[.\-/](0?[1-9]|[12]\d|3[01])\b",
-    r"\b(20\d{2})년\s*(0?[1-9]|1[0-2])월\s*(0?[1-9]|[12]\d|3[01])일\b",
+    r"\b(20\d{2})[.\-/](1[0-2]|0?[1-9])[.\-/](3[01]|[12]\d|0?[1-9])\b",
+    r"\b(20\d{2})년\s*(1[0-2]|0?[1-9])월\s*(3[01]|[12]\d|0?[1-9])일\b",
 ]
 PARTIAL_DATE_PATTERNS = [
-    r"\b(20\d{2})[.\-/](0?[1-9]|1[0-2])\b",
-    r"\b(20\d{2})년\s*(0?[1-9]|1[0-2])월\b",
+    r"\b(20\d{2})[.\-/](1[0-2]|0?[1-9])\b",
+    r"\b(20\d{2})년\s*(1[0-2]|0?[1-9])월\b",
 ]
 DATE_LABEL_PATTERNS = [
-    r"(?:처방일|조제일|진료일|작성일|발행일)\s*[:：]?\s*(20\d{2})[.\-/년\s]+(0?[1-9]|1[0-2])[.\-/월\s]+(0?[1-9]|[12]\d|3[01])",
+    r"(?:처방일|조제일|진료일|작성일|발행일)\s*[:：]?\s*(20\d{2})[.\-/년\s]+(1[0-2]|0?[1-9])[.\-/월\s]+(3[01]|[12]\d|0?[1-9])",
 ]
 
 _WS_RE = re.compile(r"\s+")
@@ -152,36 +152,56 @@ def _clean_drug_candidate(value: str) -> str | None:
     return cleaned
 
 
-def extract_drug_candidates(raw: dict[str, Any], text: str) -> list[str]:
-    """OCR 결과에서 약품명 후보를 추출한다."""
-    candidates: list[str] = []
-    seen: set[str] = set()
+def _append_unique(items: list[str], seen: set[str], value: str | None) -> None:
+    if not value or value in seen:
+        return
+    seen.add(value)
+    items.append(value)
 
+
+def _extract_labeled_drug_candidates(text: str) -> list[str]:
+    items: list[str] = []
+    seen: set[str] = set()
     for match in re.finditer(_DRUG_LABEL_RE, text):
         segment = match.group(1)
         for token in re.split(r"[,\s/]+", segment):
-            cleaned = _clean_drug_candidate(token)
-            if cleaned and cleaned not in seen:
-                seen.add(cleaned)
-                candidates.append(cleaned)
+            _append_unique(items, seen, _clean_drug_candidate(token))
+    return items
 
+
+def _extract_form_drug_candidates(text: str) -> list[str]:
+    items: list[str] = []
+    seen: set[str] = set()
     for token in _DRUG_FORM_RE.findall(text):
-        cleaned = _clean_drug_candidate(token)
-        if cleaned and cleaned not in seen:
-            seen.add(cleaned)
-            candidates.append(cleaned)
+        _append_unique(items, seen, _clean_drug_candidate(token))
+    return items
 
+
+def _extract_field_drug_candidates(raw: dict[str, Any]) -> list[str]:
+    items: list[str] = []
+    seen: set[str] = set()
     for img in raw.get("images", []) or []:
         for field in img.get("fields", []) or []:
             infer_text = field.get("inferText")
             if not isinstance(infer_text, str):
                 continue
             cleaned = _clean_drug_candidate(infer_text)
-            if not cleaned:
-                continue
-            if _DRUG_FORM_RE.fullmatch(cleaned) and cleaned not in seen:
-                seen.add(cleaned)
-                candidates.append(cleaned)
+            if cleaned and _DRUG_FORM_RE.fullmatch(cleaned):
+                _append_unique(items, seen, cleaned)
+    return items
+
+
+def extract_drug_candidates(raw: dict[str, Any], text: str) -> list[str]:
+    """OCR 결과에서 약품명 후보를 추출한다."""
+    candidates: list[str] = []
+    seen: set[str] = set()
+    for group in (
+        _extract_labeled_drug_candidates(text),
+        _extract_form_drug_candidates(text),
+        _extract_field_drug_candidates(raw),
+    ):
+        for item in group:
+            _append_unique(candidates, seen, item)
 
     return candidates
 
