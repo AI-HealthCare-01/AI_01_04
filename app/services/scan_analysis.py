@@ -305,6 +305,20 @@ class ScanAnalysisService:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="scan not found.")
         return scan
 
+    def _build_update_fields(self, data: ScanResultUpdateRequest) -> dict[str, Any]:
+        """ScanResultUpdateRequest에서 업데이트할 필드 딕셔너리를 생성한다."""
+        update_fields: dict[str, Any] = {}
+        if data.document_date is not None:
+            parse_date_yyyy_mm_dd(data.document_date)
+            update_fields["document_date"] = data.document_date
+        if data.diagnosis is not None:
+            update_fields["diagnosis_list"] = data.diagnosis if isinstance(data.diagnosis, list) else [data.diagnosis]
+        if data.clinical_note is not None:
+            update_fields["clinical_note"] = data.clinical_note
+        if data.drugs is not None:
+            update_fields["drugs"] = data.drugs
+        return update_fields
+
     async def update_result(
         self,
         user: Any,
@@ -317,23 +331,7 @@ class ScanAnalysisService:
             if not cur:
                 raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="scan not found.")
 
-            update_fields: dict[str, Any] = {}
-
-            if data.document_date is not None:
-                parse_date_yyyy_mm_dd(data.document_date)
-                update_fields["document_date"] = data.document_date
-
-            if data.diagnosis is not None:
-                update_fields["diagnosis_list"] = (
-                    data.diagnosis if isinstance(data.diagnosis, list) else [data.diagnosis]
-                )
-
-            if data.clinical_note is not None:
-                update_fields["clinical_note"] = data.clinical_note
-
-            if data.drugs is not None:
-                update_fields["drugs"] = data.drugs
-
+            update_fields = self._build_update_fields(data)
             if update_fields:
                 update_fields["status"] = "updated"
                 await self.scan_repo.update(user.id, scan_id, **update_fields)
@@ -350,6 +348,28 @@ class ScanAnalysisService:
             logger.exception("update_result failed")
             raise HTTPException(status_code=500, detail=str(e)) from e
 
+    async def _resolve_disease(self, diag: str) -> Disease | None:
+        """진단 문자열에서 Disease 객체를 조회하거나 생성한다."""
+        diag_name = diag.strip()
+        if not diag_name:
+            return None
+        m = re.match(r"^([A-Za-z]\d{2,5})\s+(.*)", diag_name)
+        if m:
+            kcd_code = m.group(1).upper()
+            name = m.group(2).strip()
+        else:
+            kcd_code = diag_name.upper() if re.match(r"^[A-Za-z]\d{2,5}$", diag_name) else None
+            if kcd_code:
+                mapping = await DiseaseCodeMapping.get_or_none(code=kcd_code)
+                name = mapping.name if mapping else kcd_code
+            else:
+                name = diag_name
+        if kcd_code:
+            disease_obj = await Disease.get_or_none(kcd_code=kcd_code)
+        else:
+            disease_obj = await Disease.get_or_none(name=name)
+        return disease_obj or await Disease.create(name=name, kcd_code=kcd_code)
+
     async def _create_prescriptions(
         self,
         user: Any,
@@ -364,29 +384,7 @@ class ScanAnalysisService:
         """
         disease_objects: list[Disease | None] = []
         for diag in diagnosis_list:
-            diag_name = diag.strip()
-            if not diag_name:
-                disease_objects.append(None)
-                continue
-            m = re.match(r"^([A-Za-z]\d{2,5})\s+(.*)", diag_name)
-            if m:
-                kcd_code = m.group(1).upper()
-                name = m.group(2).strip()
-            else:
-                # 코드만 있는 경우 disease_code_mappings에서 이름 조회
-                kcd_code = diag_name.upper() if re.match(r"^[A-Za-z]\d{2,5}$", diag_name) else None
-                if kcd_code:
-                    mapping = await DiseaseCodeMapping.get_or_none(code=kcd_code)
-                    name = mapping.name if mapping else kcd_code
-                else:
-                    name = diag_name
-            if kcd_code:
-                disease_obj = await Disease.get_or_none(kcd_code=kcd_code)
-            else:
-                disease_obj = await Disease.get_or_none(name=name)
-            if not disease_obj:
-                disease_obj = await Disease.create(name=name, kcd_code=kcd_code)
-            disease_objects.append(disease_obj)
+            disease_objects.append(await self._resolve_disease(diag))
 
         if not disease_objects:
             disease_objects = [None]
@@ -409,8 +407,8 @@ class ScanAnalysisService:
                 reference_type="drug",
                 top_k=1,
             )
-            _DRUG_SIMILARITY_THRESHOLD = 0.15
-            if similar and getattr(similar[0], "_distance", 1.0) <= _DRUG_SIMILARITY_THRESHOLD:
+            _drug_similarity_threshold = 0.15
+            if similar and getattr(similar[0], "_distance", 1.0) <= _drug_similarity_threshold:
                 drug_obj = await Drug.get_or_none(id=similar[0].reference_id)
                 if not drug_obj:
                     drug_obj, _ = await Drug.get_or_create(name=drug_name)

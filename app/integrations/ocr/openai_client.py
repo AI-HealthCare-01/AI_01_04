@@ -119,16 +119,18 @@ async def ai_postprocess(
     return result
 
 
-_KCD_PATTERN = re.compile(r'(?:질병분류|상병코드|질병코드|질병\s*분류|상병\s*기호|분류기호|분류)\s{0,10}([1lI][0-9]{3}[0-9A-Z]?|[A-Z][0-9]{2,3}[0-9A-Z]?)')
+_KCD_PATTERN = re.compile(
+    r"(?:질병분류|상병코드|질병코드|질병\s*분류|상병\s*기호|분류기호|분류)\s{0,10}([1lI][0-9]{3}[0-9A-Z]?|[A-Z][0-9]{2,3}[0-9A-Z]?)"
+)
 _KCD_LABEL_PATTERN = re.compile(
-    r'(?:질병분류|상병코드|질병코드|질병\s*분류|상병\s*기호|분류기호)\s*([1lIA-Z][0-9]{2,4}[0-9A-Z]?)'
+    r"(?:질병분류|상병코드|질병코드|질병\s*분류|상병\s*기호|분류기호)\s*([1lIA-Z][0-9]{2,4}[0-9A-Z]?)"
 )
 
 
 def _normalize_kcd(code: str) -> str:
     """OCR 오인식된 KCD 코드 첫 글자를 영문 대문자로 보정한다."""
-    if code[0] in ('1', 'l'):
-        return 'I' + code[1:]
+    if code[0] in ("1", "l"):
+        return "I" + code[1:]
     return code
 
 
