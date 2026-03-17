@@ -473,6 +473,29 @@ class ScanAnalysisService:
 
         return created, skipped, skipped_duplicates
 
+    async def _save_prescription_data(
+        self, user: Any, cur: dict[str, Any], doc_date: str
+    ) -> tuple[list[int], int, list[str]]:
+        """prescription 타입 스캔의 약품 데이터를 처방전으로 저장한다."""
+        await self.med_service.ensure_day_seed(user_id=user.id, date=doc_date)
+        await self.health_service.ensure_day_seed(user_id=user.id, date=doc_date)
+
+        drug_names_raw: Any = cur.get("drugs", [])
+        drugs_data: list[dict] = []
+        if isinstance(drug_names_raw, list):
+            for d in drug_names_raw:
+                if isinstance(d, str):
+                    drugs_data.append({"name": d})
+                elif isinstance(d, dict):
+                    drugs_data.append(d)
+
+        return await self._create_prescriptions(
+            user,
+            doc_date,
+            cur.get("diagnosis_list", []),
+            drugs_data,
+        )
+
     async def save_result(self, user: Any, scan_id: int) -> dict[str, Any]:
         """스캔 결과를 실제 서비스 데이터로 저장한다."""
         try:
@@ -493,29 +516,13 @@ class ScanAnalysisService:
                         status_code=status.HTTP_400_BAD_REQUEST,
                         detail="처방/진단 날짜(document_date)가 필요합니다. 결과 화면에서 입력/수정 후 저장해주세요.",
                     )
-
-                await self.med_service.ensure_day_seed(user_id=user.id, date=doc_date)
-                await self.health_service.ensure_day_seed(user_id=user.id, date=doc_date)
-
-                drug_names_raw: Any = cur.get("drugs", [])
-                drugs_data: list[dict] = []
-                if isinstance(drug_names_raw, list):
-                    for d in drug_names_raw:
-                        if isinstance(d, str):
-                            drugs_data.append({"name": d})
-                        elif isinstance(d, dict):
-                            drugs_data.append(d)
-
-                created_prescriptions, skipped_count, skipped_duplicates = await self._create_prescriptions(
+                created_prescriptions, skipped_count, skipped_duplicates = await self._save_prescription_data(
                     user,
+                    cur,
                     doc_date,
-                    cur.get("diagnosis_list", []),
-                    drugs_data,
                 )
-
-            else:
-                if doc_date:
-                    await self.health_service.ensure_day_seed(user_id=user.id, date=doc_date)
+            elif doc_date:
+                await self.health_service.ensure_day_seed(user_id=user.id, date=doc_date)
 
             await self.scan_repo.update(user.id, scan_id, status="saved")
 

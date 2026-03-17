@@ -632,21 +632,8 @@ class RecommendationService:
             )
         ]
 
-    async def get_for_scan(self, user_id: int, scan_id: int) -> dict[str, Any]:
-        """
-        특정 scan의 recommendation을 조회하거나, 없으면 새로 생성한다.
-        """
-        scan = await self.scan_repo.get_by_id_for_user(user_id, scan_id)
-        if not scan:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="scan not found")
-
-        existing = await self.recommendation_repo.list_by_user_scan(user_id=user_id, scan_id=scan_id)
-        if existing:
-            return {"scan_id": scan_id, "items": [_rec_to_response_dict(r) for r in existing]}
-
-        document_type = self._normalize_document_type(scan.get("document_type"))
-
-        # diagnosis_list 우선, 하위호환으로 diagnosis(단수)도 지원
+    def _extract_scan_fields(self, scan: dict[str, Any]) -> tuple[list[str], str | None, list[str]]:
+        """scan dict에서 diagnosis_list, clinical_note, drugs를 추출한다."""
         diagnosis_list_raw = scan.get("diagnosis_list") or []
         if not diagnosis_list_raw:
             single = scan.get("diagnosis")
@@ -668,22 +655,37 @@ class RecommendationService:
                 elif isinstance(d, dict) and d.get("name", "").strip():
                     drugs.append(d["name"].strip())
 
+        return diagnosis_list, clinical_note, drugs
+
+    async def get_for_scan(self, user_id: int, scan_id: int) -> dict[str, Any]:
+        """
+        특정 scan의 recommendation을 조회하거나, 없으면 새로 생성한다.
+        """
+        scan = await self.scan_repo.get_by_id_for_user(user_id, scan_id)
+        if not scan:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="scan not found")
+
+        existing = await self.recommendation_repo.list_by_user_scan(user_id=user_id, scan_id=scan_id)
+        if existing:
+            return {"scan_id": scan_id, "items": [_rec_to_response_dict(r) for r in existing]}
+
+        document_type = self._normalize_document_type(scan.get("document_type"))
+        diagnosis_list, clinical_note, drugs = self._extract_scan_fields(scan)
+
         batch = await self.recommendation_repo.create_batch(
             user_id=user_id,
             retrieval_strategy=f"scan-{document_type}-multi-diag-v3",
         )
 
-        candidates: list[RecommendationCandidate] = []
-
         if document_type == "medical_record":
-            candidates.extend(
+            candidates = list(
                 await self._build_medical_record_recommendations(
                     diagnosis_list=diagnosis_list,
                     clinical_note=clinical_note,
                 )
             )
         else:
-            candidates.extend(
+            candidates = list(
                 await self._build_prescription_recommendations(
                     diagnosis_list=diagnosis_list,
                     drugs=drugs,
@@ -691,11 +693,7 @@ class RecommendationService:
             )
 
         if not candidates:
-            candidates.extend(
-                await self._build_fallback_recommendation(
-                    document_type=document_type,
-                )
-            )
+            candidates = list(await self._build_fallback_recommendation(document_type=document_type))
 
         final_candidates = await finalize_recommendations(
             candidates,

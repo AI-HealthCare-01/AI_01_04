@@ -196,6 +196,6 @@ class DiseaseRepository:
 
         if disease:
             guidelines = await self.get_guidelines_by_disease(disease.id)
-            return disease.icd_code, disease.name, [gl.content for gl in guidelines]
+            return disease.kcd_code, disease.name, [gl.content for gl in guidelines]
 
         return None, None, []

@@ -51,8 +51,9 @@ async def deactivate_medication(request: DeactivateRequest):
     if not rx:
         return DeactivateResponse(success=False, message="처방전을 찾을 수 없습니다.")
 
+    await rx.fetch_related("user")
     service = ChatContextService()
-    ok = await service.deactivate_prescription(rx.user_id, request.prescription_id)
+    ok = await service.deactivate_prescription(rx.user.id, request.prescription_id)
     if ok:
         return DeactivateResponse(success=True, message="약품이 비활성화되었습니다.")
     return DeactivateResponse(success=False, message="비활성화에 실패했습니다.")

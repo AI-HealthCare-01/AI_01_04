@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import logging
+
 from app.repositories.disease_repository import DiseaseRepository
 
-from ..models.chat_medication import MediChat
 from ..dtos.chat import ChatRequest
+from ..models.chat_medication import MediChat
 from ..utils.constants import COMMON_SYSTEM_PROMPT, COMMON_USER_PROMPT
 from .chat_base_service import ChatBaseService as BaseService
 from .chat_context_service import ChatContextService
