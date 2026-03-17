@@ -103,7 +103,6 @@ class UserRepository:
         name: str,
         phone_number: str,
         birthday: date,
-        hashed_password: str = "",
         gender: Gender | None = None,
     ) -> User:
         """새 사용자를 생성한다.
@@ -128,7 +127,6 @@ class UserRepository:
             name=name,
             phone_number=phone_number,
             birthday=birthday,
-            hashed_password=hashed_password,
             gender=gender,
         )
 

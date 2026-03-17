@@ -55,7 +55,6 @@ class AuthService:
                 name=data.name,
                 phone_number=normalized_phone_number,
                 birthday=data.birthday,
-                hashed_password=password_hash,
                 gender=data.gender,
             )
             await self.credential_repo.create_for_user(
