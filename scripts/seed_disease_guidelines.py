@@ -71,9 +71,7 @@ async def seed() -> None:
     logger.info("총 %d건 처리 시작", total)
 
     # 이미 임베딩된 id 조회 — 재실행 시 스킵
-    done_ids = set(
-        await VectorDocument.filter(reference_type=REFERENCE_TYPE).values_list("reference_id", flat=True)
-    )
+    done_ids = set(await VectorDocument.filter(reference_type=REFERENCE_TYPE).values_list("reference_id", flat=True))
     logger.info("이미 완료된 임베딩: %d건 스킵", len(done_ids))
 
     # 임베딩 텍스트 구성
