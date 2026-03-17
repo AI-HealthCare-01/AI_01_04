@@ -73,7 +73,7 @@ class TestBuildGuidelineWithMapping(TestCase):
 
     async def test_direct_disease_match(self):
         """Disease 테이블에 직접 매칭되면 해당 가이드라인 반환."""
-        disease = await Disease.create(name="고혈압", icd_code="I10")
+        disease = await Disease.create(name="고혈압", kcd_code="I10")
         await DiseaseGuideline.create(
             disease=disease,
             category="general_care",
@@ -88,7 +88,7 @@ class TestBuildGuidelineWithMapping(TestCase):
 
     async def test_code_mapping_fallback(self):
         """Disease 직접 매칭 실패 시 DiseaseCodeMapping → anchor 가이드라인 반환."""
-        anchor_disease = await Disease.create(name="당뇨병", icd_code="E14")
+        anchor_disease = await Disease.create(name="당뇨병", kcd_code="E14")
         await DiseaseGuideline.create(
             disease=anchor_disease,
             category="general_care",
@@ -121,10 +121,10 @@ class TestBuildPrescriptionMultiDiagnosis(TestCase):
 
     async def test_multiple_diagnoses_collect_guidelines(self):
         """여러 진단에서 각각 가이드라인을 수집한다."""
-        d1 = await Disease.create(name="고혈압", icd_code="I10")
+        d1 = await Disease.create(name="고혈압", kcd_code="I10")
         await DiseaseGuideline.create(disease=d1, category="general_care", content="염분을 줄이세요")
 
-        d2 = await Disease.create(name="당뇨병", icd_code="E14")
+        d2 = await Disease.create(name="당뇨병", kcd_code="E14")
         await DiseaseGuideline.create(disease=d2, category="general_care", content="혈당을 관리하세요")
 
         svc = RecommendationService()
@@ -151,7 +151,7 @@ class TestBuildPrescriptionMultiDiagnosis(TestCase):
 
     async def test_single_diagnosis_with_code(self):
         """단일 진단(코드+이름 형태)도 정상 처리."""
-        disease = await Disease.create(name="급성 상기도감염", icd_code="J06")
+        disease = await Disease.create(name="급성 상기도감염", kcd_code="J06")
         await DiseaseGuideline.create(
             disease=disease,
             category="general_care",
@@ -179,7 +179,7 @@ class TestBuildMedicalRecordMultiDiagnosis(TestCase):
 
     async def test_multiple_diagnoses_with_clinical_note(self):
         """복수 진단 + clinical_note 조합 처리."""
-        d1 = await Disease.create(name="편두통", icd_code="G43")
+        d1 = await Disease.create(name="편두통", kcd_code="G43")
         await DiseaseGuideline.create(disease=d1, category="general_care", content="유발인자를 피하세요")
 
         svc = RecommendationService()
@@ -201,7 +201,7 @@ class TestGetForScanMultiDiagnosis(TestCase):
     async def test_uses_diagnosis_list(self):
         """scan의 diagnosis_list를 사용하여 추천을 생성한다."""
         user = await _make_user("multi_diag@example.com")
-        disease = await Disease.create(name="고혈압", icd_code="I10")
+        disease = await Disease.create(name="고혈압", kcd_code="I10")
         await DiseaseGuideline.create(
             disease=disease,
             category="general_care",

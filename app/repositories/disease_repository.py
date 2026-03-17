@@ -86,19 +86,19 @@ class DiseaseRepository:
         """
         return await self._guideline_model.filter(disease_id=disease_id).order_by("category")
 
-    async def get_by_icd_code(self, icd_code: str) -> Disease | None:
+    async def get_by_kcd_code(self, kcd_code: str) -> Disease | None:
         """
-        ICD/KCD 코드로 질환을 조회한다.
+        KCD 코드로 질환을 조회한다.
 
         Args:
-            icd_code (str):
+            kcd_code (str):
                 질병 코드
 
         Returns:
             Disease | None:
                 조회된 질환 객체
         """
-        return await self._model.get_or_none(icd_code=icd_code)
+        return await self._model.get_or_none(kcd_code=kcd_code)
 
     async def get_by_name(self, name: str) -> Disease | None:
         """
@@ -164,7 +164,7 @@ class DiseaseRepository:
 
     async def get_guidelines_by_anchor_code(self, anchor_code: str) -> list[DiseaseGuideline]:
         """anchor 코드에 해당하는 Disease의 가이드라인을 조회한다."""
-        disease = await self._model.get_or_none(icd_code=anchor_code.strip().upper())
+        disease = await self._model.get_or_none(kcd_code=anchor_code.strip().upper())
         if not disease:
             return []
         return await self._guideline_model.filter(disease_id=disease.id).order_by("category")

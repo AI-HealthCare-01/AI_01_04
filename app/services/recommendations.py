@@ -227,7 +227,7 @@ class RecommendationService:
             return None
 
         if self._looks_like_disease_code(value):
-            disease = await self.disease_repo.get_by_icd_code(value.upper())
+            disease = await self.disease_repo.get_by_kcd_code(value.upper())
             if disease:
                 return disease
 
