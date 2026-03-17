@@ -13,8 +13,6 @@ from __future__ import annotations
 from datetime import date, timedelta
 from typing import Any
 
-from app.models.diseases import Disease
-from app.models.drugs import Drug
 from app.models.prescriptions import MedicationIntakeLog, Prescription
 from app.models.scans import Scan
 
@@ -28,9 +26,7 @@ class ChatContextService:
         total_days = (rx.end_date - rx.start_date).days + 1
         total_doses = rx.dose_count * total_days
 
-        taken_count = await MedicationIntakeLog.filter(
-            prescription_id=rx.id, status="taken"
-        ).count()
+        taken_count = await MedicationIntakeLog.filter(prescription_id=rx.id, status="taken").count()
 
         return max(total_doses - taken_count, 0)
 
@@ -64,15 +60,16 @@ class ChatContextService:
         for rx in prescriptions:
             if not await self._is_active(rx):
                 continue
-            if rx.disease_id and rx.disease_id not in seen:
-                seen.add(rx.disease_id)
-                disease = await Disease.get_or_none(id=rx.disease_id)
-                if disease:
-                    diseases.append({
-                        "id": disease.id,
-                        "name": disease.name,
-                        "kcd_code": disease.kcd_code,
-                    })
+            await rx.fetch_related("disease")
+            if rx.disease and rx.disease.id not in seen:
+                seen.add(rx.disease.id)
+                diseases.append(
+                    {
+                        "id": rx.disease.id,
+                        "name": rx.disease.name,
+                        "kcd_code": rx.disease.kcd_code,
+                    }
+                )
         return diseases
 
     async def _get_active_medications(self, user_id: int) -> list[dict[str, Any]]:
@@ -85,21 +82,23 @@ class ChatContextService:
 
             remaining = await self._calc_remaining(rx)
 
-            if rx.drug_id:
-                drug = await Drug.get_or_none(id=rx.drug_id)
-                drug_name = drug.name if drug else f"약품ID:{rx.drug_id}"
+            await rx.fetch_related("drug")
+            if rx.drug:
+                drug_name = rx.drug.name
             else:
                 drug_name = "미등록 약품"
 
-            meds.append({
-                "prescription_id": rx.id,
-                "drug_name": drug_name,
-                "dose_count": rx.dose_count,
-                "dose_amount": rx.dose_amount,
-                "start_date": str(rx.start_date) if rx.start_date else None,
-                "end_date": str(rx.end_date) if rx.end_date else None,
-                "remaining": remaining,
-            })
+            meds.append(
+                {
+                    "prescription_id": rx.id,
+                    "drug_name": drug_name,
+                    "dose_count": rx.dose_count,
+                    "dose_amount": rx.dose_amount,
+                    "start_date": str(rx.start_date) if rx.start_date else None,
+                    "end_date": str(rx.end_date) if rx.end_date else None,
+                    "remaining": remaining,
+                }
+            )
         return meds
 
     async def _get_scan_summary(self, user_id: int) -> dict[str, Any]:

@@ -4,8 +4,8 @@ import logging
 
 from app.repositories.disease_repository import DiseaseRepository
 
-from ..models.chat_health import HealthChat
 from ..dtos.chat import ChatRequest
+from ..models.chat_health import HealthChat
 from ..utils.constants import COMMON_SYSTEM_PROMPT
 from .chat_base_service import ChatBaseService as BaseService
 from .chat_context_service import ChatContextService

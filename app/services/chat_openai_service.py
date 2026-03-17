@@ -12,12 +12,12 @@ logger = logging.getLogger(__name__)
 
 class ChatOpenaiService:
     def __init__(self) -> None:
-        self.llm = ChatOpenAI(model="gpt-4o-mini", openai_api_key=config.OPENAI_API_KEY)
+        self.llm = ChatOpenAI(model="gpt-4o-mini", api_key=config.OPENAI_API_KEY)  # type: ignore[arg-type]
 
     async def get_advice(self, system_content: str, user_content: str) -> dict[str, str]:
         try:
             response = self.llm.invoke([SystemMessage(content=system_content), HumanMessage(content=user_content)])
-            ai_content = response.content if response.content else "답변을 생성할 수 없습니다."
+            ai_content: str = str(response.content) if response.content else "답변을 생성할 수 없습니다."
             return {"chat_answer": ai_content}
         except Exception:
             logger.exception("AI Service Error")
