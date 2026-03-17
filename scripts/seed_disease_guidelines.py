@@ -61,7 +61,7 @@ async def get_or_create_disease(
     disease = None
 
     if disease_code:
-        disease = await Disease.get_or_none(icd_code=disease_code)
+        disease = await Disease.get_or_none(kcd_code=disease_code)
 
     if disease is None:
         disease = await Disease.get_or_none(name=disease_name)
@@ -69,8 +69,8 @@ async def get_or_create_disease(
     if disease:
         updated = False
 
-        if not disease.icd_code and disease_code:
-            disease.icd_code = disease_code
+        if not disease.kcd_code and disease_code:
+            disease.kcd_code = disease_code
             updated = True
 
         if not disease.description and original_disease_name:
@@ -86,7 +86,7 @@ async def get_or_create_disease(
 
     return await Disease.create(
         name=disease_name,
-        icd_code=disease_code,
+        kcd_code=disease_code,
         description=description,
     )
 
