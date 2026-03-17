@@ -76,6 +76,41 @@
             padding: 1rem;
             background: #fff;
         }
+
+        .quick-chip {
+            border: 1px solid rgba(109, 162, 133, 0.28);
+            background: #fff;
+            color: var(--primary-color);
+            border-radius: 999px;
+            padding: 0.55rem 0.9rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .quick-chip:hover {
+            background: rgba(109, 162, 133, 0.12);
+            border-color: var(--primary-color);
+        }
+
+        .quick-chip-wrap {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .context-card {
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            background: #fdfcf8;
+            padding: 0.85rem 1rem;
+        }
+
+        .context-title {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.35rem;
+        }
     </style>
 </head>
 
@@ -136,6 +171,21 @@
                             </div>
                             <div id="history-list" class="history-list">
                                 <span class="text-soft small" data-text="chatbot.historyLoading">이력을 불러오는 중입니다...</span>
+                            </div>
+                        </div>
+
+                        <div class="mode-card mb-3">
+                            <label class="form-label text-secondary small fw-bold mb-2 d-block" data-text="chatbot.quickQuestionTitle">바로 질문하기</label>
+                            <div id="quick-question-list" class="quick-chip-wrap"></div>
+                        </div>
+
+                        <div class="mode-card">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <label class="form-label text-secondary small fw-bold mb-0" data-text="chatbot.contextTitle">AI가 참고하는 정보</label>
+                                <a href="recommendations.html" class="btn btn-sm btn-outline-primary" data-text="chatbot.contextLink">추천 보기</a>
+                            </div>
+                            <div id="chatbot-context-list" class="d-grid gap-2">
+                                <span class="text-soft small" data-text="chatbot.contextLoading">추천과 복약 정보를 불러오는 중입니다...</span>
                             </div>
                         </div>
                     </div>
@@ -223,6 +273,41 @@
         function handleModeChange() {
             const mode = document.getElementById('chat-mode').value;
             document.getElementById('medication-fields').classList.toggle('d-none', mode !== 'medication');
+            renderQuickQuestions();
+        }
+
+        function getQuickQuestions(mode) {
+            if (mode === 'health') {
+                return [
+                    getText('chatbot.quickHealth1', '요즘 잠이 잘 안 오는데 생활 습관을 어떻게 바꾸면 좋을까요?'),
+                    getText('chatbot.quickHealth2', '식단과 운동을 같이 관리하려면 어떤 순서로 시작하면 좋을까요?'),
+                    getText('chatbot.quickHealth3', '피곤함이 계속될 때 병원에 가야 하는 신호가 있을까요?'),
+                ];
+            }
+
+            return [
+                getText('chatbot.quickMedication1', '이 약은 식전/식후 언제 먹는 게 좋나요?'),
+                getText('chatbot.quickMedication2', '현재 약들끼리 같이 먹어도 되는지 확인해 주세요.'),
+                getText('chatbot.quickMedication3', '부작용이 나타나면 어떤 증상을 먼저 봐야 하나요?'),
+            ];
+        }
+
+        function renderQuickQuestions() {
+            const mode = document.getElementById('chat-mode').value;
+            const container = document.getElementById('quick-question-list');
+            container.innerHTML = '';
+
+            getQuickQuestions(mode).forEach((question) => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'quick-chip';
+                button.textContent = question;
+                button.onclick = () => {
+                    document.getElementById('chat-question').value = question;
+                    document.getElementById('chat-question').focus();
+                };
+                container.appendChild(button);
+            });
         }
 
         function renderHistory(items) {
@@ -242,6 +327,47 @@
                 pill.textContent = `${diseaseCode} · ${medications}`;
                 historyList.appendChild(pill);
             });
+
+            const latest = items.find((item) => item && item.medications);
+            const medicationBox = document.getElementById('medications-input');
+            const diseaseBox = document.getElementById('disease-code');
+
+            if (latest && medicationBox && !medicationBox.value.trim()) {
+                medicationBox.value = latest.medications;
+            }
+
+            if (latest && diseaseBox && !diseaseBox.value.trim() && latest.disease_code) {
+                diseaseBox.value = latest.disease_code;
+            }
+        }
+
+        function renderContext(items) {
+            const container = document.getElementById('chatbot-context-list');
+            container.innerHTML = '';
+
+            if (!items || items.length === 0) {
+                container.innerHTML = `<span class="text-soft small">${escapeHtml(getText('chatbot.contextEmpty', '아직 연결된 추천 정보가 없습니다. 처방전을 저장하면 이곳에 참고 정보가 표시됩니다.'))}</span>`;
+                return;
+            }
+
+            items.slice(0, 3).forEach((item) => {
+                const card = document.createElement('div');
+                card.className = 'context-card';
+                card.innerHTML = `
+                    <div class="context-title">${escapeHtml(getText('chatbot.contextRecommendationLabel', '활성 추천'))}</div>
+                    <div class="fw-semibold">${escapeHtml(item.content || '-')}</div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        async function loadContextRecommendations() {
+            try {
+                const recommendations = await window.api.getActiveRecommendations();
+                renderContext(recommendations);
+            } catch (err) {
+                renderContext([]);
+            }
         }
 
         async function loadMedicationHistory() {
@@ -351,6 +477,7 @@
             }
 
             await loadMedicationHistory();
+            await loadContextRecommendations();
         }
 
         document.addEventListener('DOMContentLoaded', initChatbotPage);
