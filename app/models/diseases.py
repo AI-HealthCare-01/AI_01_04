@@ -3,7 +3,7 @@
 
 📚 학습 포인트:
 - FK가 없는 독립 테이블: 다른 테이블을 참조하지 않음
-- icd_code: 국제질병분류코드 (WHO 표준)
+- kcd_code: 한국표준질병사인분류코드 (KCD)
 """
 
 from tortoise import fields, models
@@ -14,12 +14,12 @@ class Disease(models.Model):
     """
     질병 마스터 테이블 (ERD: diseases).
 
-    icd_code는 WHO 국제질병분류코드.
+    kcd_code는 한국표준질병사인분류코드 (KCD).
     """
 
     id = fields.IntField(pk=True)
     name = fields.CharField(max_length=255)
-    icd_code = fields.CharField(max_length=20, null=True)
+    kcd_code = fields.CharField(max_length=20, null=True)
     description = fields.TextField(null=True)
 
     class Meta:
