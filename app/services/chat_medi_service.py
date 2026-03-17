@@ -23,7 +23,7 @@ class ChatMediService(BaseService):
         user_content = f"""
         [환자 정보]
         - 질병명: {disease_name}
-        - 현재 처방약: {", ".join(request.medications)}
+        - 현재 처방약: {", ".join(request.medications or [])}
         - 과거 복약 이력: {history_str if history_str else "없음"}
         {COMMON_USER_PROMPT}"""
 
@@ -44,7 +44,7 @@ class ChatMediService(BaseService):
         await MediChat.create(
             patient_id=request.patient_id,
             disease_code=request.disease_code,
-            medications=", ".join(request.medications),
+            medications=", ".join(request.medications or []),
             advice=ai_result.get("chat_answer", ""),
         )
 
