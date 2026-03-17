@@ -13,6 +13,7 @@ from app.core import config
 from app.integrations.ocr.exceptions import (
     OCRAuthError,
     OCRBadRequestError,
+    OCRConfigError,
     OCRRateLimitError,
     OCRServerError,
     OCRTimeoutError,
@@ -47,6 +48,9 @@ class NaverOCRClient:
             OCRBadRequestError: 4xx 요청 오류 시.
             OCRServerError: 5xx 서버 오류 시.
         """
+        if not self.url or not self.secret:
+            raise OCRConfigError("OCR config missing.")
+
         path = Path(file_path)
         ext = path.suffix.lower().lstrip(".")  # jpg/png/pdf
 
@@ -70,12 +74,22 @@ class NaverOCRClient:
         except httpx.TimeoutException as e:
             raise OCRTimeoutError("OCR request timeout") from e
 
+        body_text = resp.text
+        body_json: dict[str, Any] | None = None
+        try:
+            body_json = resp.json()
+        except Exception:
+            body_json = None
+
+        error_code = str((body_json or {}).get("code", "")).strip()
+        error_message = str((body_json or {}).get("message", "")).strip().lower()
+
         if resp.status_code in (401, 403):
             raise OCRAuthError("OCR auth failed (check secret key).")
-        if resp.status_code == 429:
+        if resp.status_code == 429 or error_code == "0025" or "rate limit" in error_message:
             raise OCRRateLimitError("OCR rate limited.")
         if 400 <= resp.status_code < 500:
-            raise OCRBadRequestError(f"OCR bad request: {resp.text}")
+            raise OCRBadRequestError(f"OCR bad request: {body_text}")
         if resp.status_code >= 500:
             raise OCRServerError("OCR server error.")
 

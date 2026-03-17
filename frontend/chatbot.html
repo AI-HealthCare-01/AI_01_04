@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-text="chatbot.title">AI 건강 상담</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .chat-shell {
+            min-height: calc(100vh - 180px);
+        }
+
+        .chat-log {
+            background: #fafdfb;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            min-height: 460px;
+            max-height: 62vh;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+
+        .chat-bubble {
+            max-width: 85%;
+            border-radius: 16px;
+            padding: 0.9rem 1rem;
+            margin-bottom: 0.85rem;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.04);
+            white-space: pre-wrap;
+        }
+
+        .chat-bubble.user {
+            margin-left: auto;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: #fff;
+            border-bottom-right-radius: 4px;
+        }
+
+        .chat-bubble.assistant {
+            margin-right: auto;
+            background: #fff;
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            border-bottom-left-radius: 4px;
+        }
+
+        .chat-meta {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.35rem;
+        }
+
+        .history-pill {
+            border-radius: 999px;
+            background: rgba(109, 162, 133, 0.12);
+            color: var(--primary-color);
+            padding: 0.4rem 0.75rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .history-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .mode-card {
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 1rem;
+            background: #fff;
+        }
+
+        .quick-chip {
+            border: 1px solid rgba(109, 162, 133, 0.28);
+            background: #fff;
+            color: var(--primary-color);
+            border-radius: 999px;
+            padding: 0.55rem 0.9rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .quick-chip:hover {
+            background: rgba(109, 162, 133, 0.12);
+            border-color: var(--primary-color);
+        }
+
+        .quick-chip-wrap {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .context-card {
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            background: #fdfcf8;
+            padding: 0.85rem 1rem;
+        }
+
+        .context-title {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.35rem;
+        }
+    </style>
+</head>
+
+<body>
+    <button class="btn btn-primary d-lg-none position-fixed top-0 end-0 m-3 z-3" type="button"
+        onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <div class="app-wrapper">
+        <nav id="sidebar-container" class="sidebar shadow-sm"></nav>
+
+        <main class="main-content">
+            <div class="fade-in mb-4 pb-2 border-bottom">
+                <h3 class="fw-bold mb-0" data-text="chatbot.title">AI 건강 상담</h3>
+                <p class="text-soft mt-1 mb-0" data-text="chatbot.subtitle">복약 상담과 생활 건강 질문을 한 화면에서 바로 이어갈 수 있습니다.</p>
+            </div>
+
+            <div class="row g-4 chat-shell fade-in">
+                <div class="col-lg-4">
+                    <div class="card p-4 h-100">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <h5 class="fw-bold text-primary-custom mb-1" data-text="chatbot.setupTitle">상담 설정</h5>
+                                <p class="text-soft small mb-0" data-text="chatbot.setupSubtitle">상담 모드를 고르고 필요한 정보만 입력해 주세요.</p>
+                            </div>
+                            <span id="patient-badge" class="badge bg-light text-dark border rounded-pill">-</span>
+                        </div>
+
+                        <div id="chatbot-status" class="alert d-none small p-2 mb-3"></div>
+
+                        <div class="mode-card mb-3">
+                            <label class="form-label text-secondary small fw-bold" data-text="chatbot.modeLabel">상담 모드</label>
+                            <select id="chat-mode" class="form-select bg-light" onchange="handleModeChange()">
+                                <option value="medication" data-text="chatbot.modeMedication">복약 상담</option>
+                                <option value="health" data-text="chatbot.modeHealth">생활 건강 상담</option>
+                            </select>
+                        </div>
+
+                        <div id="medication-fields" class="mode-card mb-3">
+                            <div class="mb-3">
+                                <label class="form-label text-secondary small fw-bold" data-text="chatbot.diseaseCodeLabel">질환 코드 또는 질환명</label>
+                                <input type="text" id="disease-code" class="form-control"
+                                    data-placeholder="chatbot.diseaseCodePlaceholder" placeholder="예: J00 또는 감기">
+                            </div>
+                            <div>
+                                <label class="form-label text-secondary small fw-bold" data-text="chatbot.medicationsLabel">현재 복용 중인 약</label>
+                                <textarea id="medications-input" class="form-control" rows="4"
+                                    data-placeholder="chatbot.medicationsPlaceholder"
+                                    placeholder="약 이름을 쉼표(,)로 구분해서 입력하세요.&#10;예: 타이레놀, 무스렉스"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="mode-card mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <label class="form-label text-secondary small fw-bold mb-0" data-text="chatbot.historyTitle">최근 복약 상담 참고 이력</label>
+                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="loadMedicationHistory()" data-text="chatbot.refreshHistory">새로고침</button>
+                            </div>
+                            <div id="history-list" class="history-list">
+                                <span class="text-soft small" data-text="chatbot.historyLoading">이력을 불러오는 중입니다...</span>
+                            </div>
+                        </div>
+
+                        <div class="mode-card mb-3">
+                            <label class="form-label text-secondary small fw-bold mb-2 d-block" data-text="chatbot.quickQuestionTitle">바로 질문하기</label>
+                            <div id="quick-question-list" class="quick-chip-wrap"></div>
+                        </div>
+
+                        <div class="mode-card">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <label class="form-label text-secondary small fw-bold mb-0" data-text="chatbot.contextTitle">AI가 참고하는 정보</label>
+                                <a href="recommendations.html" class="btn btn-sm btn-outline-primary" data-text="chatbot.contextLink">추천 보기</a>
+                            </div>
+                            <div id="chatbot-context-list" class="d-grid gap-2">
+                                <span class="text-soft small" data-text="chatbot.contextLoading">추천과 복약 정보를 불러오는 중입니다...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-8">
+                    <div class="card p-4 h-100 d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <h5 class="fw-bold text-primary-custom mb-1" data-text="chatbot.chatTitle">대화창</h5>
+                                <p class="text-soft small mb-0" data-text="chatbot.chatSubtitle">질문을 보내면 AI가 현재 모드에 맞춰 답변합니다.</p>
+                            </div>
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="resetConversation()" data-text="chatbot.resetButton">대화 비우기</button>
+                        </div>
+
+                        <div id="chat-log" class="chat-log flex-grow-1 mb-3">
+                            <div class="chat-bubble assistant">
+                                <div class="chat-meta" data-text="chatbot.assistantName">AI 상담사</div>
+                                <div data-text="chatbot.welcomeMessage">안녕하세요. 복약 상담이나 생활 건강 고민을 편하게 남겨 주세요.</div>
+                            </div>
+                        </div>
+
+                        <form onsubmit="sendChat(event)">
+                            <label class="form-label text-secondary small fw-bold" data-text="chatbot.questionLabel">질문 입력</label>
+                            <textarea id="chat-question" class="form-control mb-3" rows="4"
+                                data-placeholder="chatbot.questionPlaceholder"
+                                placeholder="예: 이 약은 식후에 먹어야 하나요?"></textarea>
+                            <div class="d-flex justify-content-end">
+                                <button type="submit" id="send-chat-btn" class="btn btn-primary px-4">
+                                    <span class="btn-text" data-text="chatbot.sendButton">질문 보내기</span>
+                                    <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/texts.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/components.js"></script>
+    <script>
+        let currentUser = null;
+
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('show');
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? '')
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#39;');
+        }
+
+        function setStatus(message = '', type = 'info') {
+            const box = document.getElementById('chatbot-status');
+            if (!message) {
+                box.className = 'alert d-none small p-2 mb-3';
+                box.innerText = '';
+                return;
+            }
+            box.className = `alert alert-${type} small p-2 mb-3`;
+            box.innerText = message;
+        }
+
+        function appendMessage(role, content) {
+            const log = document.getElementById('chat-log');
+            const bubble = document.createElement('div');
+            bubble.className = `chat-bubble ${role}`;
+            bubble.innerHTML = `
+                <div class="chat-meta">${role === 'user'
+                    ? escapeHtml(getText('chatbot.userName', '나'))
+                    : escapeHtml(getText('chatbot.assistantName', 'AI 상담사'))}</div>
+                <div>${escapeHtml(content)}</div>
+            `;
+            log.appendChild(bubble);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function handleModeChange() {
+            const mode = document.getElementById('chat-mode').value;
+            document.getElementById('medication-fields').classList.toggle('d-none', mode !== 'medication');
+            renderQuickQuestions();
+        }
+
+        function getQuickQuestions(mode) {
+            if (mode === 'health') {
+                return [
+                    getText('chatbot.quickHealth1', '요즘 잠이 잘 안 오는데 생활 습관을 어떻게 바꾸면 좋을까요?'),
+                    getText('chatbot.quickHealth2', '식단과 운동을 같이 관리하려면 어떤 순서로 시작하면 좋을까요?'),
+                    getText('chatbot.quickHealth3', '피곤함이 계속될 때 병원에 가야 하는 신호가 있을까요?'),
+                ];
+            }
+
+            return [
+                getText('chatbot.quickMedication1', '이 약은 식전/식후 언제 먹는 게 좋나요?'),
+                getText('chatbot.quickMedication2', '현재 약들끼리 같이 먹어도 되는지 확인해 주세요.'),
+                getText('chatbot.quickMedication3', '부작용이 나타나면 어떤 증상을 먼저 봐야 하나요?'),
+            ];
+        }
+
+        function renderQuickQuestions() {
+            const mode = document.getElementById('chat-mode').value;
+            const container = document.getElementById('quick-question-list');
+            container.innerHTML = '';
+
+            getQuickQuestions(mode).forEach((question) => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'quick-chip';
+                button.textContent = question;
+                button.onclick = () => {
+                    document.getElementById('chat-question').value = question;
+                    document.getElementById('chat-question').focus();
+                };
+                container.appendChild(button);
+            });
+        }
+
+        function renderHistory(items) {
+            const historyList = document.getElementById('history-list');
+            historyList.innerHTML = '';
+
+            if (!items || items.length === 0) {
+                historyList.innerHTML = `<span class="text-soft small">${escapeHtml(getText('chatbot.historyEmpty', '아직 저장된 복약 상담 참고 이력이 없습니다.'))}</span>`;
+                return;
+            }
+
+            items.slice(0, 8).forEach((item) => {
+                const pill = document.createElement('span');
+                const diseaseCode = item.disease_code || getText('chatbot.historyNoDisease', '질환 정보 없음');
+                const medications = item.medications || getText('chatbot.historyNoMedication', '약 정보 없음');
+                pill.className = 'history-pill';
+                pill.textContent = `${diseaseCode} · ${medications}`;
+                historyList.appendChild(pill);
+            });
+
+            const latest = items.find((item) => item && item.medications);
+            const medicationBox = document.getElementById('medications-input');
+            const diseaseBox = document.getElementById('disease-code');
+
+            if (latest && medicationBox && !medicationBox.value.trim()) {
+                medicationBox.value = latest.medications;
+            }
+
+            if (latest && diseaseBox && !diseaseBox.value.trim() && latest.disease_code) {
+                diseaseBox.value = latest.disease_code;
+            }
+        }
+
+        function renderContext(items) {
+            const container = document.getElementById('chatbot-context-list');
+            container.innerHTML = '';
+
+            if (!items || items.length === 0) {
+                container.innerHTML = `<span class="text-soft small">${escapeHtml(getText('chatbot.contextEmpty', '아직 연결된 추천 정보가 없습니다. 처방전을 저장하면 이곳에 참고 정보가 표시됩니다.'))}</span>`;
+                return;
+            }
+
+            items.slice(0, 3).forEach((item) => {
+                const card = document.createElement('div');
+                card.className = 'context-card';
+                card.innerHTML = `
+                    <div class="context-title">${escapeHtml(getText('chatbot.contextRecommendationLabel', '활성 추천'))}</div>
+                    <div class="fw-semibold">${escapeHtml(item.content || '-')}</div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        async function loadContextRecommendations() {
+            try {
+                const recommendations = await window.api.getActiveRecommendations();
+                renderContext(recommendations);
+            } catch (err) {
+                renderContext([]);
+            }
+        }
+
+        async function loadMedicationHistory() {
+            if (!currentUser?.id) {
+                renderHistory([]);
+                return;
+            }
+
+            try {
+                const history = await window.api.getChatbotHistory(currentUser.id);
+                renderHistory(history);
+            } catch (err) {
+                renderHistory([]);
+                setStatus(getText('chatbot.historyError', '복약 상담 이력을 불러오지 못했습니다: ') + err.message, 'warning');
+            }
+        }
+
+        function resetConversation() {
+            const log = document.getElementById('chat-log');
+            log.innerHTML = `
+                <div class="chat-bubble assistant">
+                    <div class="chat-meta">${escapeHtml(getText('chatbot.assistantName', 'AI 상담사'))}</div>
+                    <div>${escapeHtml(getText('chatbot.welcomeMessage', '안녕하세요. 복약 상담이나 생활 건강 고민을 편하게 남겨 주세요.'))}</div>
+                </div>
+            `;
+            document.getElementById('chat-question').value = '';
+            setStatus('');
+        }
+
+        async function sendChat(event) {
+            event.preventDefault();
+
+            const question = document.getElementById('chat-question').value.trim();
+            const mode = document.getElementById('chat-mode').value;
+            const diseaseCode = document.getElementById('disease-code').value.trim();
+            const medications = document.getElementById('medications-input').value
+                .split(',')
+                .map((item) => item.trim())
+                .filter(Boolean);
+
+            if (!currentUser?.id) {
+                setStatus(getText('chatbot.userMissing', '사용자 정보를 확인할 수 없어 상담을 시작할 수 없습니다.'), 'danger');
+                return;
+            }
+
+            if (!question) {
+                setStatus(getText('chatbot.questionRequired', '질문을 먼저 입력해 주세요.'), 'warning');
+                return;
+            }
+
+            if (mode === 'medication' && medications.length === 0) {
+                setStatus(getText('chatbot.medicationsRequired', '복약 상담 모드에서는 현재 복용 중인 약을 한 개 이상 입력해 주세요.'), 'warning');
+                return;
+            }
+
+            const button = document.getElementById('send-chat-btn');
+
+            try {
+                button.disabled = true;
+                button.querySelector('.btn-text').classList.add('d-none');
+                button.querySelector('.spinner-border').classList.remove('d-none');
+                setStatus(getText('chatbot.sending', '질문을 전송하고 있습니다...'), 'info');
+
+                appendMessage('user', question);
+
+                const response = await window.api.sendChatMessage({
+                    patient_id: String(currentUser.id),
+                    mode,
+                    user_question: question,
+                    disease_code: diseaseCode || null,
+                    medications,
+                });
+
+                appendMessage('assistant', response.chat_answer || getText('chatbot.emptyAnswer', '답변을 받아오지 못했습니다.'));
+                document.getElementById('chat-question').value = '';
+                setStatus(getText('chatbot.success', '답변이 도착했습니다.'), 'success');
+                await loadMedicationHistory();
+            } catch (err) {
+                appendMessage('assistant', getText('chatbot.errorReply', '죄송합니다. 답변을 가져오는 중 문제가 생겼습니다.'));
+                setStatus(err.message, 'danger');
+            } finally {
+                button.disabled = false;
+                button.querySelector('.btn-text').classList.remove('d-none');
+                button.querySelector('.spinner-border').classList.add('d-none');
+            }
+        }
+
+        async function initChatbotPage() {
+            applyTextBindings();
+            document.title = getText('chatbot.title', document.title);
+            handleModeChange();
+
+            try {
+                currentUser = await window.api.getUserMe();
+                localStorage.setItem('user_name', currentUser.name || getText('common.userFallbackName', '사용자'));
+                renderSidebar();
+                document.getElementById('patient-badge').innerText = `${getText('chatbot.patientIdLabel', '내 ID')}: ${currentUser.id}`;
+
+                const check = await window.api.checkChatbotPatient(currentUser.id);
+                if (!check || !check.exists) {
+                    setStatus(getText('chatbot.patientCheckFailed', '현재 사용자 정보가 상담 대상과 연결되지 않았습니다.'), 'warning');
+                } else {
+                    setStatus(getText('chatbot.ready', '상담 준비가 완료되었습니다.'), 'success');
+                }
+            } catch (err) {
+                setStatus(getText('chatbot.initError', '상담 초기화 중 문제가 발생했습니다: ') + err.message, 'danger');
+            }
+
+            await loadMedicationHistory();
+            await loadContextRecommendations();
+        }
+
+        document.addEventListener('DOMContentLoaded', initChatbotPage);
+    </script>
+</body>
+
+</html>

@@ -69,7 +69,7 @@ function formatHttpStatusMessage(status) {
         case 422:
             return '입력값을 다시 확인해주세요.';
         case 429:
-            return '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.';
+            return 'OCR 서버 요청이 잠시 몰려 있습니다. 잠깐 기다린 뒤 다시 확인해주세요.';
         case 500:
             return '서버 내부 오류가 발생했습니다.';
         case 502:
@@ -164,5 +164,8 @@ window.api = {
     saveRecommendationsForScan: (scanId) => fetchAPI(`/recommendations/scans/${scanId}/save`, { method: 'POST' }),
     searchDrugs: (q, limit = 10) => fetchAPI(`/drugs/search?q=${encodeURIComponent(q)}&limit=${limit}`),
     getActiveRecommendations: () => fetchAPI('/recommendations/active'),
-    sendFeedback: (recId, type) => fetchAPI(`/recommendations/${recId}/feedback?feedback_type=${type}`, { method: 'POST' })
+    sendFeedback: (recId, type) => fetchAPI(`/recommendations/${recId}/feedback?feedback_type=${type}`, { method: 'POST' }),
+    checkChatbotPatient: (patientId) => fetchAPI(`/chatbot/check-patient/${encodeURIComponent(patientId)}`),
+    getChatbotHistory: (patientId) => fetchAPI(`/chatbot/history/${encodeURIComponent(patientId)}`),
+    sendChatMessage: (body) => fetchAPI('/chatbot/chat', { method: 'POST', body })
 };
