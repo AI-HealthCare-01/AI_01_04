@@ -25,3 +25,16 @@ def encode(text: str) -> list[float]:
     """
     response = _client.embeddings.create(input=text, model=_MODEL)
     return response.data[0].embedding
+
+
+def encode_batch(texts: list[str]) -> list[list[float]]:
+    """텍스트 목록을 한 번의 API 호출로 일괄 임베딩한다.
+
+    Args:
+        texts (list[str]): 임베딩할 텍스트 목록.
+
+    Returns:
+        list[list[float]]: 각 텍스트에 대한 1536차원 벡터 목록.
+    """
+    response = _client.embeddings.create(input=texts, model=_MODEL)
+    return [item.embedding for item in sorted(response.data, key=lambda x: x.index)]
