@@ -311,12 +311,12 @@ class ScanAnalysisService:
         if data.document_date is not None:
             parse_date_yyyy_mm_dd(data.document_date)
             update_fields["document_date"] = data.document_date
-        if data.diagnosis is not None:
-            update_fields["diagnosis_list"] = data.diagnosis if isinstance(data.diagnosis, list) else [data.diagnosis]
+        if data.diagnosis_list is not None:
+            update_fields["diagnosis_list"] = data.diagnosis_list
         if data.clinical_note is not None:
             update_fields["clinical_note"] = data.clinical_note
         if data.drugs is not None:
-            update_fields["drugs"] = data.drugs
+            update_fields["drugs"] = [d.model_dump(exclude_none=True) for d in data.drugs]
         return update_fields
 
     async def update_result(
@@ -375,7 +375,7 @@ class ScanAnalysisService:
         user: Any,
         doc_date: str,
         diagnosis_list: list[str],
-        drug_names: list[str],
+        drugs_data: list[dict[str, Any]],
     ) -> tuple[list[int], int, list[str]]:
         """처방전 레코드를 생성한다.
 
@@ -394,12 +394,22 @@ class ScanAnalysisService:
         skipped_duplicates: list[str] = []
 
         start = parse_date_yyyy_mm_dd(doc_date)
-        end = start
 
-        for drug_name_raw in drug_names:
-            drug_name = drug_name_raw.strip()
+        for drug_entry in drugs_data:
+            if isinstance(drug_entry, str):
+                drug_entry = {"name": drug_entry}
+            drug_name = (drug_entry.get("name") or "").strip()
             if not drug_name:
                 continue
+
+            dose_count = drug_entry.get("dose_count") or 1
+            dose_days = drug_entry.get("dose_days")
+            dose_amount = drug_entry.get("dose_amount") or "1"
+            dose_unit = drug_entry.get("dose_unit") or "정"
+
+            from datetime import timedelta
+
+            end = start + timedelta(days=(dose_days - 1)) if dose_days and dose_days > 0 else start
 
             query_vector = encode(drug_name)
             similar = await self.vector_repo.search_similar(
@@ -415,14 +425,12 @@ class ScanAnalysisService:
             else:
                 drug_obj, _ = await Drug.get_or_create(name=drug_name)
 
-            # 첫 번째 질환과만 처방전 연결 (1약물:1처방전)
             disease_obj = disease_objects[0]
 
             exists_qs = Prescription.filter(
                 user_id=user.id,
                 drug_id=drug_obj.id,
                 start_date=start,
-                end_date=end,
             )
             exists_qs = (
                 exists_qs.filter(disease_id=disease_obj.id)
@@ -441,9 +449,9 @@ class ScanAnalysisService:
                 drug=drug_obj,
                 start_date=start,
                 end_date=end,
-                dose_count=1,
-                dose_amount="1",
-                dose_unit="정",
+                dose_count=dose_count,
+                dose_amount=str(dose_amount),
+                dose_unit=dose_unit,
             )
             created.append(prescription.id)
 
@@ -474,13 +482,19 @@ class ScanAnalysisService:
                 await self.health_service.ensure_day_seed(user_id=user.id, date=doc_date)
 
                 drug_names_raw: Any = cur.get("drugs", [])
-                drug_names: list[str] = drug_names_raw if isinstance(drug_names_raw, list) else []
+                drugs_data: list[dict] = []
+                if isinstance(drug_names_raw, list):
+                    for d in drug_names_raw:
+                        if isinstance(d, str):
+                            drugs_data.append({"name": d})
+                        elif isinstance(d, dict):
+                            drugs_data.append(d)
 
                 created_prescriptions, skipped_count, skipped_duplicates = await self._create_prescriptions(
                     user,
                     doc_date,
                     cur.get("diagnosis_list", []),
-                    drug_names,
+                    drugs_data,
                 )
 
             else:

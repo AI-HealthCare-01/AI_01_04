@@ -27,9 +27,14 @@ PRESCRIPTION_SYSTEM_PROMPT = """
   OCR 오인식 주의: KCD 코드 첫 글자는 반드시 영문 대문자다. '1', 'l' 로 인식된 경우 'I'로, '0'으로 인식된 경우 'O'로 보정하라. 예: "1219" → "I219", "l109" → "I109"
   한국 첫 방문 질병분류기호 위치: 첫 방문 질병분류기호는 주로 '질병분류', '상병코드', '질병코드' 등의 라벨 근처에 위치한다. 해당 라벨 근처에 영문자+숫자 또는 숫자만으로 된 3~5자리 코드가 있으면 KCD 코드로 간주하고 영문자 보정 후 diagnosis_list에 추가하라.
 - clinical_note: null
-- drugs:
-    1. 문자열 배열. OCR로 인식된 텍스트를 가장 유사한 한국 약물명으로 보정해라. (없으면 [])
-    2. 보정 불가능하면 "인식 불가"를 배열에 포함시켜라.
+- drugs: 객체 배열. 각 약품에 대해 다음 필드를 추출한다. (없으면 [])
+    - name: 약품명 (OCR 텍스트를 가장 유사한 한국 약물명으로 보정. 보정 불가능하면 "인식 불가")
+    - dose_amount: 1회 투여량 문자열 (예: "1"). 없으면 null
+    - dose_unit: 단위 (정, ml, 캡슐 등). 없으면 null
+    - dose_count: 1일 투여횟수 정수 (예: 2). 없으면 null
+    - dose_timing: 복용 시점 (식전, 식후, 식후30분, 자기전, 공복 등). 없으면 null
+    - dose_days: 투약일수 정수 (예: 30). 없으면 null
+  예시: {"name": "노바스크정5mg", "dose_amount": "1", "dose_unit": "정", "dose_count": 1, "dose_timing": "식후", "dose_days": 30}
 - raw_text: 입력 원문 그대로
 - ocr_raw: 입력 원본 JSON 그대로
 
@@ -46,7 +51,7 @@ MEDICAL_RECORD_SYSTEM_PROMPT = """
 - document_date: YYYY-MM-DD 또는 null
 - diagnosis_list: 진단명/질병명/질병코드 배열. 여러 개가 있으면 모두 추출. 없으면 []
 - clinical_note: 진료 내용, 주증상, 소견, 생활지도, 경과관찰 내용 등을 자연스럽게 정리한 문자열, 없으면 null
-- drugs: 문자열 배열 (진료기록지에서 약물명이 명확히 보일 때만 추출, 없으면 [])
+- drugs: 객체 배열. 진료기록지에서 약물명이 명확히 보일 때만 추출. 각 항목은 {"name": "약품명", "dose_amount": null, "dose_unit": null, "dose_count": null, "dose_timing": null, "dose_days": null}. 없으면 []
 - raw_text: 입력 원문 그대로
 - ocr_raw: 입력 원본 JSON 그대로
 
@@ -109,8 +114,22 @@ async def ai_postprocess(
     if not isinstance(result["drugs"], list):
         result["drugs"] = []
 
-    result["unrecognized_drugs"] = [d for d in result["drugs"] if d == "인식 불가"]
-    result["drugs"] = [d for d in result["drugs"] if d != "인식 불가"]
+    # drugs를 DrugEntry 호환 dict 목록으로 정규화
+    normalized_drugs: list[dict] = []
+    unrecognized: list[str] = []
+    for d in result["drugs"]:
+        if isinstance(d, str):
+            if d == "인식 불가":
+                unrecognized.append(d)
+            else:
+                normalized_drugs.append({"name": d})
+        elif isinstance(d, dict) and d.get("name"):
+            if d["name"] == "인식 불가":
+                unrecognized.append(d["name"])
+            else:
+                normalized_drugs.append(d)
+    result["drugs"] = normalized_drugs
+    result["unrecognized_drugs"] = unrecognized
 
     # AI가 못 잡은 KCD 코드를 raw_text에서 직접 추출하여 보완
     if not result["diagnosis_list"]:
