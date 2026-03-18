@@ -1,6 +1,7 @@
 import zoneinfo
 from dataclasses import field
 
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings
 
 
@@ -13,5 +14,5 @@ class Config(BaseSettings):
 
     TIMEZONE: zoneinfo.ZoneInfo = field(default_factory=lambda: zoneinfo.ZoneInfo("Asia/Seoul"))
 
-    OPENAI_API_KEY: str = ""
+    OPENAI_API_KEY: str = Field(default="", validation_alias=AliasChoices("OPENAI_API_KEY", "api_key"))
     OPENAI_MODEL: str = "gpt-4o-mini"

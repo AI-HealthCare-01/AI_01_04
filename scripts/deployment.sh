@@ -37,13 +37,13 @@ build_and_push () {
 # ---------- Docker login Prompt ----------
 echo "${COLOR_BLUE}도커 유저네임과 비밀번호(PAT)을 입력해주세요.${COLOR_NC}"
 read -p "username: " docker_user
-read -p "password: " docker_pw
+read -s -p "password: " docker_pw
 echo ""
 
 
 # ---------- Docker Login ----------
 echo "${COLOR_BLUE}Docker login${COLOR_NC}"
-if ! docker login -u ${docker_user} -p ${docker_pw} ; then
+if ! echo "${docker_pw}" | docker login -u "${docker_user}" --password-stdin ; then
   echo "${COLOR_RED}도커 로그인에 실패했습니다. 도커 유저네임과 비밀번호를 확인해주세요.${COLOR_NC}"
 fi
 echo "${COLOR_GREEN}도커 로그인 성공!${COLOR_NC}"
@@ -108,7 +108,7 @@ echo ""
 # ---------- EC2 내에 배포 준비 파일 복사  ----------
 scp -i ~/.ssh/${ssh_key_file} envs/.prod.env ubuntu@${ec2_ip}:~/project/.env
 scp -i ~/.ssh/${ssh_key_file} docker-compose.prod.yml ubuntu@${ec2_ip}:~/project/docker-compose.yml
-if is_https ; then
+if [[ "$is_https" == "1" ]]; then
   # ---------- prod_https.conf 파일의 server_name, ssl_certificate 자동 수정 ----------
   sed -i '' "s/server_name .*/server_name ${ec2_ip};/g" nginx/prod_http.conf
   scp -i ~/.ssh/${ssh_key_file} nginx/prod_http.conf ubuntu@${ec2_ip}:~/project/nginx/default.conf
@@ -133,7 +133,7 @@ ssh -i ~/.ssh/${ssh_key_file} ubuntu@${ec2_ip} \
   cd project
 
   echo "Docker login"
-  docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PAT"
+  echo "$DOCKER_PAT" | docker login -u "$DOCKER_USERNAME" --password-stdin
 
   echo "Deploying services: $DEPLOY_SERVICES"
   docker compose up -d --pull always --no-deps $DEPLOY_SERVICES

@@ -76,7 +76,7 @@ class ScanAnalysisService:
         try:
             normalized_document_type = self._normalize_document_type(document_type)
 
-            base_dir = getattr(config, "FILE_STORAGE_DIR", "./artifacts")
+            base_dir = config.FILE_STORAGE_DIR
             file_path = await save_user_upload_file(
                 user_id=user.id,
                 upload=file,

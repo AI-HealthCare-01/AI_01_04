@@ -1,9 +1,26 @@
 // api.js - Core API Client
 
-const BACKEND_ORIGIN =
-    window.location.port === '8000'
-        ? window.location.origin
-        : `${window.location.protocol}//${window.location.hostname}:8000`;
+const BACKEND_ORIGIN = (() => {
+    const override = typeof window.__BACKEND_ORIGIN__ === 'string' ? window.__BACKEND_ORIGIN__.trim() : '';
+    if (override) {
+        return override.replace(/\/$/, '');
+    }
+
+    if (window.location.protocol === 'file:') {
+        return 'http://localhost:8000';
+    }
+
+    const isLocalHost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+    if (window.location.port === '8000') {
+        return window.location.origin;
+    }
+
+    if (isLocalHost) {
+        return `${window.location.protocol}//${window.location.hostname}:8000`;
+    }
+
+    return window.location.origin;
+})();
 const API_BASE_URL = `${BACKEND_ORIGIN}/api/v1`;
 const STATIC_BASE_URL = BACKEND_ORIGIN;
 
