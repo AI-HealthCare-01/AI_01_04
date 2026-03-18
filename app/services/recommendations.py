@@ -719,7 +719,7 @@ class RecommendationService:
             return [_rec_to_response_dict(r) for r in recs]
         except Exception as e:
             logger.exception("list_by_user failed")
-            raise HTTPException(status_code=500, detail=str(e)) from e
+            raise HTTPException(status_code=500, detail="서버 내부 오류가 발생했습니다.") from e
 
     async def list_active(self, user_id: int) -> list[dict[str, Any]]:
         """
@@ -730,7 +730,7 @@ class RecommendationService:
             return [_rec_to_response_dict(ar.recommendation) for ar in active_recs]
         except Exception as e:
             logger.exception("list_active failed")
-            raise HTTPException(status_code=500, detail=str(e)) from e
+            raise HTTPException(status_code=500, detail="서버 내부 오류가 발생했습니다.") from e
 
     async def update(self, user_id: int, recommendation_id: int, data: RecommendationUpdateRequest) -> dict[str, Any]:
         """
@@ -757,7 +757,7 @@ class RecommendationService:
             raise
         except Exception as e:
             logger.exception("update failed")
-            raise HTTPException(status_code=500, detail=str(e)) from e
+            raise HTTPException(status_code=500, detail="서버 내부 오류가 발생했습니다.") from e
 
     async def delete(self, user_id: int, recommendation_id: int) -> None:
         """
@@ -774,7 +774,7 @@ class RecommendationService:
             raise
         except Exception as e:
             logger.exception("delete failed")
-            raise HTTPException(status_code=500, detail=str(e)) from e
+            raise HTTPException(status_code=500, detail="서버 내부 오류가 발생했습니다.") from e
 
     async def save_for_scan(self, user_id: int, scan_id: int) -> dict[str, Any]:
         """
@@ -799,7 +799,7 @@ class RecommendationService:
             raise
         except Exception as e:
             logger.exception("save_for_scan failed")
-            raise HTTPException(status_code=500, detail=str(e)) from e
+            raise HTTPException(status_code=500, detail="서버 내부 오류가 발생했습니다.") from e
 
     async def add_feedback(self, user_id: int, recommendation_id: int, feedback_type: str) -> dict[str, Any]:
         """
@@ -819,4 +819,4 @@ class RecommendationService:
             raise
         except Exception as e:
             logger.exception("add_feedback failed")
-            raise HTTPException(status_code=500, detail=str(e)) from e
+            raise HTTPException(status_code=500, detail="서버 내부 오류가 발생했습니다.") from e

@@ -292,4 +292,4 @@ class MedicationService:
             raise
         except Exception as e:
             logger.exception("update_log failed")
-            raise HTTPException(status_code=500, detail=str(e)) from e
+            raise HTTPException(status_code=500, detail="서버 내부 오류가 발생했습니다.") from e

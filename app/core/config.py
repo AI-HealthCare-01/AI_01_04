@@ -4,6 +4,7 @@ from dataclasses import field
 from enum import StrEnum
 from pathlib import Path
 
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -28,6 +29,7 @@ class Config(BaseSettings):
     SECRET_KEY: str = ""
     TIMEZONE: zoneinfo.ZoneInfo = field(default_factory=lambda: zoneinfo.ZoneInfo("Asia/Seoul"))
     TEMPLATE_DIR: str = os.path.join(Path(__file__).resolve().parent.parent, "templates")
+    FILE_STORAGE_DIR: str = "./artifacts"
 
     DB_HOST: str = "localhost"
     DB_PORT: int = 5432
@@ -38,6 +40,7 @@ class Config(BaseSettings):
     DB_CONNECTION_POOL_MAXSIZE: int = 10
 
     COOKIE_DOMAIN: str = "localhost"
+    CORS_ORIGINS: str = ""
 
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
@@ -46,7 +49,7 @@ class Config(BaseSettings):
 
     NAVER_OCR_SECRET_KEY: str = ""
     NAVER_OCR_API_URL: str = ""
-    OPENAI_API_KEY: str = ""
+    OPENAI_API_KEY: str = Field(default="", validation_alias=AliasChoices("OPENAI_API_KEY", "api_key"))
     OPENAI_MODEL: str = "gpt-4o-mini"
 
     # ENABLE_LLM_REFINEMENT=False로 검증 그다음 LLM refinement 켜서 비교

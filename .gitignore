@@ -23,3 +23,6 @@ artifacts/uploads/
 
 # 데이터 원본 파일(용량 100MB이상)
 scripts/raw_drug_license_info.xlsx
+
+.mcp.json
+.claude
