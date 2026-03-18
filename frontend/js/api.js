@@ -1,9 +1,26 @@
 // api.js - Core API Client
 
-const BACKEND_ORIGIN =
-    window.location.port === '8000'
-        ? window.location.origin
-        : `${window.location.protocol}//${window.location.hostname}:8000`;
+const BACKEND_ORIGIN = (() => {
+    const override = typeof window.__BACKEND_ORIGIN__ === 'string' ? window.__BACKEND_ORIGIN__.trim() : '';
+    if (override) {
+        return override.replace(/\/$/, '');
+    }
+
+    if (window.location.protocol === 'file:') {
+        return 'http://localhost:8000';
+    }
+
+    const isLocalHost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+    if (window.location.port === '8000') {
+        return window.location.origin;
+    }
+
+    if (isLocalHost) {
+        return `${window.location.protocol}//${window.location.hostname}:8000`;
+    }
+
+    return window.location.origin;
+})();
 const API_BASE_URL = `${BACKEND_ORIGIN}/api/v1`;
 const STATIC_BASE_URL = BACKEND_ORIGIN;
 
@@ -106,8 +123,8 @@ async function fetchAPI(endpoint, options = {}) {
     try {
         let response = await fetch(url, { ...options, headers, credentials: 'include' });
 
-        if (response.status === 401 && !endpoint.startsWith('/auth/login')) {
-            // Try refreshing token
+        if (response.status === 401 && !endpoint.startsWith('/auth/login') && !options._retried) {
+            // Try refreshing token (once only)
             console.log("Token expired, attempting refresh...");
             const refreshRes = await fetch(`${API_BASE_URL}/auth/token/refresh`, {
                 credentials: 'include',
@@ -115,9 +132,9 @@ async function fetchAPI(endpoint, options = {}) {
             if (refreshRes.ok) {
                 const data = await refreshRes.json();
                 setAccessToken(data.access_token);
-                // Retry original request with new token
+                // Retry original request with new token (mark as retried)
                 headers.set('Authorization', `Bearer ${data.access_token}`);
-                response = await fetch(url, { ...options, headers, credentials: 'include' });
+                response = await fetch(url, { ...options, headers, credentials: 'include', _retried: true });
             } else {
                 // Refresh failed, clear and logout
                 clearAuth();

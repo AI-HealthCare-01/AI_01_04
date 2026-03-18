@@ -25,11 +25,19 @@ PRESCRIPTION_SYSTEM_PROMPT = """
 - document_date: YYYY-MM-DD 또는 null
 - diagnosis_list: 진단명/질병명/질병분류기호(KCD 코드) 배열. 여러 개가 있으면 모두 추출. 예: ["I109 기타 및 상세불명의 원발성 고혈압", "E118 합병증을 동반하지 않은 1형 당뇨병"]. 없으면 []
   OCR 오인식 주의: KCD 코드 첫 글자는 반드시 영문 대문자다. '1', 'l' 로 인식된 경우 'I'로, '0'으로 인식된 경우 'O'로 보정하라. 예: "1219" → "I219", "l109" → "I109"
+  칸 분리 형식 주의: 한국 처방전의 질병분류기호는 각 글자가 별도 칸에 나뉘어 있는 경우가 많다. OCR이 이를 개별 문자로 인식하여 공백으로 분리될 수 있다. 예: "I 1 0 9" → "I109", "E 1 1 8" → "E118". 이런 패턴을 발견하면 공백을 제거하고 KCD 코드로 보정하여 diagnosis_list에 추가하라.
+  OCR 누락 보완: 질병분류기호 칸에서 일부 글자가 OCR에 의해 누락될 수 있다. 처방된 약물 정보를 참고하여 누락된 질병코드를 추론하라. 예: 노바스크정(고혈압약)이 처방되었으면 I10 계열(고혈압) 코드가 있을 가능성이 높다. parser_hints의 candidate_diagnosis_codes에 이미 추출된 코드가 있으면 그것을 신뢰하되, 처방약과 매칭되지 않는 누락 코드가 있으면 추론하여 추가하라.
   한국 첫 방문 질병분류기호 위치: 첫 방문 질병분류기호는 주로 '질병분류', '상병코드', '질병코드' 등의 라벨 근처에 위치한다. 해당 라벨 근처에 영문자+숫자 또는 숫자만으로 된 3~5자리 코드가 있으면 KCD 코드로 간주하고 영문자 보정 후 diagnosis_list에 추가하라.
 - clinical_note: null
-- drugs:
-    1. 문자열 배열. OCR로 인식된 텍스트를 가장 유사한 한국 약물명으로 보정해라. (없으면 [])
-    2. 보정 불가능하면 "인식 불가"를 배열에 포함시켜라.
+- drugs: 객체 배열. 각 약품에 대해 다음 필드를 추출한다. (없으면 [])
+    - name: 약품명 (OCR 텍스트를 가장 유사한 한국 약물명으로 보정. 보정 불가능하면 "인식 불가")
+    - edi_code: 보험코드/EDI코드/약품코드 (9자리 숫자). 처방전에 "코드", "보험코드", "EDI", "약품코드" 라벨 근처 숫자가 있으면 추출. 없으면 null
+    - dose_amount: 1회 투여량 문자열 (예: "1"). 없으면 null
+    - dose_unit: 단위 (정, ml, 캡슐 등). 없으면 null
+    - dose_count: 1일 투여횟수 정수 (예: 2). 없으면 null
+    - dose_timing: 복용 시점 (식전, 식후, 식후30분, 자기전, 공복 등). 없으면 null
+    - dose_days: 투약일수 정수 (예: 30). 없으면 null
+  예시: {"name": "노바스크정5mg", "edi_code": "670600380", "dose_amount": "1", "dose_unit": "정", "dose_count": 1, "dose_timing": "식후", "dose_days": 30}
 - raw_text: 입력 원문 그대로
 - ocr_raw: 입력 원본 JSON 그대로
 
@@ -46,7 +54,7 @@ MEDICAL_RECORD_SYSTEM_PROMPT = """
 - document_date: YYYY-MM-DD 또는 null
 - diagnosis_list: 진단명/질병명/질병코드 배열. 여러 개가 있으면 모두 추출. 없으면 []
 - clinical_note: 진료 내용, 주증상, 소견, 생활지도, 경과관찰 내용 등을 자연스럽게 정리한 문자열, 없으면 null
-- drugs: 문자열 배열 (진료기록지에서 약물명이 명확히 보일 때만 추출, 없으면 [])
+- drugs: 객체 배열. 진료기록지에서 약물명이 명확히 보일 때만 추출. 각 항목은 {"name": "약품명", "dose_amount": null, "dose_unit": null, "dose_count": null, "dose_timing": null, "dose_days": null}. 없으면 []
 - raw_text: 입력 원문 그대로
 - ocr_raw: 입력 원본 JSON 그대로
 
@@ -137,15 +145,31 @@ async def ai_postprocess(
     result.setdefault("raw_text", raw_text)
     result["ocr_raw"] = ocr_raw  # LLM 응답과 무관하게 원본 그대로 저장
 
-    if not isinstance(result["diagnosis_list"], list):
+    if not isinstance(result.get("diagnosis_list"), list):
         result["diagnosis_list"] = []
-    if not isinstance(result["drugs"], list):
+    if not isinstance(result.get("drugs"), list):
         result["drugs"] = []
 
     result = _merge_parser_hints(result, parser_hints)
 
-    result["unrecognized_drugs"] = [d for d in result["drugs"] if d == "인식 불가"]
-    result["drugs"] = [d for d in result["drugs"] if d != "인식 불가"]
+    # drugs를 DrugEntry 호환 dict 목록으로 정규화
+    normalized_drugs: list[dict] = []
+    unrecognized: list[str] = []
+    for d in result["drugs"]:
+        if isinstance(d, str):
+            if d == "인식 불가":
+                unrecognized.append(d)
+            else:
+                normalized_drugs.append({"name": d})
+        elif isinstance(d, dict) and d.get("name"):
+            if d["name"] == "인식 불가":
+                unrecognized.append(d["name"])
+            else:
+                if d.get("dose_unit"):
+                    d["dose_unit"] = _fix_dose_unit(d["dose_unit"])
+                normalized_drugs.append(d)
+    result["drugs"] = normalized_drugs
+    result["unrecognized_drugs"] = unrecognized
 
     # AI가 못 잡은 KCD 코드를 raw_text에서 직접 추출하여 보완
     if not result["diagnosis_list"]:
@@ -166,8 +190,51 @@ def _dedupe_keep_order(items: list[str]) -> list[str]:
     return result
 
 
+def _drug_name(item: str | dict) -> str:
+    """drugs 항목에서 약품명을 추출한다."""
+    if isinstance(item, dict):
+        return str(item.get("name", "")).strip()
+    return str(item).strip()
+
+
+def _dedupe_drugs(items: list) -> list[dict]:
+    """drugs 리스트를 dict 형태로 정규화하고 중복을 제거한다."""
+    seen: set[str] = set()
+    result: list[dict] = []
+    for item in items:
+        name = _drug_name(item)
+        if not name or name in seen:
+            continue
+        seen.add(name)
+        result.append(item if isinstance(item, dict) else {"name": name})
+    return result
+
+
+def _reconcile_diagnosis(
+    diagnosis_list: list[str],
+    candidate_codes: list[str],
+) -> list[str]:
+    """AI diagnosis_list와 parser 후보 코드를 비교하여 병합한다."""
+    kept: list[str] = []
+    used_codes: set[str] = set()
+    for diag in diagnosis_list:
+        matched = False
+        for code in candidate_codes:
+            if code in diag:
+                kept.append(diag)
+                used_codes.add(code)
+                matched = True
+                break
+        if not matched and not re.match(r"^[A-Z]\d{2}", diag.strip()):
+            kept.append(diag)
+    for code in candidate_codes:
+        if code not in used_codes:
+            kept.append(code)
+    return _dedupe_keep_order(kept)
+
+
 def _merge_parser_hints(result: dict, parser_hints: dict) -> dict:
-    """AI 결과가 빈약할 때 parser 후보를 최소한으로 보완한다."""
+    """AI 결과가 빈약하거나 부정확할 때 parser 후보로 보완/교체한다."""
     candidate_codes = [
         item for item in parser_hints.get("candidate_diagnosis_codes", []) if isinstance(item, str) and item.strip()
     ]
@@ -176,19 +243,39 @@ def _merge_parser_hints(result: dict, parser_hints: dict) -> dict:
     ]
 
     diagnosis_list = [item for item in result.get("diagnosis_list", []) if isinstance(item, str) and item.strip()]
-    drugs = [item for item in result.get("drugs", []) if isinstance(item, str) and item.strip()]
+    existing_drugs = [item for item in result.get("drugs", []) if _drug_name(item)]
 
-    if not diagnosis_list and candidate_codes:
+    if candidate_codes and diagnosis_list:
+        result["diagnosis_list"] = _reconcile_diagnosis(diagnosis_list, candidate_codes)
+    elif not diagnosis_list and candidate_codes:
         result["diagnosis_list"] = _dedupe_keep_order(candidate_codes[:5])
     else:
         result["diagnosis_list"] = _dedupe_keep_order(diagnosis_list)
 
-    if not drugs and candidate_drugs:
-        result["drugs"] = _dedupe_keep_order(candidate_drugs[:10])
+    if not existing_drugs and candidate_drugs:
+        result["drugs"] = _dedupe_drugs(candidate_drugs[:10])
     else:
-        result["drugs"] = _dedupe_keep_order(drugs)
+        result["drugs"] = _dedupe_drugs(existing_drugs)
 
     return result
+
+
+# OCR 오인식 dose_unit 보정 맵
+_DOSE_UNIT_FIX: dict[str, str] = {
+    "점": "정",
+    "갭슐": "캡슐",
+    "캡술": "캡슐",
+    "겝슐": "캡슐",
+    "mI": "ml",
+    "MI": "ml",
+    "ML": "ml",
+    "Ml": "ml",
+}
+
+
+def _fix_dose_unit(unit: str) -> str:
+    """OCR 오인식된 dose_unit을 보정한다."""
+    return _DOSE_UNIT_FIX.get(unit.strip(), unit.strip())
 
 
 _KCD_PATTERN = re.compile(
@@ -196,6 +283,9 @@ _KCD_PATTERN = re.compile(
 )
 _KCD_LABEL_PATTERN = re.compile(
     r"(?:질병분류|상병코드|질병코드|질병\s*분류|상병\s*기호|분류기호)\s*([1lIA-Z][0-9]{2,4}[0-9A-Z]?)"
+)
+_KCD_SPACED_PATTERN = re.compile(
+    r"(?<![A-Za-z0-9])([A-Za-z1l])\s+([0-9])\s+([0-9])\s+([0-9])(?:\s+([0-9]))?(?![A-Za-z])"
 )
 
 
@@ -208,7 +298,32 @@ def _normalize_kcd(code: str) -> str:
 
 def _extract_kcd_codes(raw_text: str) -> list[str]:
     """raw_text에서 KCD 코드를 추출한다."""
+    codes: list[str] = []
+    seen: set[str] = set()
+
+    # 라벨 근처 연속 코드
     label_matches = _KCD_LABEL_PATTERN.findall(raw_text)
     if label_matches:
-        return [_normalize_kcd(c) for c in label_matches]
-    return [normalized for c in _KCD_PATTERN.findall(raw_text) if (normalized := _normalize_kcd(c))[0].isalpha()]
+        for c in label_matches:
+            n = _normalize_kcd(c)
+            if n not in seen:
+                seen.add(n)
+                codes.append(n)
+
+    # 일반 패턴
+    if not codes:
+        for c in _KCD_PATTERN.findall(raw_text):
+            n = _normalize_kcd(c)
+            if n[0].isalpha() and n not in seen:
+                seen.add(n)
+                codes.append(n)
+
+    # 칸 분리 형식 (예: I 1 0 9)
+    for m in _KCD_SPACED_PATTERN.finditer(raw_text):
+        raw_code = "".join(g for g in m.groups() if g is not None)
+        n = _normalize_kcd(raw_code)
+        if re.fullmatch(r"[A-Z]\d{2,4}[0-9A-Z]?", n) and n not in seen:
+            seen.add(n)
+            codes.append(n)
+
+    return codes

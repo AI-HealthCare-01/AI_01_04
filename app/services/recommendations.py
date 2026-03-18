@@ -76,6 +76,7 @@ def _rec_to_response_dict(rec: Any) -> dict[str, Any]:
         "id": rec.id,
         "recommendation_type": _normalize_rec_type(getattr(rec, "recommendation_type", None)),
         "content": rec.content,
+        "frequency": getattr(rec, "frequency", None),
         "score": getattr(rec, "score", None),
         "is_selected": bool(getattr(rec, "is_selected", False)),
         "rank": getattr(rec, "rank", None),
@@ -278,6 +279,7 @@ class RecommendationService:
         content: str,
         score: float,
         rank: int,
+        frequency: str | None = None,
         status_value: str = "active",
     ) -> Any | None:
         """
@@ -290,6 +292,7 @@ class RecommendationService:
             recommendation_type=recommendation_type,
             source=source,
             content=content,
+            frequency=frequency,
             score=score,
             rank=rank,
             status=status_value,
@@ -318,6 +321,7 @@ class RecommendationService:
                 source=candidate.source,
                 content=candidate.content,
                 score=candidate.score,
+                frequency=candidate.frequency,
                 rank=rank,
                 status_value=status_value,
             )
@@ -632,21 +636,8 @@ class RecommendationService:
             )
         ]
 
-    async def get_for_scan(self, user_id: int, scan_id: int) -> dict[str, Any]:
-        """
-        특정 scan의 recommendation을 조회하거나, 없으면 새로 생성한다.
-        """
-        scan = await self.scan_repo.get_by_id_for_user(user_id, scan_id)
-        if not scan:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="scan not found")
-
-        existing = await self.recommendation_repo.list_by_user_scan(user_id=user_id, scan_id=scan_id)
-        if existing:
-            return {"scan_id": scan_id, "items": [_rec_to_response_dict(r) for r in existing]}
-
-        document_type = self._normalize_document_type(scan.get("document_type"))
-
-        # diagnosis_list 우선, 하위호환으로 diagnosis(단수)도 지원
+    def _extract_scan_fields(self, scan: dict[str, Any]) -> tuple[list[str], str | None, list[str]]:
+        """scan dict에서 diagnosis_list, clinical_note, drugs를 추출한다."""
         diagnosis_list_raw = scan.get("diagnosis_list") or []
         if not diagnosis_list_raw:
             single = scan.get("diagnosis")
@@ -660,26 +651,45 @@ class RecommendationService:
         )
 
         drugs_raw = scan.get("drugs") or []
-        drugs: list[str] = (
-            [d for d in drugs_raw if isinstance(d, str) and d.strip()] if isinstance(drugs_raw, list) else []
-        )
+        drugs: list[str] = []
+        if isinstance(drugs_raw, list):
+            for d in drugs_raw:
+                if isinstance(d, str) and d.strip():
+                    drugs.append(d.strip())
+                elif isinstance(d, dict) and d.get("name", "").strip():
+                    drugs.append(d["name"].strip())
+
+        return diagnosis_list, clinical_note, drugs
+
+    async def get_for_scan(self, user_id: int, scan_id: int) -> dict[str, Any]:
+        """
+        특정 scan의 recommendation을 조회하거나, 없으면 새로 생성한다.
+        """
+        scan = await self.scan_repo.get_by_id_for_user(user_id, scan_id)
+        if not scan:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="scan not found")
+
+        existing = await self.recommendation_repo.list_by_user_scan(user_id=user_id, scan_id=scan_id)
+        if existing:
+            return {"scan_id": scan_id, "items": [_rec_to_response_dict(r) for r in existing]}
+
+        document_type = self._normalize_document_type(scan.get("document_type"))
+        diagnosis_list, clinical_note, drugs = self._extract_scan_fields(scan)
 
         batch = await self.recommendation_repo.create_batch(
             user_id=user_id,
             retrieval_strategy=f"scan-{document_type}-multi-diag-v3",
         )
 
-        candidates: list[RecommendationCandidate] = []
-
         if document_type == "medical_record":
-            candidates.extend(
+            candidates = list(
                 await self._build_medical_record_recommendations(
                     diagnosis_list=diagnosis_list,
                     clinical_note=clinical_note,
                 )
             )
         else:
-            candidates.extend(
+            candidates = list(
                 await self._build_prescription_recommendations(
                     diagnosis_list=diagnosis_list,
                     drugs=drugs,
@@ -687,11 +697,7 @@ class RecommendationService:
             )
 
         if not candidates:
-            candidates.extend(
-                await self._build_fallback_recommendation(
-                    document_type=document_type,
-                )
-            )
+            candidates = list(await self._build_fallback_recommendation(document_type=document_type))
 
         final_candidates = await finalize_recommendations(
             candidates,
@@ -717,7 +723,7 @@ class RecommendationService:
             return [_rec_to_response_dict(r) for r in recs]
         except Exception as e:
             logger.exception("list_by_user failed")
-            raise HTTPException(status_code=500, detail=str(e)) from e
+            raise HTTPException(status_code=500, detail="서버 내부 오류가 발생했습니다.") from e
 
     async def list_active(self, user_id: int) -> list[dict[str, Any]]:
         """
@@ -728,7 +734,7 @@ class RecommendationService:
             return [_rec_to_response_dict(ar.recommendation) for ar in active_recs]
         except Exception as e:
             logger.exception("list_active failed")
-            raise HTTPException(status_code=500, detail=str(e)) from e
+            raise HTTPException(status_code=500, detail="서버 내부 오류가 발생했습니다.") from e
 
     async def update(self, user_id: int, recommendation_id: int, data: RecommendationUpdateRequest) -> dict[str, Any]:
         """
@@ -755,7 +761,7 @@ class RecommendationService:
             raise
         except Exception as e:
             logger.exception("update failed")
-            raise HTTPException(status_code=500, detail=str(e)) from e
+            raise HTTPException(status_code=500, detail="서버 내부 오류가 발생했습니다.") from e
 
     async def delete(self, user_id: int, recommendation_id: int) -> None:
         """
@@ -772,7 +778,7 @@ class RecommendationService:
             raise
         except Exception as e:
             logger.exception("delete failed")
-            raise HTTPException(status_code=500, detail=str(e)) from e
+            raise HTTPException(status_code=500, detail="서버 내부 오류가 발생했습니다.") from e
 
     async def save_for_scan(self, user_id: int, scan_id: int) -> dict[str, Any]:
         """
@@ -797,7 +803,7 @@ class RecommendationService:
             raise
         except Exception as e:
             logger.exception("save_for_scan failed")
-            raise HTTPException(status_code=500, detail=str(e)) from e
+            raise HTTPException(status_code=500, detail="서버 내부 오류가 발생했습니다.") from e
 
     async def add_feedback(self, user_id: int, recommendation_id: int, feedback_type: str) -> dict[str, Any]:
         """
@@ -817,4 +823,4 @@ class RecommendationService:
             raise
         except Exception as e:
             logger.exception("add_feedback failed")
-            raise HTTPException(status_code=500, detail=str(e)) from e
+            raise HTTPException(status_code=500, detail="서버 내부 오류가 발생했습니다.") from e

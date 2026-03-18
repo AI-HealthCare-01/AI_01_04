@@ -95,6 +95,7 @@
         </main>
     </div>
 
+    <script src="js/utils.js"></script>
     <script src="js/texts.js"></script>
     <script src="js/api.js"></script>
     <script src="js/components.js"></script>
@@ -122,8 +123,8 @@
                     card.querySelector('.status-text').innerHTML = getText('health.pending', '미완료');
                 }
 
-                // Rebind
-                card.onclick = () => toggleHealthLog(logId, newStatus, elId);
+                // Update data attribute for event delegation
+                card.dataset.status = newStatus;
 
             } catch (err) {
                 alert(getText('health.updateError', '업데이트 중 오류가 발생했습니다: ') + err.message);
@@ -170,13 +171,13 @@
 
                         const html = `
                 <div class="col-md-6 col-lg-4">
-                    <div class="health-card cursor-pointer shadow-sm d-flex align-items-center ${isDone ? 'selected' : ''}" id="${elId}" onclick="toggleHealthLog(${log.id}, '${log.status}', '${elId}')" style="cursor:pointer;">
+                    <div class="health-card cursor-pointer shadow-sm d-flex align-items-center ${isDone ? 'selected' : ''}" id="${elId}" data-log-id="${log.id}" data-status="${escapeHtml(log.status)}" data-el-id="${elId}" style="cursor:pointer;">
                         <div class="icon-box-lg shadow-sm me-3">
                             <i class="bi ${iconClass}"></i>
                         </div>
                         <div class="flex-grow-1">
-                            <h6 class="fw-bold mb-1">${log.label}</h6>
-                            ${log.memo ? `<p class="mb-0 small opacity-75">${log.memo}</p>` : ''}
+                            <h6 class="fw-bold mb-1">${escapeHtml(log.label)}</h6>
+                            ${log.memo ? `<p class="mb-0 small opacity-75">${escapeHtml(log.memo)}</p>` : ''}
                         </div>
                         <div class="ms-2">
                            <span class="status-text fw-bold small opacity-75">${isDone ? `<i class="bi bi-check-circle-fill me-1"></i>${getText('health.done', '완료')}` : getText('health.pending', '미완료')}</span>
@@ -197,6 +198,16 @@
         }
 
         document.addEventListener("DOMContentLoaded", loadHealthHistory);
+
+        // Event delegation for health cards
+        document.getElementById('health-list').addEventListener('click', (e) => {
+            const card = e.target.closest('.health-card');
+            if (!card) return;
+            const logId = parseInt(card.dataset.logId);
+            const status = card.dataset.status;
+            const elId = card.dataset.elId;
+            toggleHealthLog(logId, status, elId);
+        });
     </script>
 </body>
 

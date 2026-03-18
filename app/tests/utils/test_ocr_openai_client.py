@@ -15,12 +15,12 @@ class TestMergeParserHints:
         merged = _merge_parser_hints(result, parser_hints)
 
         assert merged["diagnosis_list"] == ["I109", "E119"]
-        assert merged["drugs"] == ["타이레놀정", "코푸시럽"]
+        assert merged["drugs"] == [{"name": "타이레놀정"}, {"name": "코푸시럽"}]
 
     def test_keeps_ai_values_when_present(self):
         result = {
             "diagnosis_list": ["고혈압"],
-            "drugs": ["아스피린"],
+            "drugs": [{"name": "아스피린"}],
         }
         parser_hints = {
             "candidate_diagnosis_codes": ["I109"],
@@ -29,8 +29,9 @@ class TestMergeParserHints:
 
         merged = _merge_parser_hints(result, parser_hints)
 
-        assert merged["diagnosis_list"] == ["고혈압"]
-        assert merged["drugs"] == ["아스피린"]
+        # AI 질병명(고혈압) 유지 + parser 후보 코드(I109) 추가
+        assert merged["diagnosis_list"] == ["고혈압", "I109"]
+        assert merged["drugs"] == [{"name": "아스피린"}]
 
     def test_dedupes_parser_values(self):
         result = {
@@ -45,4 +46,4 @@ class TestMergeParserHints:
         merged = _merge_parser_hints(result, parser_hints)
 
         assert merged["diagnosis_list"] == ["I109", "E119"]
-        assert merged["drugs"] == ["타이레놀정", "코푸시럽"]
+        assert merged["drugs"] == [{"name": "타이레놀정"}, {"name": "코푸시럽"}]

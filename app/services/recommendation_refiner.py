@@ -8,6 +8,51 @@ from typing import Any
 
 from app.integrations.openai.recommendation import recommendation_chat_completion
 
+# ── 카테고리별 직관적 행동 지침 매핑 ──
+# guideline content가 모호하거나 질환명이 포함된 경우
+# 사용자가 바로 실천할 수 있는 구체적 문구로 변환한다.
+ACTIONABLE_CONTENT: dict[str, list[dict[str, str]]] = {
+    "diet": [
+        {"content": "하루 물 1.5L 이상 마시기", "frequency": "daily"},
+        {"content": "채소·과일 5접시 이상 섭취하기", "frequency": "daily"},
+        {"content": "나트륨 하루 2,000mg 이하로 줄이기", "frequency": "daily"},
+        {"content": "가공식품·인스턴트 대신 자연식 선택하기", "frequency": "daily"},
+        {"content": "체중 변화 기록하고 적정 체중 유지하기", "frequency": "weekly"},
+        {"content": "금연하고 간접흡연도 피하기", "frequency": "daily"},
+        {"content": "음주량 줄이거나 금주하기", "frequency": "daily"},
+    ],
+    "exercise": [
+        {"content": "하루 5,000보 이상 걷기", "frequency": "daily"},
+        {"content": "30분 이상 유산소 운동하기 (걷기·자전거·수영)", "frequency": "3_per_week"},
+        {"content": "가벼운 스트레칭 10분 하기", "frequency": "daily"},
+        {"content": "근력 운동 20분 하기 (아령·밴드·스쿼트)", "frequency": "every_other_day"},
+    ],
+    "general_care": [
+        {"content": "혈압·혈당 등 주요 수치 기록하기", "frequency": "daily"},
+        {"content": "정기 진료 일정 확인하고 방문하기", "frequency": "as_needed"},
+        {"content": "처방약 정해진 시간에 빠짐없이 복용하기", "frequency": "daily"},
+        {"content": "7시간 이상 수면 취하기", "frequency": "daily"},
+    ],
+    "hygiene": [
+        {"content": "외출 후·식사 전 손 30초 이상 씻기", "frequency": "daily"},
+        {"content": "양치질 하루 3회 이상 하기", "frequency": "daily"},
+    ],
+    "warning_sign": [
+        {"content": "이상 증상 발생 시 즉시 병원 방문하기", "frequency": "as_needed"},
+    ],
+    "medication_caution": [
+        {"content": "복용 중인 약 부작용 여부 체크하기", "frequency": "daily"},
+        {"content": "약 복용 시간·용량 지키기", "frequency": "daily"},
+    ],
+}
+
+# 카테고리 → 기본 frequency 매핑
+DEFAULT_FREQUENCY: dict[str, str] = {
+    "general_care": "daily",
+    "medication_caution": "daily",
+    "follow_up": "weekly",
+}
+
 # recommendation_type 별칭을 내부 표준 타입으로 맞추기 위한 매핑
 # - general/lifestyle 계열 -> general_care
 # - warning/caution/medication 계열 -> medication_caution
@@ -72,30 +117,13 @@ FORBIDDEN_PHRASES = [
 class RecommendationCandidate:
     """
     추천 생성 중간 단계에서 사용하는 후보 데이터 구조.
-
-    Attributes:
-        type:
-            내부 표준 recommendation type 또는 원본 type
-        content:
-            사용자에게 보여줄 추천 문구
-        source:
-            후보가 생성된 출처
-        score:
-            후보 점수(우선순위 비교 시 사용)
-        disease_id:
-            매칭된 질환 ID
-        guideline_id:
-            매칭된 guideline ID
-        drug_name:
-            관련 약물명
-        metadata:
-            기타 디버깅/추적용 메타데이터
     """
 
     type: str
     content: str
     source: str
     score: float = 0.0
+    frequency: str | None = None
     disease_id: int | None = None
     guideline_id: int | None = None
     drug_name: str | None = None
@@ -572,6 +600,136 @@ async def refine_recommendations_with_llm(
     return dedup_recommendations(refined)
 
 
+def to_actionable_candidates(
+    candidates: list[RecommendationCandidate],
+) -> list[RecommendationCandidate]:
+    """
+    guideline 원문 content를 직관적·실행 가능한 행동 지침으로 변환한다.
+
+    변환 규칙:
+    1. category(type)에 해당하는 ACTIONABLE_CONTENT 풀에서 키워드 매칭으로 선택
+    2. 매칭 실패 시 원문에서 질환명·의학 용어를 제거하고 간결화
+    3. frequency를 category 기본값으로 할당
+    """
+    keyword_map: dict[str, list[tuple[list[str], dict[str, str]]]] = {}
+    for category, items in ACTIONABLE_CONTENT.items():
+        keyword_map[category] = []
+        for item in items:
+            keywords = _extract_match_keywords(item["content"])
+            keyword_map[category].append((keywords, item))
+
+    used_contents: set[str] = set()
+    result: list[RecommendationCandidate] = []
+
+    for c in candidates:
+        norm_type = normalize_recommendation_type(c.type)
+        # actionable 매칭은 원본 type 기반으로 수행 (diet, exercise 등 구분 유지)
+        raw_type = c.type.strip().lower()
+        category_key = raw_type if raw_type in ACTIONABLE_CONTENT else _type_to_category(norm_type)
+        content_lower = c.content.lower()
+
+        matched_item: dict[str, str] | None = None
+        for keywords, item in keyword_map.get(category_key, []):
+            if any(kw in content_lower for kw in keywords):
+                if item["content"] not in used_contents:
+                    matched_item = item
+                    break
+
+        if matched_item:
+            used_contents.add(matched_item["content"])
+            result.append(
+                RecommendationCandidate(
+                    type=c.type,
+                    content=matched_item["content"],
+                    source=c.source,
+                    score=c.score,
+                    frequency=matched_item.get("frequency"),
+                    disease_id=c.disease_id,
+                    guideline_id=c.guideline_id,
+                    drug_name=c.drug_name,
+                    metadata=c.metadata,
+                )
+            )
+        else:
+            cleaned = _clean_content(c.content)
+            freq = c.frequency or DEFAULT_FREQUENCY.get(norm_type)
+            result.append(
+                RecommendationCandidate(
+                    type=c.type,
+                    content=cleaned,
+                    source=c.source,
+                    score=c.score,
+                    frequency=freq,
+                    disease_id=c.disease_id,
+                    guideline_id=c.guideline_id,
+                    drug_name=c.drug_name,
+                    metadata=c.metadata,
+                )
+            )
+
+    return result
+
+
+def _type_to_category(norm_type: str) -> str:
+    mapping = {
+        "general_care": "general_care",
+        "medication_caution": "medication_caution",
+        "follow_up": "warning_sign",
+    }
+    return mapping.get(norm_type, norm_type)
+
+
+def _extract_match_keywords(actionable_content: str) -> list[str]:
+    """actionable content에서 매칭용 핵심 키워드를 추출한다."""
+    kw_map: dict[str, list[str]] = {
+        "물": ["물", "수분"],
+        "채소": ["채소", "과일", "식사"],
+        "나트륨": ["나트륨", "염분", "소금"],
+        "가공식품": ["가공", "인스턴트"],
+        "체중": ["체중", "비만"],
+        "금연": ["금연", "흡연", "담배"],
+        "금주": ["금주", "절주", "음주"],
+        "5,000보": ["걷기", "걸음", "보행"],
+        "유산소": ["유산소", "운동", "조깅", "자전거"],
+        "스트레칭": ["스트레칭", "체조"],
+        "근력": ["근력", "아령", "저항"],
+        "혈압": ["혈압", "혈당", "측정", "기록"],
+        "진료": ["진료", "병원", "검진"],
+        "처방약": ["복용", "약물", "처방"],
+        "수면": ["수면", "잠"],
+        "손": ["손 씻", "손씻"],
+        "양치": ["양치", "치아"],
+        "증상": ["증상", "응급"],
+        "부작용": ["부작용"],
+        "용량": ["용량", "시간"],
+    }
+    content_lower = actionable_content.lower()
+    for key, keywords in kw_map.items():
+        if key in content_lower:
+            return keywords
+    return [actionable_content[:4]]
+
+
+def _clean_content(text: str) -> str:
+    """원문에서 불필요한 접두어·질환명·번호를 제거하고 간결하게 정리한다."""
+    import re as _re
+
+    cleaned = text.strip()
+    cleaned = _re.sub(r"^\d+[).]\s*", "", cleaned)
+    cleaned = _re.sub(r"^[˚⦁●•\-]\s*", "", cleaned)
+    # 문장 끝 노이즈 제거
+    cleaned = _re.sub(r"\s*것이\s*하기$", "하기", cleaned)
+    cleaned = _re.sub(r"\s*것이\s*중요함$", "하기", cleaned)
+    cleaned = _re.sub(r"\s*중요함$", "하기", cleaned)
+    # 이미 적절한 어미로 끝나면 그대로 두기
+    if cleaned.endswith(("하기", "니다", "세요", "십시오", "합니다")):
+        return cleaned
+    # "하기"로 끝나지 않으면 문장 마무리
+    cleaned = _re.sub(r"\s*합니다\.?$", "하기", cleaned)
+    cleaned = _re.sub(r"\s*입니다\.?$", "하기", cleaned)
+    return cleaned
+
+
 async def finalize_recommendations(
     candidates: list[RecommendationCandidate],
     enable_llm_refinement: bool = False,
@@ -595,13 +753,14 @@ async def finalize_recommendations(
             최종 추천 후보 목록
     """
     deduped = dedup_recommendations(candidates)
+    actionable = to_actionable_candidates(deduped)
 
     if not enable_llm_refinement:
-        return deduped
+        return actionable
 
-    if not should_run_llm_refinement(deduped):
-        return deduped
+    if not should_run_llm_refinement(actionable):
+        return actionable
 
-    refined = await refine_recommendations_with_llm(deduped)
+    refined = await refine_recommendations_with_llm(actionable)
 
     return dedup_recommendations(refined)

@@ -5,6 +5,8 @@
   --text-primary: #4a5d53; /* Soft dark slate for text */
   --bg-color: #f7faf8; /* Very soft off-white green tinted background */
   --card-bg: #ffffff;
+  --border-color: #e2e8e4;
+  --text-secondary: #6c7a72;
 }
 
 body {

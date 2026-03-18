@@ -78,7 +78,7 @@ class UserManageService:
         validate_extension(filename)
         await validate_size(file)
 
-        base_dir = getattr(config, "FILE_STORAGE_DIR", "./artifacts")
+        base_dir = config.FILE_STORAGE_DIR
         dest = build_storage_path(base_dir=base_dir, user_id=user.id, original_filename=filename)
 
         await save_upload_file(file, dest)
