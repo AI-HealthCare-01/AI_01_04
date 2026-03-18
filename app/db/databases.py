@@ -16,11 +16,10 @@ TORTOISE_APP_MODELS = [
     "app.models.chat_health",
     "app.models.chatbot",  # ChatbotSession, ChatbotMessage, ChatbotSessionSummary
     "app.models.vector_documents",
-    "app.models.scans",
+    "app.models.scans",  # Scan
     "app.models.health",
     "app.models.user_features",  # UserFeatureSnapshot, UserCurrentFeatures
     "app.models.recommendations",  # RecommendationBatch, Recommendation, UserActiveRecommendation, RecommendationFeedback
-    "app.models.scans",  # Scan
 ]
 
 
