@@ -13,15 +13,19 @@ from typing import Any
 from app.models.scans import Scan
 
 
+def _normalize_drug_entry(raw: Any) -> dict[str, Any]:
+    """drugs JSON 항목을 DrugEntry 호환 dict로 정규화한다."""
+    if isinstance(raw, str):
+        return {"name": raw}
+    if isinstance(raw, dict):
+        return raw
+    return {"name": str(raw)}
+
+
 def _to_dict(scan: Scan) -> dict[str, Any]:
-    """Scan ORM 객체를 API 응답용 dict로 변환한다.
-
-    Args:
-        scan (Scan): 변환할 Scan ORM 객체.
-
-    Returns:
-        dict[str, Any]: scan 필드를 담은 딕셔너리.
-    """
+    """Scan ORM 객체를 API 응답용 dict로 변환한다."""
+    raw_drugs = scan.drugs or []
+    drugs = [_normalize_drug_entry(d) for d in raw_drugs]
     return {
         "scan_id": scan.id,
         "user_id": scan.user_id,
@@ -30,9 +34,8 @@ def _to_dict(scan: Scan) -> dict[str, Any]:
         "document_type": scan.document_type,
         "document_date": scan.document_date,
         "diagnosis_list": scan.diagnosis_list or [],
-        "diagnosis": scan.diagnosis_list[0] if scan.diagnosis_list else None,
         "clinical_note": scan.clinical_note,
-        "drugs": scan.drugs or [],
+        "drugs": drugs,
         "unrecognized_drugs": scan.unrecognized_drugs or [],
         "raw_text": scan.raw_text,
         "ocr_raw": scan.ocr_raw,

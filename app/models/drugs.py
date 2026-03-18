@@ -29,6 +29,7 @@ class Drug(models.Model):
     storage = fields.TextField(null=True)  # 저장방법
     change_log = fields.TextField(null=True)  # 변경내용 (없으면 null)
     main_ingredient = fields.TextField(null=True)  # 주성분명
+    edi_code = fields.CharField(max_length=255, null=True, index=True)  # 보험코드(EDI)
 
     class Meta:
         table = "drugs"

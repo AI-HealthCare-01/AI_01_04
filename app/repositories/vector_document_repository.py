@@ -178,6 +178,51 @@ class VectorDocumentRepository:
 
         return docs
 
+    async def search_drug_context(
+        self,
+        embedding: list[float],
+        *,
+        top_k: int = 5,
+    ) -> list[VectorDocument]:
+        """drug 관련 벡터 문서만 검색한다. 결과가 없으면 전체에서 fallback."""
+        docs = await self.search_similar(embedding, reference_type="drug", top_k=top_k)
+        if not docs:
+            docs = await self.search_similar(embedding, top_k=top_k)
+        return docs
+
+    async def search_disease_context(
+        self,
+        embedding: list[float],
+        *,
+        top_k: int = 5,
+    ) -> list[VectorDocument]:
+        """disease_guideline 관련 벡터 문서만 검색한다."""
+        return await self.search_similar(embedding, reference_type="disease_guideline", top_k=top_k)
+
+    async def search_with_type_priority(
+        self,
+        embedding: list[float],
+        *,
+        preferred_type: str,
+        top_k: int = 5,
+        fallback_threshold: float = 0.5,
+    ) -> list[VectorDocument]:
+        """preferred_type을 우선 검색하고, 유사도가 낮으면 전체에서 보충한다."""
+        docs = await self.search_similar(embedding, reference_type=preferred_type, top_k=top_k)
+
+        # 유사도가 threshold 이상인 문서만 유지
+        good_docs = [d for d in docs if hasattr(d, "_distance") and d._distance < fallback_threshold]
+
+        if len(good_docs) < top_k:
+            all_docs = await self.search_similar(embedding, top_k=top_k)
+            seen_ids = {d.id for d in good_docs}
+            for d in all_docs:
+                if d.id not in seen_ids and len(good_docs) < top_k:
+                    good_docs.append(d)
+                    seen_ids.add(d.id)
+
+        return good_docs
+
     async def delete_by_reference(self, reference_type: str, reference_id: int) -> int:
         """
         reference_type + reference_id 조합으로 벡터 문서를 삭제한다.

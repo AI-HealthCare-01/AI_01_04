@@ -117,6 +117,7 @@ async def seed() -> None:
                     storage=_str_or_none(row["저장방법"]),
                     change_log=_str_or_none(row["변경내용"]),
                     main_ingredient=_str_or_none(row["주성분명"]),
+                    edi_code=_str_or_none(row["보험코드"]),
                 )
                 for _, row in df.iterrows()
             ]

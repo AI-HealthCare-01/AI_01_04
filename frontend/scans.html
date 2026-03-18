@@ -48,6 +48,47 @@
         .drug-suggestion-item:hover {
             background: rgba(93, 120, 94, 0.08);
         }
+
+        .diagnosis-row {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .diagnosis-row input { flex: 1; }
+
+        .drug-entry-card {
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            background: #fff;
+        }
+
+        .drug-entry-card .drug-entry-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .drug-entry-card .dose-fields {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 0.5rem;
+        }
+
+        .dose-fields input, .dose-fields select {
+            font-size: 0.8rem;
+            padding: 0.3rem 0.5rem;
+        }
+
+        .dose-fields label {
+            font-size: 0.7rem;
+            margin-bottom: 0.15rem;
+            color: #888;
+        }
     </style>
 </head>
 
@@ -133,7 +174,10 @@
 
                                 <div class="mb-3">
                                     <label class="form-label small fw-bold text-secondary" data-text="scans.diagnosis">진단명</label>
-                                    <input type="text" id="edit-diagnosis" class="form-control" data-placeholder="scans.diagnosisPlaceholder" placeholder="예: 감기">
+                                    <div id="diagnosis-list-editor"></div>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm mt-1" onclick="addDiagnosisRow()">
+                                        <i class="bi bi-plus-circle me-1"></i>진단명 추가
+                                    </button>
                                 </div>
 
                                 <div class="mb-3 d-none" id="clinical-note-group">
@@ -142,12 +186,12 @@
                                 </div>
 
                                 <div class="mb-3" id="drug-editor-group">
-                                    <label class="form-label small fw-bold text-secondary" data-text="scans.drugLabel">약품 선택</label>
-                                    <div class="position-relative">
+                                    <label class="form-label small fw-bold text-secondary" data-text="scans.drugLabel">약품 목록</label>
+                                    <div class="position-relative mb-2">
                                         <input type="text" id="drug-search-input" class="form-control" data-placeholder="scans.drugPlaceholder" placeholder="약 이름을 검색하세요. 예: 무스리">
                                         <div id="drug-suggestion-list" class="drug-suggestion-list d-none"></div>
                                     </div>
-                                    <div id="selected-drugs" class="d-flex flex-wrap gap-2 mt-3"></div>
+                                    <div id="selected-drugs"></div>
                                     <div class="form-text" data-text="scans.drugHelp">약품은 DB 검색 결과에서 선택해 추가합니다.</div>
                                 </div>
 
@@ -184,7 +228,7 @@
     <script>
         let currentScanId = null;
         let currentScanResult = null;
-        let selectedDrugs = [];
+        let selectedDrugs = [];  // Array of DrugEntry objects: {name, dose_count, dose_timing, dose_days, dose_amount, dose_unit}
         let drugSearchTimer = null;
 
         function toggleSidebar() {
@@ -202,6 +246,21 @@
             warningBox.classList.remove('d-none');
         }
 
+        function addDiagnosisRow(value = '') {
+            const editor = document.getElementById('diagnosis-list-editor');
+            const row = document.createElement('div');
+            row.className = 'diagnosis-row';
+            row.innerHTML = `<input type="text" class="form-control form-control-sm diagnosis-input" value="${escapeHtml(value)}" placeholder="진단명 입력">
+                <button type="button" class="btn btn-outline-danger btn-sm" onclick="this.parentElement.remove()"><i class="bi bi-x"></i></button>`;
+            editor.appendChild(row);
+        }
+
+        function getDiagnosisList() {
+            return Array.from(document.querySelectorAll('.diagnosis-input'))
+                .map(el => el.value.trim())
+                .filter(v => v.length > 0);
+        }
+
         function renderSelectedDrugs() {
             const container = document.getElementById('selected-drugs');
             container.innerHTML = '';
@@ -211,16 +270,29 @@
                 return;
             }
 
-            selectedDrugs.forEach((drugName) => {
-                const chip = document.createElement('span');
-                chip.className = 'drug-chip';
-                chip.innerHTML = `<span>${escapeHtml(drugName)}</span><button type="button" class="btn-close btn-close-sm" aria-label="삭제"></button>`;
-                chip.querySelector('button').addEventListener('click', () => {
-                    selectedDrugs = selectedDrugs.filter((name) => name !== drugName);
-                    renderSelectedDrugs();
-                });
-                container.appendChild(chip);
+            selectedDrugs.forEach((drug, idx) => {
+                const card = document.createElement('div');
+                card.className = 'drug-entry-card';
+                card.innerHTML = `
+                    <div class="drug-entry-header">
+                        <span class="fw-bold small">${escapeHtml(drug.name)}</span>
+                        <button type="button" class="btn btn-outline-danger btn-sm py-0 px-1" onclick="removeDrug(${idx})"><i class="bi bi-x"></i></button>
+                    </div>
+                    <div class="dose-fields">
+                        <div><label>1회 투여량</label><input type="text" class="form-control" value="${escapeHtml(drug.dose_amount || '')}" onchange="selectedDrugs[${idx}].dose_amount=this.value||null"></div>
+                        <div><label>단위</label><input type="text" class="form-control" value="${escapeHtml(drug.dose_unit || '')}" placeholder="정, ml" onchange="selectedDrugs[${idx}].dose_unit=this.value||null"></div>
+                        <div><label>1일 횟수</label><input type="number" class="form-control" value="${drug.dose_count ?? ''}" onchange="selectedDrugs[${idx}].dose_count=this.value?Number(this.value):null"></div>
+                        <div><label>복용시점</label><input type="text" class="form-control" value="${escapeHtml(drug.dose_timing || '')}" placeholder="식후" onchange="selectedDrugs[${idx}].dose_timing=this.value||null"></div>
+                        <div><label>투약일수</label><input type="number" class="form-control" value="${drug.dose_days ?? ''}" onchange="selectedDrugs[${idx}].dose_days=this.value?Number(this.value):null"></div>
+                    </div>
+                `;
+                container.appendChild(card);
             });
+        }
+
+        function removeDrug(idx) {
+            selectedDrugs.splice(idx, 1);
+            renderSelectedDrugs();
         }
 
         function renderDrugSuggestions(items) {
@@ -238,8 +310,8 @@
                 button.className = 'drug-suggestion-item';
                 button.innerHTML = `<div class="fw-bold">${escapeHtml(item.name)}</div><div class="small text-soft">${escapeHtml(item.manufacturer || getText('scans.noManufacturer', '제조사 정보 없음'))}</div>`;
                 button.addEventListener('click', () => {
-                    if (!selectedDrugs.includes(item.name)) {
-                        selectedDrugs.push(item.name);
+                    if (!selectedDrugs.some(d => d.name === item.name)) {
+                        selectedDrugs.push({ name: item.name, dose_count: null, dose_timing: null, dose_days: null, dose_amount: null, dose_unit: null });
                         renderSelectedDrugs();
                     }
                     document.getElementById('drug-search-input').value = '';
@@ -269,9 +341,24 @@
         function populateEditForm(res) {
             currentScanResult = res;
             document.getElementById('edit-document-date').value = res.document_date || '';
-            document.getElementById('edit-diagnosis').value = res.diagnosis || '';
             document.getElementById('edit-clinical-note').value = res.clinical_note || '';
-            selectedDrugs = Array.isArray(res.drugs) ? [...res.drugs] : [];
+
+            // diagnosis_list
+            const diagEditor = document.getElementById('diagnosis-list-editor');
+            diagEditor.innerHTML = '';
+            const diagList = res.diagnosis_list || (res.diagnosis ? [res.diagnosis] : []);
+            if (diagList.length === 0) {
+                addDiagnosisRow('');
+            } else {
+                diagList.forEach(d => addDiagnosisRow(d));
+            }
+
+            // drugs as DrugEntry objects
+            selectedDrugs = Array.isArray(res.drugs) ? res.drugs.map(d =>
+                typeof d === 'string'
+                    ? { name: d, dose_count: null, dose_timing: null, dose_days: null, dose_amount: null, dose_unit: null }
+                    : { name: d.name || '', dose_count: d.dose_count ?? null, dose_timing: d.dose_timing ?? null, dose_days: d.dose_days ?? null, dose_amount: d.dose_amount ?? null, dose_unit: d.dose_unit ?? null }
+            ) : [];
             renderSelectedDrugs();
 
             const isMedicalRecord = res.document_type === 'medical_record';
@@ -289,17 +376,28 @@
             const txtBox = document.getElementById('analysis-text-container');
             let html = '';
 
+            const diagList = res.diagnosis_list || (res.diagnosis ? [res.diagnosis] : []);
+            const diagDisplay = diagList.length > 0 ? escapeHtml(diagList.join(', ')) : '-';
+
             if (res.document_type === 'prescription') {
                 html += `<h6 class="fw-bold mb-3 p-2 bg-light rounded text-center">${getText('scans.extractedDrugTitle', '발견된 약품 정보')}</h6>`;
                 if (res.drugs && res.drugs.length > 0) {
                     html += `<ul class="list-group mb-3 shadow-sm rounded">`;
-                    res.drugs.forEach((drugName) => {
+                    res.drugs.forEach((drug) => {
+                        const name = typeof drug === 'string' ? drug : drug.name;
+                        let doseInfo = '';
+                        if (typeof drug === 'object') {
+                            const parts = [];
+                            if (drug.dose_amount) parts.push(`${drug.dose_amount}${drug.dose_unit || ''}`);
+                            if (drug.dose_count) parts.push(`1일 ${drug.dose_count}회`);
+                            if (drug.dose_timing) parts.push(drug.dose_timing);
+                            if (drug.dose_days) parts.push(`${drug.dose_days}일분`);
+                            doseInfo = parts.length > 0 ? parts.join(' · ') : '';
+                        }
                         html += `
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <div>
-                                    <span class="fw-bold">${escapeHtml(drugName)}</span>
-                                    <div class="small text-soft">${getText('scans.extractedDrugHint', 'OCR/AI 분석 결과에 포함된 약품명입니다.')}</div>
-                                </div>
+                            <li class="list-group-item">
+                                <span class="fw-bold">${escapeHtml(name)}</span>
+                                ${doseInfo ? `<div class="small text-soft">${escapeHtml(doseInfo)}</div>` : ''}
                             </li>
                         `;
                     });
@@ -309,7 +407,7 @@
                 }
                 html += `<div class="p-3 bg-light rounded shadow-sm mt-3">`;
                 html += `<p class="mb-1"><span class="fw-bold">${getText('scans.documentDateLabel', '문서 날짜:')}</span> ${escapeHtml(res.document_date || '-')}</p>`;
-                html += `<p class="mb-0"><span class="fw-bold">${getText('scans.diagnosisLabel', '진단명:')}</span> ${escapeHtml(res.diagnosis || '-')}</p>`;
+                html += `<p class="mb-0"><span class="fw-bold">${getText('scans.diagnosisLabel', '진단명:')}</span> ${diagDisplay}</p>`;
                 html += `</div>`;
             } else {
                 html += `<div class="p-3 bg-light rounded shadow-sm">`;
@@ -318,7 +416,7 @@
                 html += `</div>`;
                 html += `<div class="p-3 bg-light rounded shadow-sm mt-3">`;
                 html += `<p class="mb-1"><span class="fw-bold">${getText('scans.documentDateLabel', '문서 날짜:')}</span> ${escapeHtml(res.document_date || '-')}</p>`;
-                html += `<p class="mb-1"><span class="fw-bold">${getText('scans.diagnosisLabel', '진단명:')}</span> ${escapeHtml(res.diagnosis || '-')}</p>`;
+                html += `<p class="mb-1"><span class="fw-bold">${getText('scans.diagnosisLabel', '진단명:')}</span> ${diagDisplay}</p>`;
                 html += `<p class="mb-0"><span class="fw-bold">${getText('scans.clinicalNoteLabel', '진료 요약:')}</span> ${escapeHtml(res.clinical_note || '-')}</p>`;
                 html += `</div>`;
             }
@@ -354,9 +452,10 @@
         async function updateResult() {
             if (!currentScanId) return;
 
+            const diagList = getDiagnosisList();
             const payload = {
                 document_date: document.getElementById('edit-document-date').value || null,
-                diagnosis: document.getElementById('edit-diagnosis').value.trim() || null,
+                diagnosis_list: diagList.length > 0 ? diagList : null,
                 clinical_note: document.getElementById('edit-clinical-note').value.trim() || null,
                 drugs: document.getElementById('drug-editor-group').classList.contains('d-none') ? null : selectedDrugs,
             };
@@ -410,7 +509,7 @@
                 renderAnalysisResult({
                     document_type: docType,
                     document_date: null,
-                    diagnosis: null,
+                    diagnosis_list: [],
                     clinical_note: null,
                     drugs: [],
                     raw_text: null,

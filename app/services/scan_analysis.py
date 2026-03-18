@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import logging
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any
 
 from fastapi import HTTPException, UploadFile
@@ -317,12 +317,12 @@ class ScanAnalysisService:
         if data.document_date is not None:
             parse_date_yyyy_mm_dd(data.document_date)
             update_fields["document_date"] = data.document_date
-        if data.diagnosis is not None:
-            update_fields["diagnosis_list"] = data.diagnosis if isinstance(data.diagnosis, list) else [data.diagnosis]
+        if data.diagnosis_list is not None:
+            update_fields["diagnosis_list"] = data.diagnosis_list
         if data.clinical_note is not None:
             update_fields["clinical_note"] = data.clinical_note
         if data.drugs is not None:
-            update_fields["drugs"] = data.drugs
+            update_fields["drugs"] = [d.model_dump(exclude_none=True) for d in data.drugs]
         return update_fields
 
     async def update_result(
@@ -376,12 +376,41 @@ class ScanAnalysisService:
             disease_obj = await Disease.get_or_none(name=name)
         return disease_obj or await Disease.create(name=name, kcd_code=kcd_code)
 
+    async def _match_drug(self, drug_entry: dict[str, Any], drug_name: str) -> Drug:
+        """EDI코드 우선 → 벡터 유사도 → get_or_create 순으로 약물을 매칭한다."""
+        edi_code = (drug_entry.get("edi_code") or "").strip()
+        if edi_code:
+            drug_obj = await Drug.filter(edi_code__contains=f",{edi_code},").first()
+            if not drug_obj:
+                drug_obj = await Drug.filter(edi_code__startswith=f"{edi_code},").first()
+            if not drug_obj:
+                drug_obj = await Drug.filter(edi_code__endswith=f",{edi_code}").first()
+            if not drug_obj:
+                drug_obj = await Drug.filter(edi_code=edi_code).first()
+            if drug_obj:
+                return drug_obj
+
+        query_vector = encode(drug_name)
+        similar = await self.vector_repo.search_similar(
+            query_vector,
+            reference_type="drug",
+            top_k=1,
+        )
+        _drug_similarity_threshold = 0.15
+        if similar and getattr(similar[0], "_distance", 1.0) <= _drug_similarity_threshold:
+            drug_obj = await Drug.get_or_none(id=similar[0].reference_id)
+            if drug_obj:
+                return drug_obj
+
+        drug_obj, _ = await Drug.get_or_create(name=drug_name)
+        return drug_obj
+
     async def _create_prescriptions(
         self,
         user: Any,
         doc_date: str,
         diagnosis_list: list[str],
-        drug_names: list[str],
+        drugs_data: list[dict[str, Any]],
     ) -> tuple[list[int], int, list[str]]:
         """처방전 레코드를 생성한다.
 
@@ -400,35 +429,29 @@ class ScanAnalysisService:
         skipped_duplicates: list[str] = []
 
         start = parse_date_yyyy_mm_dd(doc_date)
-        end = start
 
-        for drug_name_raw in drug_names:
-            drug_name = drug_name_raw.strip()
+        for drug_entry in drugs_data:
+            if isinstance(drug_entry, str):
+                drug_entry = {"name": drug_entry}
+            drug_name = (drug_entry.get("name") or "").strip()
             if not drug_name:
                 continue
 
-            query_vector = encode(drug_name)
-            similar = await self.vector_repo.search_similar(
-                query_vector,
-                reference_type="drug",
-                top_k=1,
-            )
-            _drug_similarity_threshold = 0.15
-            if similar and getattr(similar[0], "_distance", 1.0) <= _drug_similarity_threshold:
-                drug_obj = await Drug.get_or_none(id=similar[0].reference_id)
-                if not drug_obj:
-                    drug_obj, _ = await Drug.get_or_create(name=drug_name)
-            else:
-                drug_obj, _ = await Drug.get_or_create(name=drug_name)
+            dose_count = drug_entry.get("dose_count") or 1
+            dose_days = drug_entry.get("dose_days")
+            dose_amount = drug_entry.get("dose_amount") or "1"
+            dose_unit = drug_entry.get("dose_unit") or "정"
 
-            # 첫 번째 질환과만 처방전 연결 (1약물:1처방전)
+            end = start + timedelta(days=(dose_days - 1)) if dose_days and dose_days > 0 else start
+
+            drug_obj = await self._match_drug(drug_entry, drug_name)
+
             disease_obj = disease_objects[0]
 
             exists_qs = Prescription.filter(
                 user_id=user.id,
                 drug_id=drug_obj.id,
                 start_date=start,
-                end_date=end,
             )
             exists_qs = (
                 exists_qs.filter(disease_id=disease_obj.id)
@@ -447,13 +470,36 @@ class ScanAnalysisService:
                 drug=drug_obj,
                 start_date=start,
                 end_date=end,
-                dose_count=1,
-                dose_amount="1",
-                dose_unit="정",
+                dose_count=dose_count,
+                dose_amount=str(dose_amount),
+                dose_unit=dose_unit,
             )
             created.append(prescription.id)
 
         return created, skipped, skipped_duplicates
+
+    async def _save_prescription_data(
+        self, user: Any, cur: dict[str, Any], doc_date: str
+    ) -> tuple[list[int], int, list[str]]:
+        """prescription 타입 스캔의 약품 데이터를 처방전으로 저장한다."""
+        await self.med_service.ensure_day_seed(user_id=user.id, date=doc_date)
+        await self.health_service.ensure_day_seed(user_id=user.id, date=doc_date)
+
+        drug_names_raw: Any = cur.get("drugs", [])
+        drugs_data: list[dict] = []
+        if isinstance(drug_names_raw, list):
+            for d in drug_names_raw:
+                if isinstance(d, str):
+                    drugs_data.append({"name": d})
+                elif isinstance(d, dict):
+                    drugs_data.append(d)
+
+        return await self._create_prescriptions(
+            user,
+            doc_date,
+            cur.get("diagnosis_list", []),
+            drugs_data,
+        )
 
     async def save_result(self, user: Any, scan_id: int) -> dict[str, Any]:
         """스캔 결과를 실제 서비스 데이터로 저장한다."""
@@ -476,23 +522,13 @@ class ScanAnalysisService:
                             status_code=status.HTTP_400_BAD_REQUEST,
                             detail="처방/진단 날짜(document_date)가 필요합니다. 결과 화면에서 입력/수정 후 저장해주세요.",
                         )
-
-                    await self.med_service.ensure_day_seed(user_id=user.id, date=doc_date)
-                    await self.health_service.ensure_day_seed(user_id=user.id, date=doc_date)
-
-                    drug_names_raw: Any = cur.get("drugs", [])
-                    drug_names: list[str] = drug_names_raw if isinstance(drug_names_raw, list) else []
-
-                    created_prescriptions, skipped_count, skipped_duplicates = await self._create_prescriptions(
+                    created_prescriptions, skipped_count, skipped_duplicates = await self._save_prescription_data(
                         user,
+                        cur,
                         doc_date,
-                        cur.get("diagnosis_list", []),
-                        drug_names,
                     )
-
-                else:
-                    if doc_date:
-                        await self.health_service.ensure_day_seed(user_id=user.id, date=doc_date)
+                elif doc_date:
+                    await self.health_service.ensure_day_seed(user_id=user.id, date=doc_date)
 
                 await self.scan_repo.update(user.id, scan_id, status="saved")
 

@@ -7,7 +7,7 @@ data = {
     "password": "password123!",
     "gender": "male",
     "birthday": "1990-01-01",
-    "phone_number": "010-1234-5678"
+    "phone_number": "010-1234-5678",
 }
 
 try:
