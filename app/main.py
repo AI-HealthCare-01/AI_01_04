@@ -35,9 +35,7 @@ def _validate_config() -> None:
         raise RuntimeError("SECRET_KEY is not set. Check your .env file.")
     if config.ENV == "prod":
         missing = [
-            k
-            for k in ("OPENAI_API_KEY", "NAVER_OCR_SECRET_KEY", "NAVER_OCR_API_URL")
-            if not getattr(config, k, "")
+            k for k in ("OPENAI_API_KEY", "NAVER_OCR_SECRET_KEY", "NAVER_OCR_API_URL") if not getattr(config, k, "")
         ]
         if missing:
             raise RuntimeError(f"Production missing config: {', '.join(missing)}")
