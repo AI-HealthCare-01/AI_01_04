@@ -14,6 +14,7 @@ from typing import Any
 
 from fastapi import HTTPException, UploadFile
 from starlette import status
+from tortoise.transactions import in_transaction
 
 from app.core import config
 from app.dtos.scan import ScanResultUpdateRequest
@@ -97,7 +98,7 @@ class ScanAnalysisService:
             raise
         except Exception as e:
             logger.exception("upload_file failed")
-            raise HTTPException(status_code=500, detail=str(e)) from e
+            raise HTTPException(status_code=500, detail="서버 내부 오류가 발생했습니다.") from e
 
     async def _handle_ocr_analysis(
         self,
@@ -301,7 +302,7 @@ class ScanAnalysisService:
             raise
         except Exception as e:
             logger.exception("start_analysis failed")
-            raise HTTPException(status_code=500, detail=str(e)) from e
+            raise HTTPException(status_code=500, detail="서버 내부 오류가 발생했습니다.") from e
 
     async def get_result(self, user: Any, scan_id: int) -> dict[str, Any]:
         """스캔 결과를 조회한다."""
@@ -351,7 +352,7 @@ class ScanAnalysisService:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e
         except Exception as e:
             logger.exception("update_result failed")
-            raise HTTPException(status_code=500, detail=str(e)) from e
+            raise HTTPException(status_code=500, detail="서버 내부 오류가 발생했습니다.") from e
 
     async def _resolve_disease(self, diag: str) -> Disease | None:
         """진단 문자열에서 Disease 객체를 조회하거나 생성한다."""
@@ -468,31 +469,32 @@ class ScanAnalysisService:
             skipped_count = 0
             skipped_duplicates: list[str] = []
 
-            if document_type == "prescription":
-                if not doc_date:
-                    raise HTTPException(
-                        status_code=status.HTTP_400_BAD_REQUEST,
-                        detail="처방/진단 날짜(document_date)가 필요합니다. 결과 화면에서 입력/수정 후 저장해주세요.",
-                    )
+            async with in_transaction():
+                if document_type == "prescription":
+                    if not doc_date:
+                        raise HTTPException(
+                            status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="처방/진단 날짜(document_date)가 필요합니다. 결과 화면에서 입력/수정 후 저장해주세요.",
+                        )
 
-                await self.med_service.ensure_day_seed(user_id=user.id, date=doc_date)
-                await self.health_service.ensure_day_seed(user_id=user.id, date=doc_date)
-
-                drug_names_raw: Any = cur.get("drugs", [])
-                drug_names: list[str] = drug_names_raw if isinstance(drug_names_raw, list) else []
-
-                created_prescriptions, skipped_count, skipped_duplicates = await self._create_prescriptions(
-                    user,
-                    doc_date,
-                    cur.get("diagnosis_list", []),
-                    drug_names,
-                )
-
-            else:
-                if doc_date:
+                    await self.med_service.ensure_day_seed(user_id=user.id, date=doc_date)
                     await self.health_service.ensure_day_seed(user_id=user.id, date=doc_date)
 
-            await self.scan_repo.update(user.id, scan_id, status="saved")
+                    drug_names_raw: Any = cur.get("drugs", [])
+                    drug_names: list[str] = drug_names_raw if isinstance(drug_names_raw, list) else []
+
+                    created_prescriptions, skipped_count, skipped_duplicates = await self._create_prescriptions(
+                        user,
+                        doc_date,
+                        cur.get("diagnosis_list", []),
+                        drug_names,
+                    )
+
+                else:
+                    if doc_date:
+                        await self.health_service.ensure_day_seed(user_id=user.id, date=doc_date)
+
+                await self.scan_repo.update(user.id, scan_id, status="saved")
 
             try:
                 await self.recommendation_service.get_for_scan(user_id=user.id, scan_id=scan_id)
@@ -515,4 +517,4 @@ class ScanAnalysisService:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e
         except Exception as e:
             logger.exception("save_result failed")
-            raise HTTPException(status_code=500, detail=str(e)) from e
+            raise HTTPException(status_code=500, detail="서버 내부 오류가 발생했습니다.") from e

@@ -16,7 +16,7 @@ function renderSidebar() {
             
             <div class="user-block p-3 mb-4 bg-light rounded text-center">
                 <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=random&color=fff&size=48" class="profile-img-sm mb-2 shadow-sm">
-                <h6 class="mb-0 fw-bold">${userName} 님</h6>
+                <h6 class="mb-0 fw-bold">${escapeHtml(userName)} 님</h6>
             </div>
 
             <div class="menu-list flex-grow-1">

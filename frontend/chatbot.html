@@ -226,6 +226,7 @@
         </main>
     </div>
 
+    <script src="js/utils.js"></script>
     <script src="js/texts.js"></script>
     <script src="js/api.js"></script>
     <script src="js/components.js"></script>
@@ -234,15 +235,6 @@
 
         function toggleSidebar() {
             document.querySelector('.sidebar').classList.toggle('show');
-        }
-
-        function escapeHtml(value) {
-            return String(value ?? '')
-                .replaceAll('&', '&amp;')
-                .replaceAll('<', '&lt;')
-                .replaceAll('>', '&gt;')
-                .replaceAll('"', '&quot;')
-                .replaceAll("'", '&#39;');
         }
 
         function setStatus(message = '', type = 'info') {

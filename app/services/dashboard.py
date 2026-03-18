@@ -114,7 +114,7 @@ class DashboardService:
             return await self._get_summary_impl(user)
         except Exception as e:
             logger.exception("Dashboard get_summary failed")
-            raise HTTPException(status_code=500, detail=str(e)) from e
+            raise HTTPException(status_code=500, detail="대시보드 데이터를 불러오는 중 오류가 발생했습니다.") from e
 
     async def _get_summary_impl(self, user: User) -> dict:
         """

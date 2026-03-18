@@ -1,5 +1,9 @@
-from fastapi import APIRouter
+from typing import Annotated
 
+from fastapi import APIRouter, Depends
+
+from app.dependencies.security import get_request_user
+from app.models.users import User
 from app.schemas.chat import ChatRequest, ChatResponse
 from app.services.chat_base_service import ChatBaseService as BaseService
 from app.services.chat_health_service import ChatHealthService
@@ -12,7 +16,10 @@ chatbot_router = APIRouter(prefix="/chatbot", tags=["Medical API"])
 
 
 @chatbot_router.get("/check-patient/{patient_id}")
-async def check_patient(patient_id: str):
+async def check_patient(
+    patient_id: str,
+    user: Annotated[User, Depends(get_request_user)],
+):
     service = BaseService()
     exists = await service.check_user_exists(patient_id)
     return {"exists": exists}
@@ -22,9 +29,11 @@ async def check_patient(patient_id: str):
 
 
 @chatbot_router.get("/history/{patient_id}")
-async def get_history(patient_id: str):
+async def get_history(
+    patient_id: str,
+    user: Annotated[User, Depends(get_request_user)],
+):
     service = BaseService()
-    # 비동기로 이력 데이터를 가져옵니다.
     return await service.get_medi_history(patient_id)
 
 
@@ -32,8 +41,10 @@ async def get_history(patient_id: str):
 
 
 @chatbot_router.post("/chat", response_model=ChatResponse)
-async def chat_endpoint(request: ChatRequest):
-    print(f">>> chat_endpoint: \n{request} \n<<<")
+async def chat_endpoint(
+    request: ChatRequest,
+    user: Annotated[User, Depends(get_request_user)],
+):
     if request.mode == "medication":
         medi_service = ChatMediService()
         return await medi_service.process_medical_chat(request)

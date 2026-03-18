@@ -106,8 +106,8 @@ async function fetchAPI(endpoint, options = {}) {
     try {
         let response = await fetch(url, { ...options, headers, credentials: 'include' });
 
-        if (response.status === 401 && !endpoint.startsWith('/auth/login')) {
-            // Try refreshing token
+        if (response.status === 401 && !endpoint.startsWith('/auth/login') && !options._retried) {
+            // Try refreshing token (once only)
             console.log("Token expired, attempting refresh...");
             const refreshRes = await fetch(`${API_BASE_URL}/auth/token/refresh`, {
                 credentials: 'include',
@@ -115,9 +115,9 @@ async function fetchAPI(endpoint, options = {}) {
             if (refreshRes.ok) {
                 const data = await refreshRes.json();
                 setAccessToken(data.access_token);
-                // Retry original request with new token
+                // Retry original request with new token (mark as retried)
                 headers.set('Authorization', `Bearer ${data.access_token}`);
-                response = await fetch(url, { ...options, headers, credentials: 'include' });
+                response = await fetch(url, { ...options, headers, credentials: 'include', _retried: true });
             } else {
                 // Refresh failed, clear and logout
                 clearAuth();
