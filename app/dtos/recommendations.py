@@ -3,12 +3,14 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 RecommendationType = Literal["lifestyle", "medication", "warning", "followup"]
+FrequencyType = Literal["daily", "every_other_day", "3_per_week", "weekly", "as_needed"] | None
 
 
 class RecommendationResponse(BaseModel):
     id: int
     recommendation_type: RecommendationType = "lifestyle"
     content: str
+    frequency: FrequencyType = None
     score: float | None = None
     is_selected: bool = False
     rank: int | None = None

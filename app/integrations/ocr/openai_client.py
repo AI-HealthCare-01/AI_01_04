@@ -165,6 +165,8 @@ async def ai_postprocess(
             if d["name"] == "인식 불가":
                 unrecognized.append(d["name"])
             else:
+                if d.get("dose_unit"):
+                    d["dose_unit"] = _fix_dose_unit(d["dose_unit"])
                 normalized_drugs.append(d)
     result["drugs"] = normalized_drugs
     result["unrecognized_drugs"] = unrecognized
@@ -256,6 +258,24 @@ def _merge_parser_hints(result: dict, parser_hints: dict) -> dict:
         result["drugs"] = _dedupe_drugs(existing_drugs)
 
     return result
+
+
+# OCR 오인식 dose_unit 보정 맵
+_DOSE_UNIT_FIX: dict[str, str] = {
+    "점": "정",
+    "갭슐": "캡슐",
+    "캡술": "캡슐",
+    "겝슐": "캡슐",
+    "mI": "ml",
+    "MI": "ml",
+    "ML": "ml",
+    "Ml": "ml",
+}
+
+
+def _fix_dose_unit(unit: str) -> str:
+    """OCR 오인식된 dose_unit을 보정한다."""
+    return _DOSE_UNIT_FIX.get(unit.strip(), unit.strip())
 
 
 _KCD_PATTERN = re.compile(
