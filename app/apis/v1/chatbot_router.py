@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import logging
+from typing import Annotated
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
+from app.dependencies.security import get_request_user
 from app.dtos.chat import (
     ChatRequest,
     ChatResponse,
@@ -11,6 +13,7 @@ from app.dtos.chat import (
     DeactivateResponse,
     UserContextResponse,
 )
+from app.models.users import User
 from app.services.chat_base_service import ChatBaseService as BaseService
 from app.services.chat_context_service import ChatContextService
 from app.services.chat_health_service import ChatHealthService
@@ -22,14 +25,20 @@ chatbot_router = APIRouter(prefix="/chatbot", tags=["Medical API"])
 
 
 @chatbot_router.get("/check-patient/{patient_id}")
-async def check_patient(patient_id: str):
+async def check_patient(
+    patient_id: str,
+    user: Annotated[User, Depends(get_request_user)],
+):
     service = BaseService()
     exists = await service.check_user_exists(patient_id)
     return {"exists": exists}
 
 
 @chatbot_router.get("/history/{patient_id}")
-async def get_history(patient_id: str):
+async def get_history(
+    patient_id: str,
+    user: Annotated[User, Depends(get_request_user)],
+):
     service = BaseService()
     return await service.get_medi_history(patient_id)
 
@@ -60,7 +69,10 @@ async def deactivate_medication(request: DeactivateRequest):
 
 
 @chatbot_router.post("/chat", response_model=ChatResponse)
-async def chat_endpoint(request: ChatRequest):
+async def chat_endpoint(
+    request: ChatRequest,
+    user: Annotated[User, Depends(get_request_user)],
+):
     logger.debug("chat_endpoint: %s", request)
     if request.mode == "medication":
         medi_service = ChatMediService()

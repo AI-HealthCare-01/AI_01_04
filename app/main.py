@@ -31,6 +31,8 @@ async def seed_health_templates() -> None:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    if not config.SECRET_KEY:
+        raise RuntimeError("SECRET_KEY is not set. Check your .env file.")
     try:
         await seed_health_templates()
     except Exception:
