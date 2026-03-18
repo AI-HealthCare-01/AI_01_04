@@ -104,46 +104,29 @@ def _field_bounds(field: dict[str, Any]) -> tuple[float, float, float, float] | 
     return min(xs), min(ys), max(xs), max(ys)
 
 
-def _extract_diagnosis_codes_from_fields(fields: list[dict[str, Any]]) -> list[str]:
-    """질병분류기호 칸을 좌표 기반으로 찾아 행별 코드 후보를 추출한다.
-
-    처방전의 질병분류기호는 글자 하나씩 칸에 들어가는 경우가 많아
-    OCR field 순서만 믿으면 두 줄 코드가 섞일 수 있다.
-
-    이 함수는:
-    1. 질병/분류/기호 라벨의 좌표를 찾고
-    2. 그 오른쪽 코드 영역의 단일 문자만 수집한 뒤
-    3. y좌표 기준으로 행을 나누고
-    4. x좌표 순으로 이어붙여 KCD 코드를 만든다.
-    """
-    label_fields: list[dict[str, Any]] = []
-
-    for field in fields:
-        text = (field.get("inferText") or "").strip()
-        if text in _DIAG_LABEL_CHARS:
-            label_fields.append(field)
-
-    if not label_fields:
-        return []
-
-    label_boxes = [_field_bounds(field) for field in label_fields]
-    label_boxes = [box for box in label_boxes if box is not None]
-    if not label_boxes:
-        return []
-
-    # 질병분류 라벨 전체 영역 계산
-    label_min_x = min(box[0] for box in label_boxes)
+def _compute_code_region(
+    label_boxes: list[tuple[float, float, float, float]],
+) -> tuple[float, float, float, float]:
+    """질병분류 라벨 박스들로부터 코드 탐색 영역 (left, right, top, bottom)을 계산한다."""
     label_min_y = min(box[1] for box in label_boxes)
     label_max_x = max(box[2] for box in label_boxes)
     label_max_y = max(box[3] for box in label_boxes)
 
-    # 실제 처방전마다 조금씩 달라서 영역을 넉넉하게 잡는다
-    region_left = label_max_x - _REGION_PAD_LEFT
-    region_right = label_max_x + _REGION_PAD_RIGHT
-    region_top = label_min_y - _REGION_PAD_TOP
-    region_bottom = label_max_y + _REGION_PAD_BOTTOM
+    return (
+        label_max_x - _REGION_PAD_LEFT,
+        label_max_x + _REGION_PAD_RIGHT,
+        label_min_y - _REGION_PAD_TOP,
+        label_max_y + _REGION_PAD_BOTTOM,
+    )
 
-    single_chars: list[tuple[float, float, str]] = []
+
+def _collect_single_chars(
+    fields: list[dict[str, Any]],
+    region: tuple[float, float, float, float],
+) -> list[tuple[float, float, str]]:
+    """코드 영역 안의 단일 ASCII 영숫자 문자를 (mid_y, mid_x, text)로 수집한다."""
+    region_left, region_right, region_top, region_bottom = region
+    result: list[tuple[float, float, str]] = []
 
     for field in fields:
         text = (field.get("inferText") or "").strip()
@@ -158,17 +141,18 @@ def _extract_diagnosis_codes_from_fields(fields: list[dict[str, Any]]) -> list[s
         mid_x = (min_x + max_x) / 2
         mid_y = (min_y + max_y) / 2
 
-        # 질병분류기호 칸 추정 영역 안의 단일 문자만 수집
         if region_left <= mid_x <= region_right and region_top <= mid_y <= region_bottom:
-            single_chars.append((mid_y, mid_x, text))
+            result.append((mid_y, mid_x, text))
 
-    if not single_chars:
-        return []
+    return result
 
-    # 먼저 y좌표, 그 다음 x좌표로 정렬
+
+def _group_chars_into_codes(
+    single_chars: list[tuple[float, float, str]],
+) -> list[str]:
+    """단일 문자들을 y좌표 기준 행으로 묶고 x좌표 순으로 이어붙여 KCD 코드를 생성한다."""
     single_chars.sort(key=lambda item: (item[0], item[1]))
 
-    # y좌표 기준으로 행 분리
     rows: list[list[tuple[float, float, str]]] = []
     for item in single_chars:
         placed = False
@@ -180,7 +164,6 @@ def _extract_diagnosis_codes_from_fields(fields: list[dict[str, Any]]) -> list[s
         if not placed:
             rows.append([item])
 
-    # 각 행을 x축 순으로 이어붙여 코드 생성
     codes: list[str] = []
     seen: set[str] = set()
 
@@ -195,6 +178,26 @@ def _extract_diagnosis_codes_from_fields(fields: list[dict[str, Any]]) -> list[s
                 codes.append(normalized)
 
     return codes
+
+
+def _extract_diagnosis_codes_from_fields(fields: list[dict[str, Any]]) -> list[str]:
+    """질병분류기호 칸을 좌표 기반으로 찾아 행별 코드 후보를 추출한다."""
+    label_fields = [f for f in fields if (f.get("inferText") or "").strip() in _DIAG_LABEL_CHARS]
+    if not label_fields:
+        return []
+
+    label_boxes: list[tuple[float, float, float, float]] = [
+        box for box in (_field_bounds(f) for f in label_fields) if box is not None
+    ]
+    if not label_boxes:
+        return []
+
+    region = _compute_code_region(label_boxes)
+    single_chars = _collect_single_chars(fields, region)
+    if not single_chars:
+        return []
+
+    return _group_chars_into_codes(single_chars)
 
 
 def _merge_single_char_fields(fields: list[dict[str, Any]]) -> list[str]:

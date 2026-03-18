@@ -177,72 +177,53 @@ def postprocess(text: str) -> str:
     return t
 
 
-# ── 메인 ───────────────────────────────────────────────────────
-def main():
-    with open(SRC, encoding="utf-8") as f:
-        data = json.load(f)
+def _refine_item(item: dict, stats: dict, restore_samples: list, split_samples: list) -> list[dict]:
+    """단일 항목을 정제하여 0개 이상의 결과 항목을 반환한다."""
+    content = item["content"]
+    category = item["category"]
+    disease_code = item["disease_code"]
 
-    print(f"원본 항목 수: {len(data)}")
+    content = clean_prefix(content)
 
-    refined = []
-    seen = set()
-    stats = {"conj": 0, "restored": 0, "split": 0, "removed_desc": 0, "removed_dup": 0, "removed_short": 0}
-    restore_samples = []
-    split_samples = []
+    before_conj = content
+    content = strip_conjunction(content)
+    if content != before_conj:
+        stats["conj"] += 1
 
-    for item in data:
-        content = item["content"]
-        category = item["category"]
-        disease_code = item["disease_code"]
+    before_restore = content
+    content = restore_broken(content)
+    if content != before_restore:
+        stats["restored"] += 1
+        if len(restore_samples) < 25:
+            restore_samples.append((before_conj, content))
 
-        # 접두사 제거
-        content = clean_prefix(content)
+    content = postprocess(content)
 
-        # 접속부사 제거
-        before_conj = content
-        content = strip_conjunction(content)
-        if content != before_conj:
-            stats["conj"] += 1
+    parts = split_actions(content)
+    if len(parts) > 1:
+        stats["split"] += 1
+        if len(split_samples) < 15:
+            split_samples.append((content, parts))
 
-        # 잘린 문장 복원
-        before_restore = content
-        content = restore_broken(content)
-        if content != before_restore:
-            stats["restored"] += 1
-            if len(restore_samples) < 25:
-                restore_samples.append((before_conj, content))
+    results: list[dict] = []
+    for part in parts:
+        part = restore_broken(part.strip())
+        part = postprocess(part)
 
-        content = postprocess(content)
+        if not part or len(part) < MIN_LEN:
+            stats["removed_short"] += 1
+            continue
+        if not is_actionable(part, category):
+            stats["removed_desc"] += 1
+            continue
 
-        # 복수 행동 분리
-        parts = split_actions(content)
-        if len(parts) > 1:
-            stats["split"] += 1
-            if len(split_samples) < 15:
-                split_samples.append((content, parts))
+        results.append({**item, "content": part, "_dedup_key": (disease_code, category, part.lower().replace(" ", ""))})
 
-        for part in parts:
-            part = part.strip()
+    return results
 
-            # 분리된 파트에도 복원 재적용
-            part = restore_broken(part)
-            part = postprocess(part)
 
-            if not part or len(part) < MIN_LEN:
-                stats["removed_short"] += 1
-                continue
-            if not is_actionable(part, category):
-                stats["removed_desc"] += 1
-                continue
-
-            dedup_key = (disease_code, category, part.lower().replace(" ", ""))
-            if dedup_key in seen:
-                stats["removed_dup"] += 1
-                continue
-            seen.add(dedup_key)
-
-            refined.append({**item, "content": part})
-
+def _print_report(stats: dict, restore_samples: list, split_samples: list, refined: list) -> None:
+    """정제 결과 리포트를 출력한다."""
     print(f"정제 후 항목 수: {len(refined)}")
     print(f"통계: {stats}")
 
@@ -259,7 +240,6 @@ def main():
             print(f"    → [{i+1}] {p[:80]}")
         print()
 
-    # 최종 검증
     still_broken = [r for r in refined if BROKEN_RE.search(r["content"])]
     bad_space = [r for r in refined if "을하기" in r["content"] or "를하기" in r["content"]]
     has_conj = [r for r in refined if CONJ_RE.match(r["content"])]
@@ -273,6 +253,30 @@ def main():
     print(f"검증 — 접속부사 잔여: {len(has_conj)}")
     for r in has_conj[:3]:
         print(f"  {r['content'][:80]}")
+
+
+# ── 메인 ───────────────────────────────────────────────────────
+def main():
+    with open(SRC, encoding="utf-8") as f:
+        data = json.load(f)
+
+    print(f"원본 항목 수: {len(data)}")
+
+    refined = []
+    seen: set = set()
+    stats = {"conj": 0, "restored": 0, "split": 0, "removed_desc": 0, "removed_dup": 0, "removed_short": 0}
+    restore_samples: list = []
+    split_samples: list = []
+
+    for item in data:
+        for entry in _refine_item(item, stats, restore_samples, split_samples):
+            if entry["_dedup_key"] in seen:
+                stats["removed_dup"] += 1
+                continue
+            seen.add(entry.pop("_dedup_key"))
+            refined.append(entry)
+
+    _print_report(stats, restore_samples, split_samples, refined)
 
     with open(DST, "w", encoding="utf-8") as f:
         json.dump(refined, f, ensure_ascii=False, indent=2)
