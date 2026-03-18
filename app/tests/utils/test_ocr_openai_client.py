@@ -29,7 +29,8 @@ class TestMergeParserHints:
 
         merged = _merge_parser_hints(result, parser_hints)
 
-        assert merged["diagnosis_list"] == ["고혈압"]
+        # AI 질병명(고혈압) 유지 + parser 후보 코드(I109) 추가
+        assert merged["diagnosis_list"] == ["고혈압", "I109"]
         assert merged["drugs"] == [{"name": "아스피린"}]
 
     def test_dedupes_parser_values(self):

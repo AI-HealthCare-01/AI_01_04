@@ -77,6 +77,7 @@ class Recommendation(models.Model):
     recommendation_type = fields.CharField(max_length=50, null=True)
     source = fields.CharField(max_length=100, null=True)
     content = fields.TextField(null=True)
+    frequency = fields.CharField(max_length=30, null=True)
     score = fields.FloatField(null=True)
     is_selected = fields.BooleanField(null=True)
     rank = fields.IntField(null=True)

@@ -76,6 +76,7 @@ def _rec_to_response_dict(rec: Any) -> dict[str, Any]:
         "id": rec.id,
         "recommendation_type": _normalize_rec_type(getattr(rec, "recommendation_type", None)),
         "content": rec.content,
+        "frequency": getattr(rec, "frequency", None),
         "score": getattr(rec, "score", None),
         "is_selected": bool(getattr(rec, "is_selected", False)),
         "rank": getattr(rec, "rank", None),
@@ -278,6 +279,7 @@ class RecommendationService:
         content: str,
         score: float,
         rank: int,
+        frequency: str | None = None,
         status_value: str = "active",
     ) -> Any | None:
         """
@@ -290,6 +292,7 @@ class RecommendationService:
             recommendation_type=recommendation_type,
             source=source,
             content=content,
+            frequency=frequency,
             score=score,
             rank=rank,
             status=status_value,
@@ -318,6 +321,7 @@ class RecommendationService:
                 source=candidate.source,
                 content=candidate.content,
                 score=candidate.score,
+                frequency=candidate.frequency,
                 rank=rank,
                 status_value=status_value,
             )
