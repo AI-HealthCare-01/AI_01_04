@@ -27,18 +27,14 @@ _KCD_LABEL_RE = re.compile(
 )
 
 # 약품명 형태 후보
-_DRUG_FORM_RE = re.compile(
-    r"[가-힣A-Za-z0-9\-]{2,40}(?:정|정\d+mg|캡슐|시럽|액|주|산|연질캡슐|현탁액|크림|겔|패취)"
-)
+_DRUG_FORM_RE = re.compile(r"[가-힣A-Za-z0-9\-]{2,40}(?:정|정\d+mg|캡슐|시럽|액|주|산|연질캡슐|현탁액|크림|겔|패취)")
 
 # "약품명: xxx" 같은 라벨형 텍스트 후보
 _DRUG_LABEL_RE = re.compile(r"(?:약품명|약명|처방약|투약명|복용약)\s*[:：]?\s*([^\n\r]+)")
 
 # 칸 분리 OCR 결과용 KCD 패턴
 # 예: "I 1 0 9", "E 1 1 8"
-_SPACED_KCD_RE = re.compile(
-    r"(?<![A-Za-z0-9])([A-Za-z1l])\s+([0-9])\s+([0-9])\s+([0-9])(?:\s+([0-9]))?(?![A-Za-z])"
-)
+_SPACED_KCD_RE = re.compile(r"(?<![A-Za-z0-9])([A-Za-z1l])\s+([0-9])\s+([0-9])\s+([0-9])(?:\s+([0-9]))?(?![A-Za-z])")
 
 # 약품 후보에서 제거할 노이즈 키워드
 _NOISE_KEYWORDS = (

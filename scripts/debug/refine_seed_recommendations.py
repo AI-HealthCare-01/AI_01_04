@@ -144,8 +144,15 @@ def clean_prefix(text: str) -> str:
 
 # ── 설명문 필터 ────────────────────────────────────────────────
 DESC_ENDINGS = [
-    "차지합니다", "의미합니다", "해당합니다", "나뉘어집니다",
-    "분류합니다", "이루어집니다", "구성됩니다", "포함됩니다", "비례합니다",
+    "차지합니다",
+    "의미합니다",
+    "해당합니다",
+    "나뉘어집니다",
+    "분류합니다",
+    "이루어집니다",
+    "구성됩니다",
+    "포함됩니다",
+    "비례합니다",
 ]
 MIN_LEN = 8
 LABEL_RE = re.compile(r"^[\w\s]{2,12}$")
@@ -237,7 +244,7 @@ def _print_report(stats: dict, restore_samples: list, split_samples: list, refin
     for orig, parts in split_samples[:8]:
         print(f"  원본: {orig[:90]}")
         for i, p in enumerate(parts):
-            print(f"    → [{i+1}] {p[:80]}")
+            print(f"    → [{i + 1}] {p[:80]}")
         print()
 
     still_broken = [r for r in refined if BROKEN_RE.search(r["content"])]
