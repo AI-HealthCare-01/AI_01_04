@@ -209,7 +209,11 @@ def _dedupe_drugs(items: list) -> list[dict]:
 
 
 def _merge_parser_hints(result: dict, parser_hints: dict) -> dict:
-    """AI 결과가 빈약할 때 parser 후보를 최소한으로 보완한다."""
+    """AI 결과가 빈약하거나 부정확할 때 parser 후보로 보완/교체한다.
+
+    candidate_diagnosis_codes는 좌표 기반으로 추출된 신뢰도 높은 결과이므로,
+    AI가 반환한 diagnosis_list에 후보와 다른 KCD 코드가 있으면 후보로 교체한다.
+    """
     candidate_codes = [
         item for item in parser_hints.get("candidate_diagnosis_codes", []) if isinstance(item, str) and item.strip()
     ]
@@ -220,7 +224,28 @@ def _merge_parser_hints(result: dict, parser_hints: dict) -> dict:
     diagnosis_list = [item for item in result.get("diagnosis_list", []) if isinstance(item, str) and item.strip()]
     existing_drugs = [item for item in result.get("drugs", []) if _drug_name(item)]
 
-    if not diagnosis_list and candidate_codes:
+    if candidate_codes and diagnosis_list:
+        # AI 결과에서 후보 코드와 일치하는 항목 유지, 후보에 없는 KCD 코드는 제거
+        kept: list[str] = []
+        used_codes: set[str] = set()
+        for diag in diagnosis_list:
+            matched = False
+            for code in candidate_codes:
+                if code in diag:
+                    kept.append(diag)
+                    used_codes.add(code)
+                    matched = True
+                    break
+            if not matched:
+                # KCD 코드 형식이 아닌 항목(질병명 등)은 유지
+                if not re.match(r"^[A-Z]\d{2}", diag.strip()):
+                    kept.append(diag)
+        # 매칭되지 않은 후보 코드 추가
+        for code in candidate_codes:
+            if code not in used_codes:
+                kept.append(code)
+        result["diagnosis_list"] = _dedupe_keep_order(kept)
+    elif not diagnosis_list and candidate_codes:
         result["diagnosis_list"] = _dedupe_keep_order(candidate_codes[:5])
     else:
         result["diagnosis_list"] = _dedupe_keep_order(diagnosis_list)
