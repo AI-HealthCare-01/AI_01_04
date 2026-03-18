@@ -186,6 +186,26 @@ def _dedupe_keep_order(items: list[str]) -> list[str]:
     return result
 
 
+def _drug_name(item: str | dict) -> str:
+    """drugs 항목에서 약품명을 추출한다."""
+    if isinstance(item, dict):
+        return str(item.get("name", "")).strip()
+    return str(item).strip()
+
+
+def _dedupe_drugs(items: list) -> list[dict]:
+    """drugs 리스트를 dict 형태로 정규화하고 중복을 제거한다."""
+    seen: set[str] = set()
+    result: list[dict] = []
+    for item in items:
+        name = _drug_name(item)
+        if not name or name in seen:
+            continue
+        seen.add(name)
+        result.append(item if isinstance(item, dict) else {"name": name})
+    return result
+
+
 def _merge_parser_hints(result: dict, parser_hints: dict) -> dict:
     """AI 결과가 빈약할 때 parser 후보를 최소한으로 보완한다."""
     candidate_codes = [
@@ -196,17 +216,17 @@ def _merge_parser_hints(result: dict, parser_hints: dict) -> dict:
     ]
 
     diagnosis_list = [item for item in result.get("diagnosis_list", []) if isinstance(item, str) and item.strip()]
-    drugs = [item for item in result.get("drugs", []) if isinstance(item, str) and item.strip()]
+    existing_drugs = [item for item in result.get("drugs", []) if _drug_name(item)]
 
     if not diagnosis_list and candidate_codes:
         result["diagnosis_list"] = _dedupe_keep_order(candidate_codes[:5])
     else:
         result["diagnosis_list"] = _dedupe_keep_order(diagnosis_list)
 
-    if not drugs and candidate_drugs:
-        result["drugs"] = _dedupe_keep_order(candidate_drugs[:10])
+    if not existing_drugs and candidate_drugs:
+        result["drugs"] = _dedupe_drugs(candidate_drugs[:10])
     else:
-        result["drugs"] = _dedupe_keep_order(drugs)
+        result["drugs"] = _dedupe_drugs(existing_drugs)
 
     return result
 
