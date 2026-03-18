@@ -25,6 +25,8 @@ PRESCRIPTION_SYSTEM_PROMPT = """
 - document_date: YYYY-MM-DD 또는 null
 - diagnosis_list: 진단명/질병명/질병분류기호(KCD 코드) 배열. 여러 개가 있으면 모두 추출. 예: ["I109 기타 및 상세불명의 원발성 고혈압", "E118 합병증을 동반하지 않은 1형 당뇨병"]. 없으면 []
   OCR 오인식 주의: KCD 코드 첫 글자는 반드시 영문 대문자다. '1', 'l' 로 인식된 경우 'I'로, '0'으로 인식된 경우 'O'로 보정하라. 예: "1219" → "I219", "l109" → "I109"
+  칸 분리 형식 주의: 한국 처방전의 질병분류기호는 각 글자가 별도 칸에 나뉘어 있는 경우가 많다. OCR이 이를 개별 문자로 인식하여 공백으로 분리될 수 있다. 예: "I 1 0 9" → "I109", "E 1 1 8" → "E118". 이런 패턴을 발견하면 공백을 제거하고 KCD 코드로 보정하여 diagnosis_list에 추가하라.
+  OCR 누락 보완: 질병분류기호 칸에서 일부 글자가 OCR에 의해 누락될 수 있다. 처방된 약물 정보를 참고하여 누락된 질병코드를 추론하라. 예: 노바스크정(고혈압약)이 처방되었으면 I10 계열(고혈압) 코드가 있을 가능성이 높다. parser_hints의 candidate_diagnosis_codes에 이미 추출된 코드가 있으면 그것을 신뢰하되, 처방약과 매칭되지 않는 누락 코드가 있으면 추론하여 추가하라.
   한국 첫 방문 질병분류기호 위치: 첫 방문 질병분류기호는 주로 '질병분류', '상병코드', '질병코드' 등의 라벨 근처에 위치한다. 해당 라벨 근처에 영문자+숫자 또는 숫자만으로 된 3~5자리 코드가 있으면 KCD 코드로 간주하고 영문자 보정 후 diagnosis_list에 추가하라.
 - clinical_note: null
 - drugs: 객체 배열. 각 약품에 대해 다음 필드를 추출한다. (없으면 [])
@@ -143,9 +145,9 @@ async def ai_postprocess(
     result.setdefault("raw_text", raw_text)
     result["ocr_raw"] = ocr_raw  # LLM 응답과 무관하게 원본 그대로 저장
 
-    if not isinstance(result["diagnosis_list"], list):
+    if not isinstance(result.get("diagnosis_list"), list):
         result["diagnosis_list"] = []
-    if not isinstance(result["drugs"], list):
+    if not isinstance(result.get("drugs"), list):
         result["drugs"] = []
 
     result = _merge_parser_hints(result, parser_hints)
@@ -237,6 +239,9 @@ _KCD_PATTERN = re.compile(
 _KCD_LABEL_PATTERN = re.compile(
     r"(?:질병분류|상병코드|질병코드|질병\s*분류|상병\s*기호|분류기호)\s*([1lIA-Z][0-9]{2,4}[0-9A-Z]?)"
 )
+_KCD_SPACED_PATTERN = re.compile(
+    r"(?<![A-Za-z0-9])([A-Za-z1l])\s+([0-9])\s+([0-9])\s+([0-9])(?:\s+([0-9]))?(?![A-Za-z])"
+)
 
 
 def _normalize_kcd(code: str) -> str:
@@ -248,7 +253,32 @@ def _normalize_kcd(code: str) -> str:
 
 def _extract_kcd_codes(raw_text: str) -> list[str]:
     """raw_text에서 KCD 코드를 추출한다."""
+    codes: list[str] = []
+    seen: set[str] = set()
+
+    # 라벨 근처 연속 코드
     label_matches = _KCD_LABEL_PATTERN.findall(raw_text)
     if label_matches:
-        return [_normalize_kcd(c) for c in label_matches]
-    return [normalized for c in _KCD_PATTERN.findall(raw_text) if (normalized := _normalize_kcd(c))[0].isalpha()]
+        for c in label_matches:
+            n = _normalize_kcd(c)
+            if n not in seen:
+                seen.add(n)
+                codes.append(n)
+
+    # 일반 패턴
+    if not codes:
+        for c in _KCD_PATTERN.findall(raw_text):
+            n = _normalize_kcd(c)
+            if n[0].isalpha() and n not in seen:
+                seen.add(n)
+                codes.append(n)
+
+    # 칸 분리 형식 (예: I 1 0 9)
+    for m in _KCD_SPACED_PATTERN.finditer(raw_text):
+        raw_code = "".join(g for g in m.groups() if g is not None)
+        n = _normalize_kcd(raw_code)
+        if re.fullmatch(r"[A-Z]\d{2,4}[0-9A-Z]?", n) and n not in seen:
+            seen.add(n)
+            codes.append(n)
+
+    return codes
