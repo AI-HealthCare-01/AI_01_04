@@ -33,10 +33,7 @@
 <body>
 
     <!-- Mobile Menu Button -->
-    <button class="btn btn-primary d-lg-none position-fixed top-0 end-0 m-3 z-3" type="button"
-        onclick="toggleSidebar()">
-        <i class="bi bi-list"></i>
-    </button>
+    
 
     <div class="app-wrapper">
         <!-- Sidebar -->
@@ -76,8 +73,7 @@
                     </div>
                 </div>
             </div>
-        </main>
-    </div>
+        </div>
 
     <!-- Toast for Feedback -->
     <div class="toast-container position-fixed bottom-0 end-0 p-3">
@@ -100,8 +96,6 @@
     <script src="js/components.js"></script>
 
     <script>
-        function toggleSidebar() { document.querySelector('.sidebar').classList.toggle('show'); }
-
         async function sendFeedback(recId, type) {
             try {
                 await window.api.sendFeedback(recId, type);

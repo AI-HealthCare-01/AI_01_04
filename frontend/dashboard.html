@@ -37,20 +37,40 @@
             margin-bottom: 0.5rem;
             font-size: 0.875rem;
         }
+        .medication-check-item {
+            display: flex;
+            align-items: center;
+            border-radius: 8px;
+            margin-bottom: 4px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .medication-check-item.done {
+            background-color: #f0fdf4 !important;
+            border: 1px solid #bbf7d0 !important;
+        }
+
+        .medication-check-item.pending {
+            background-color: #ffffff;
+            border: 1px solid var(--border-color);
+        }
+
+        .medication-check-item:hover {
+            border-color: var(--primary-color);
+        }
+
+        .status-badge {
+            font-size: 0.7rem;
+            padding: 3px 6px;
+        }
     </style>
 </head>
 
 <body>
 
-    <!-- Top Navigation -->
-    <nav class="top-nav d-flex justify-content-between align-items-center shadow-sm sticky-top">
-        <div class="h5 mb-0 fw-bold text-primary-custom">HealthCare AI</div>
-        <button class="btn btn-outline-primary border-0 fs-4 py-0" type="button" data-bs-toggle="offcanvas"
-            data-bs-target="#rightMenu" aria-controls="rightMenu">
-            <i class="bi bi-list"></i>
-        </button>
-    </nav>
-
+    <!-- Global Sidebar Container -->
+    <div id="sidebar-container"></div>
     <!-- Main Content Dashboard -->
     <div class="container py-4">
         <div class="row g-4">
@@ -93,6 +113,19 @@
                         <div id="health-status-badges" class="d-flex gap-2"></div>
                     </div>
 
+                    <!-- Today's Medication Details -->
+                    <div class="mb-4">
+                        <p class="text-soft small mb-2 fw-medium">오늘의 복약 일정</p>
+                        <div id="today-medication-list" class="d-flex flex-column gap-2">
+                            <div class="text-center text-soft small py-2">
+                                <span class="spinner-border spinner-border-sm" role="status"></span>
+                                불러오는 중...
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-3 opacity-25">
+
                     <!-- Recent Prescription -->
                     <div id="recent-prescription-area">
                         <p class="text-soft small mb-2 fw-medium">최근 처방전</p>
@@ -134,65 +167,10 @@
         </div>
     </div>
 
-    <!-- Right Offcanvas Menu -->
-    <div class="offcanvas offcanvas-end" tabindex="-1" id="rightMenu" aria-labelledby="rightMenuLabel">
-        <div class="offcanvas-header bg-soft-primary pb-4 pt-4 border-bottom-0">
-            <div class="d-flex align-items-center w-100">
-                <img id="menu-profile-img"
-                    src="https://ui-avatars.com/api/?name=사용자&background=6da285&color=fff&size=48"
-                    alt="프로필" class="profile-img-sm me-3 shadow-sm border border-light">
-                <div class="flex-grow-1 text-white">
-                    <h5 class="mb-0 fw-bold" id="menu-user-name">사용자</h5>
-                    <span class="small opacity-75">회원</span>
-                </div>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"
-                    aria-label="Close"></button>
-            </div>
-        </div>
-
-        <div class="offcanvas-body p-4 d-flex flex-column">
-            <h6 class="text-soft fw-bold mb-3 small text-uppercase">주요 서비스</h6>
-
-            <a href="dashboard.html" class="d-flex align-items-center menu-item px-3 py-3 mb-2 text-decoration-none">
-                <div class="bg-soft-primary text-primary-custom rounded p-2 me-3">
-                    <i class="bi bi-house-door-fill fs-5"></i>
-                </div>
-                <span class="fw-medium">홈 (대시보드)</span>
-            </a>
-
-            <a href="profile.html" class="d-flex align-items-center menu-item px-3 py-3 mb-2 text-decoration-none">
-                <div class="bg-soft-primary text-primary-custom rounded p-2 me-3">
-                    <i class="bi bi-person-lines-fill fs-5"></i>
-                </div>
-                <span class="fw-medium">내 건강 프로필</span>
-            </a>
-
-            <a href="medications.html" class="d-flex align-items-center menu-item px-3 py-3 mb-2 text-decoration-none">
-                <div class="bg-soft-primary text-primary-custom rounded p-2 me-3">
-                    <i class="bi bi-capsule-pill fs-5"></i>
-                </div>
-                <span class="fw-medium">전체 복약 기록</span>
-            </a>
-
-            <a href="scans.html" class="d-flex align-items-center menu-item px-3 py-3 mb-2 text-decoration-none">
-                <div class="bg-soft-primary text-primary-custom rounded p-2 me-3">
-                    <i class="bi bi-file-earmark-medical-fill fs-5"></i>
-                </div>
-                <span class="fw-medium">처방전 관리 보관함</span>
-            </a>
-
-            <div class="mt-auto pt-4 border-top">
-                <button onclick="logout()"
-                    class="d-flex align-items-center text-danger text-decoration-none px-3 py-2 menu-item btn btn-link w-100 text-start">
-                    <i class="bi bi-box-arrow-right me-3 fs-5"></i>
-                    <span class="fw-bold">로그아웃</span>
-                </button>
-            </div>
-        </div>
-    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/utils.js"></script>
+    <script src="js/components.js"></script>
     <script src="js/api.js"></script>
     <script>
         // 인증 체크
@@ -247,6 +225,107 @@
                 </div>`;
         }
 
+        async function toggleMedication(logId, currentStatus, elId) {
+            const checkbox = document.getElementById(elId);
+            const newItem = document.getElementById(`item-${logId}`);
+            const newStatus = currentStatus === 'taken' ? 'skipped' : 'taken';
+
+            try {
+                checkbox.disabled = true;
+                await window.api.updateMedicationLog(logId, newStatus);
+
+                if (newStatus === 'taken') {
+                    newItem.classList.remove('pending');
+                    newItem.classList.add('done');
+                    checkbox.checked = true;
+                    newItem.querySelector('.med-title').classList.add('text-muted', 'text-decoration-line-through');
+                    newItem.querySelector('.med-title').classList.remove('text-dark');
+                    const badge = newItem.querySelector('.status-badge');
+                    badge.className = 'badge bg-success bg-opacity-10 text-success rounded-pill status-badge float-end';
+                    badge.innerText = '복용 완료';
+                } else {
+                    newItem.classList.remove('done');
+                    newItem.classList.add('pending');
+                    checkbox.checked = false;
+                    newItem.querySelector('.med-title').classList.remove('text-muted', 'text-decoration-line-through');
+                    newItem.querySelector('.med-title').classList.add('text-dark');
+                    const badge = newItem.querySelector('.status-badge');
+                    badge.className = 'badge bg-danger bg-opacity-10 text-danger rounded-pill status-badge float-end';
+                    badge.innerText = '미복용';
+                }
+
+                newItem.dataset.status = newStatus;
+                loadDashboardSummaryOnly();
+            } catch (err) {
+                alert('업데이트 중 오류가 발생했습니다: ' + err.message);
+                checkbox.checked = currentStatus === 'taken';
+            } finally {
+                checkbox.disabled = false;
+            }
+        }
+
+        async function loadTodayMedications() {
+            const container = document.getElementById('today-medication-list');
+            try {
+                const today = new Date();
+                const offset = today.getTimezoneOffset() * 60000;
+                const localISOTime = (new Date(today - offset)).toISOString().split('T')[0];
+
+                const day = await window.api.fetchAPI(`/medications/history/${localISOTime}`);
+                if (!day.items || day.items.length === 0) {
+                    container.innerHTML = `<div class="text-soft small">오늘 등록된 복약 일정이 없습니다. 처방전을 먼저 등록해보세요.</div>`;
+                    return;
+                }
+
+                let html = '';
+                day.items.forEach(log => {
+                    const isDone = log.status === 'taken';
+                    const mainClass = isDone ? 'done' : 'pending';
+                    const elId = `chk-${log.id}`;
+                    const titleColor = isDone ? 'text-muted text-decoration-line-through' : 'text-dark';
+                    const badgeHtml = isDone
+                        ? `<span class="badge bg-success bg-opacity-10 text-success rounded-pill status-badge float-end">복용 완료</span>`
+                        : `<span class="badge bg-danger bg-opacity-10 text-danger rounded-pill status-badge float-end">미복용</span>`;
+
+                    html += `
+                        <div class="medication-check-item ${mainClass} p-2" id="item-${log.id}" data-log-id="${log.id}" data-status="${escapeHtml(log.status)}" data-el-id="${elId}" onclick="toggleMedication(${log.id}, this.dataset.status, '${elId}')">
+                            <div class="form-check m-0 me-2" style="pointer-events: none;">
+                                <input class="form-check-input" type="checkbox" id="${elId}" ${isDone ? 'checked' : ''}>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="fw-bold med-title ${titleColor}" style="font-size:0.85rem">${escapeHtml(log.label)}</span>
+                                    ${badgeHtml}
+                                </div>
+                                <div class="text-soft small d-flex gap-2" style="font-size:0.75rem">
+                                   <span><i class="bi bi-clock me-1"></i>${escapeHtml(log.intake_datetime || '시간 없음')}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+            } catch (err) {
+                container.innerHTML = '<div class="text-soft small text-danger">복약 일정을 가져오지 못했습니다.</div>';
+            }
+        }
+
+        async function loadDashboardSummaryOnly() {
+            try {
+                const summary = await window.api.getDashboardSummary();
+                document.getElementById('stat-medication').textContent = (summary.remaining_medication_days ?? 0) + '일';
+                document.getElementById('stat-today-med').textContent = summary.today_medication_completed ? '완료 ✓' : '미완료';
+                document.getElementById('stat-today-med').className = 'fw-bold mb-1 ' + (summary.today_medication_completed ? 'text-success' : 'text-danger');
+                document.getElementById('health-status-badges').innerHTML = `
+                    <span class="stat-badge ${summary.today_medication_completed ? 'bg-success text-white' : 'bg-warning text-dark'}">
+                        복약 ${summary.today_medication_completed ? '완료' : '미완료'}
+                    </span>
+                    <span class="stat-badge ${summary.today_health_completed ? 'bg-success text-white' : 'bg-secondary text-white'}">
+                        건강관리 ${summary.today_health_completed ? '완료' : '미완료'}
+                    </span>`;
+            } catch (e) {}
+        }
+
         async function loadDashboard() {
             try {
                 // 사용자 정보 로드
@@ -296,11 +375,17 @@
                 // 활성 추천
                 renderRecommendations(summary.active_recommendations);
 
+                // 오늘의 복약 목록 조회 (New)
+                await loadTodayMedications();
+
             } catch (e) {
                 document.getElementById('stat-medication').textContent = '-';
                 document.getElementById('recent-prescription').textContent = '데이터를 불러올 수 없습니다.';
                 document.getElementById('active-recommendations').innerHTML = '<p class="text-soft small">데이터를 불러올 수 없습니다.</p>';
             }
+
+            // 오늘의 복약 목록 조회 (New)
+            await loadTodayMedications();
         }
 
         loadDashboard();
