@@ -108,6 +108,7 @@ echo ""
 # ---------- EC2 내에 배포 준비 파일 복사  ----------
 scp -i ~/.ssh/${ssh_key_file} envs/.prod.env ubuntu@${ec2_ip}:~/project/.env
 scp -i ~/.ssh/${ssh_key_file} docker-compose.prod.yml ubuntu@${ec2_ip}:~/project/docker-compose.yml
+scp -r -i ~/.ssh/${ssh_key_file} frontend ubuntu@${ec2_ip}:~/project/
 if [[ "$is_https" == "1" ]]; then
   # ---------- prod_https.conf 파일의 server_name, ssl_certificate 자동 수정 ----------
   sed -i '' "s/server_name .*/server_name ${ec2_ip};/g" nginx/prod_http.conf
