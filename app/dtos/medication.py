@@ -40,6 +40,10 @@ class MedicationChecklistItem(BaseModel):
     label: str
     status: MedicationStatus
     intake_datetime: str | None = None
+    drug_name: str | None = None
+    dose_amount: str | None = None
+    dose_unit: str | None = None
+    dose_timing: str | None = None
 
 
 class MedicationDayDetailResponse(BaseModel):

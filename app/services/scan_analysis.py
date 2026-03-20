@@ -441,6 +441,7 @@ class ScanAnalysisService:
             dose_days = drug_entry.get("dose_days")
             dose_amount = drug_entry.get("dose_amount") or "1"
             dose_unit = drug_entry.get("dose_unit") or "정"
+            dose_timing = drug_entry.get("dose_timing")
 
             end = start + timedelta(days=(dose_days - 1)) if dose_days and dose_days > 0 else start
 
@@ -473,6 +474,7 @@ class ScanAnalysisService:
                 dose_count=dose_count,
                 dose_amount=str(dose_amount),
                 dose_unit=dose_unit,
+                dose_timing=dose_timing,
             )
             created.append(prescription.id)
 

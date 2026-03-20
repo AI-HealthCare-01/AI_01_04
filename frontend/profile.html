@@ -1,204 +1,276 @@
 <!DOCTYPE html>
 <html lang="ko">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title data-text="profile.title">내 건강 프로필</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title data-text="profile.title">내 건강 프로필 - MEDIMATE</title>
 
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"/>
+  <link rel="stylesheet" href="css/style.css"/>
+
+  <style>
+    body { background:#f5f7fb; }
+
+    .top-header { background:#fff; border-bottom:1px solid #eee; padding:.7rem 2rem; }
+    .top-header .brand { font-weight:600; color:#6da285; font-size:.95rem; }
+    .top-header .brand i { color:#6da285; }
+    .user-area { font-size:.85rem; }
+    .user-area .btn-myinfo {
+      background:#f0f0f0; border:none; border-radius:8px;
+      font-size:.8rem; padding:.3rem .85rem; color:#333; text-decoration:none;
+    }
+
+    .dashboard-card {
+      max-width:1200px; margin:32px auto; background:#fff;
+      border-radius:20px; padding:32px 36px 40px; border:1px solid #e5e7eb;
+    }
+
+    .hero-label { font-size:.78rem; color:#6da285; font-weight:500; }
+    .hero-label i { color:#6da285; }
+    .hero-title { font-size:1.6rem; font-weight:700; color:#111; margin:4px 0 6px; }
+    .hero-desc { color:#888; font-size:.88rem; margin:0 0 20px; }
+
+    .dashboard-tabs {
+      display:flex; gap:4px; background:#f1f3f5; padding:5px;
+      border-radius:999px; margin-bottom:24px; overflow-x:auto;
+    }
+    .dashboard-tabs a {
+      flex:1; text-align:center; padding:9px 18px; border-radius:999px;
+      text-decoration:none; color:#6da285; font-size:.84rem; font-weight:500;
+      white-space:nowrap; transition:all .15s;
+    }
+    .dashboard-tabs a.active { background:#fff; color:#111; font-weight:600; box-shadow:0 1px 4px rgba(0,0,0,.06); }
+    .dashboard-tabs a:hover:not(.active) { color:#4a8a68; }
+
+    .profile-section { display:grid; grid-template-columns:280px 1fr; gap:24px; align-items:start; }
+    @media(max-width:768px) { .profile-section { grid-template-columns:1fr; } }
+
+    .profile-photo-card {
+      border:1px solid #e5e7eb; border-radius:16px; padding:28px 24px;
+      text-align:center; background:#fff;
+    }
+    .profile-avatar {
+      width:100px; height:100px; border-radius:50%; object-fit:cover;
+      border:3px solid #6da285; margin-bottom:14px;
+    }
+    .profile-name { font-weight:700; font-size:1.05rem; color:#111; margin-bottom:2px; }
+    .profile-email { font-size:.82rem; color:#999; margin-bottom:16px; }
+    .btn-photo {
+      background:#f0f5f2; color:#6da285; border:1px solid #d5e5dc;
+      border-radius:10px; padding:8px 18px; font-size:.82rem; font-weight:500;
+      cursor:pointer; width:100%; transition:all .15s;
+    }
+    .btn-photo:hover { background:#e0efe6; }
+
+    .profile-form-card {
+      border:1px solid #e5e7eb; border-radius:16px; padding:28px; background:#fff;
+    }
+    .pf-title { font-weight:700; font-size:1rem; color:#111; margin-bottom:18px; }
+    .pf-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    @media(max-width:576px) { .pf-grid { grid-template-columns:1fr; } }
+    .pf-field label { font-size:.75rem; font-weight:600; color:#999; margin-bottom:4px; display:block; }
+    .pf-field input, .pf-field select {
+      border:1px solid #e5e7eb; border-radius:8px; padding:9px 12px;
+      font-size:.85rem; width:100%; transition:border-color .15s;
+    }
+    .pf-field input:focus, .pf-field select:focus {
+      border-color:#6da285; outline:none; box-shadow:0 0 0 2px rgba(109,162,133,.15);
+    }
+
+    .btn-save {
+      background:#6da285; color:#fff; border:none; border-radius:10px;
+      padding:10px 28px; font-size:.88rem; font-weight:600; margin-top:18px; cursor:pointer;
+    }
+    .btn-save:hover { background:#5a8e72; }
+
+    .save-msg { margin-top:12px; padding:10px 14px; border-radius:10px; font-size:.84rem; display:none; }
+    .save-msg.show { display:block; }
+    .save-msg.success { background:#e8f5e9; color:#2e7d32; }
+    .save-msg.error { background:#fce4ec; color:#c62828; }
+
+    .floating-chatbot {
+      position:fixed; right:24px; bottom:24px;
+      background:#6da285; color:#fff; border:none; border-radius:999px;
+      padding:14px 22px; font-size:.88rem; font-weight:600;
+      box-shadow:0 4px 18px rgba(109,162,133,.4); z-index:1050;
+      text-decoration:none; display:flex; align-items:center; gap:8px;
+    }
+    .floating-chatbot:hover { background:#5a8e72; color:#fff; }
+    .floating-chatbot .notif-dot {
+      width:8px; height:8px; background:#ff5c5c; border-radius:50%;
+      position:absolute; top:10px; right:14px;
+    }
+
+    @media(max-width:768px) {
+      .dashboard-card { margin:16px 10px; padding:20px 16px 28px; }
+      .top-header { padding:.6rem 1rem; }
+      .dashboard-tabs a { padding:7px 12px; font-size:.78rem; }
+    }
+  </style>
 </head>
-
 <body>
 
-    <!-- Mobile Menu Button -->
-    <button class="btn btn-primary d-lg-none position-fixed top-0 end-0 m-3 z-3" type="button"
-        onclick="toggleSidebar()">
-        <i class="bi bi-list"></i>
-    </button>
+<nav class="top-header d-flex justify-content-between align-items-center sticky-top">
+  <div class="brand d-flex align-items-center gap-2">
+    <i class="bi bi-activity"></i> MEDIMATE
+    <span style="font-weight:400;color:#999;font-size:.78rem;margin-left:6px" data-text="common.serviceTagline">당신의 곁에, 언제나</span>
+  </div>
+  <div class="user-area d-flex align-items-center gap-3">
+    <span class="text-muted" id="header-user-name">환영합니다</span>
+    <a href="profile.html" class="btn btn-myinfo"><i class="bi bi-person-fill me-1"></i>내 정보</a>
+  </div>
+</nav>
 
-    <div class="app-wrapper">
-        <!-- Sidebar -->
-        <nav id="sidebar-container" class="sidebar shadow-sm"></nav>
+<div class="dashboard-card">
+  <div class="mb-1">
+    <div class="hero-label"><i class="bi bi-activity me-1"></i>MEDIMATE</div>
+    <div class="hero-title" data-text="profile.title">내 건강 프로필 설정</div>
+    <p class="hero-desc" data-text="profile.subtitle">정확한 정보를 입력할수록 더 정교한 분석 결과를 받으실 수 있습니다.</p>
+  </div>
 
-        <!-- Main Content -->
-        <main class="main-content">
-            <div class="fade-in mb-4 pb-2 border-bottom">
-                <h3 class="fw-bold mb-0" data-text="profile.title">내 건강 프로필 설정</h3>
-                <p class="text-soft mt-1 mb-0" data-text="profile.subtitle">정확한 정보를 입력할수록 더 정교한 분석 결과를 받으실 수 있습니다.</p>
-            </div>
+  <div class="dashboard-tabs">
+    <a href="profile.html" class="active"><i class="bi bi-person me-1"></i>내 프로필</a>
+    <a href="dashboard.html"><i class="bi bi-grid-1x2 me-1"></i>대시보드</a>
+    <a href="scans.html"><i class="bi bi-file-earmark-plus me-1"></i>새 문서 등록</a>
+    <a href="medications.html"><i class="bi bi-capsule me-1"></i>복용 관리 이력</a>
+    <a href="health.html"><i class="bi bi-heart-pulse me-1"></i>건강 관리 이력</a>
+    <a href="chatbot.html"><i class="bi bi-chat-dots me-1"></i>AI 챗봇</a>
+  </div>
 
-            <div class="row g-4 fade-in">
-                <div class="col-md-5 col-lg-4">
-                    <div class="card p-4 text-center h-100">
-                        <h5 class="fw-bold text-primary-custom mb-3" data-text="profile.photoTitle">프로필 사진</h5>
-
-                        <img id="profile-img-preview" src="https://ui-avatars.com/api/?name=User&background=6da285&color=fff&size=120" alt="프로필"
-                            class="profile-img-lg mb-3 shadow mx-auto d-block" style="width:120px;height:120px;">
-                        <p id="profile-email" class="text-soft mb-4" data-text="profile.loadingEmail">계정 로딩 중...</p>
-
-                        <div id="upload-status" class="alert p-2 small d-none"></div>
-
-                        <input type="file" id="profile-img-input" class="d-none"
-                            accept="image/png, image/jpeg, image/jpg" onchange="uploadProfileImage(event)">
-                        <button class="btn btn-outline-primary w-100 rounded-pill"
-                            onclick="document.getElementById('profile-img-input').click()">
-                            <i class="bi bi-camera me-1"></i><span data-text="profile.changePhoto"> 사진 변경하기</span>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="col-md-7 col-lg-8">
-                    <div class="card p-4 h-100">
-                        <h5 class="fw-bold text-primary-custom mb-4" data-text="profile.formTitle">기본 정보 수정</h5>
-
-                        <div id="update-status" class="alert p-2 small d-none"></div>
-
-                        <form id="profile-form" onsubmit="updateProfile(event)">
-                            <div class="row g-3 mb-3">
-                                <div class="col-md-6">
-                                    <label class="form-label text-secondary small fw-medium" data-text="profile.name">이름</label>
-                                    <input type="text" id="prof-name" class="form-control" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label text-secondary small fw-medium" data-text="profile.birthday">생년월일 (YYYY-MM-DD)</label>
-                                    <input type="date" id="prof-birth" class="form-control">
-                                </div>
-                            </div>
-
-                            <div class="row g-3 mb-4">
-                                <div class="col-md-6">
-                                    <label class="form-label text-secondary small fw-medium" data-text="profile.gender">성별</label>
-                                    <select id="prof-gender" class="form-select border-1 px-3 py-2 bg-light">
-                                        <option value="" data-text="profile.genderNone">선택 안함</option>
-                                        <option value="MALE" data-text="profile.genderMale">남성</option>
-                                        <option value="FEMALE" data-text="profile.genderFemale">여성</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label text-secondary small fw-medium" data-text="profile.phone">휴대폰 번호</label>
-                                    <input type="tel" id="prof-phone" class="form-control" data-placeholder="profile.phonePlaceholder" placeholder="010-1234-5678">
-                                </div>
-                            </div>
-
-                            <div class="d-flex justify-content-end">
-                                <button type="submit" id="update-btn" class="btn btn-primary px-4 py-2">
-                                    <span class="btn-text" data-text="profile.saveButton">정보 저장하기</span>
-                                    <span class="spinner-border spinner-border-sm d-none" role="status"></span>
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </main>
+  <div class="profile-section">
+    <div class="profile-photo-card">
+      <img id="profile-img-preview" src="https://ui-avatars.com/api/?name=User&background=6da285&color=fff&size=100" class="profile-avatar"/>
+      <div class="profile-name" id="dispName">-</div>
+      <div class="profile-email" id="profile-email" data-text="profile.loadingEmail">계정 로딩 중...</div>
+      <div id="upload-status" class="save-msg"></div>
+      <input type="file" id="profile-img-input" class="d-none" accept="image/png, image/jpeg, image/jpg" onchange="uploadProfileImage(event)">
+      <button class="btn-photo" onclick="document.getElementById('profile-img-input').click()">
+        <i class="bi bi-camera me-1"></i><span data-text="profile.changePhoto">사진 변경하기</span>
+      </button>
     </div>
 
-    <script src="js/utils.js"></script>
-    <script src="js/texts.js"></script>
-    <script src="js/api.js"></script>
-    <script src="js/components.js"></script>
-    <script>
-        function toggleSidebar() {
-            document.querySelector('.sidebar').classList.toggle('show');
-        }
+    <div class="profile-form-card">
+      <div class="pf-title"><i class="bi bi-pencil-square me-2" style="color:#6da285"></i><span data-text="profile.formTitle">기본 정보 수정</span></div>
+      <form id="profile-form" onsubmit="updateProfile(event)">
+        <div class="pf-grid">
+          <div class="pf-field">
+            <label data-text="profile.name">이름</label>
+            <input type="text" id="prof-name" required/>
+          </div>
+          <div class="pf-field">
+            <label data-text="profile.birthday">생년월일 (YYYY-MM-DD)</label>
+            <input type="date" id="prof-birth"/>
+          </div>
+          <div class="pf-field">
+            <label data-text="profile.gender">성별</label>
+            <select id="prof-gender">
+              <option value="" data-text="profile.genderNone">선택 안함</option>
+              <option value="MALE" data-text="profile.genderMale">남성</option>
+              <option value="FEMALE" data-text="profile.genderFemale">여성</option>
+            </select>
+          </div>
+          <div class="pf-field">
+            <label data-text="profile.phone">휴대폰 번호</label>
+            <input type="tel" id="prof-phone" data-placeholder="profile.phonePlaceholder" placeholder="010-1234-5678"/>
+          </div>
+        </div>
+        <button type="submit" id="update-btn" class="btn-save">
+          <i class="bi bi-check-circle me-1"></i><span data-text="profile.saveButton">정보 저장하기</span>
+        </button>
+      </form>
+      <div class="save-msg" id="saveMsg"></div>
+    </div>
+  </div>
+</div>
 
-        async function loadProfile() {
-            try {
-                applyTextBindings();
-                document.title = getText('profile.title', document.title);
-                const user = await window.api.getUserMe();
+<a href="chatbot.html" class="floating-chatbot">
+  <i class="bi bi-robot"></i> MEDIMATE 챗봇
+  <span class="notif-dot"></span>
+</a>
 
-                // Populate form
-                document.getElementById('prof-name').value = user.name || '';
-                document.getElementById('prof-birth').value = user.birthday || '';
-                document.getElementById('prof-gender').value = user.gender || '';
-                document.getElementById('prof-phone').value = user.phone_number || '';
+<script src="js/utils.js"></script>
+<script src="js/texts.js"></script>
+<script src="js/api.js"></script>
+<script>
+if (!localStorage.getItem('access_token')) {
+  window.location.href = 'index.html';
+}
 
-                document.getElementById('profile-email').innerText = user.email || '';
+async function loadProfile() {
+  applyTextBindings();
+  document.title = getText('profile.title', document.title);
+  try {
+    const user = await window.api.getUserMe();
+    document.getElementById('prof-name').value = user.name || '';
+    document.getElementById('prof-birth').value = user.birthday || '';
+    document.getElementById('prof-gender').value = user.gender || '';
+    document.getElementById('prof-phone').value = user.phone_number || '';
+    document.getElementById('profile-email').innerText = user.email || '';
+    document.getElementById('dispName').textContent = user.name || '-';
+    document.getElementById('header-user-name').textContent = '환영합니다, ' + (user.name || '사용자') + '님';
+    localStorage.setItem('user_name', user.name || '사용자');
 
-                const avUrl = user.profile_image_url
-                    ? window.api.resolveBackendUrl(user.profile_image_url)
-                    : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || 'User')}&background=random&color=fff&size=120`;
-                document.getElementById('profile-img-preview').src = avUrl;
+    const avUrl = user.profile_image_url
+      ? window.api.resolveBackendUrl(user.profile_image_url)
+      : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || 'User')}&background=6da285&color=fff&size=100`;
+    document.getElementById('profile-img-preview').src = avUrl;
+  } catch (err) {
+    console.error('Failed to load profile', err);
+  }
+}
 
-            } catch (err) {
-                console.error("Failed to load profile", err);
-            }
-        }
+async function updateProfile(event) {
+  event.preventDefault();
+  const btn = document.getElementById('update-btn');
+  const msg = document.getElementById('saveMsg');
+  const data = {
+    name: document.getElementById('prof-name').value || null,
+    birthday: document.getElementById('prof-birth').value || null,
+    gender: document.getElementById('prof-gender').value || null,
+    phone_number: document.getElementById('prof-phone').value || null,
+  };
+  try {
+    btn.disabled = true;
+    const updated = await window.api.fetchAPI('/users/me', { method: 'PATCH', body: data });
+    document.getElementById('dispName').textContent = updated.name || '-';
+    document.getElementById('header-user-name').textContent = '환영합니다, ' + (updated.name || '사용자') + '님';
+    localStorage.setItem('user_name', updated.name);
+    msg.className = 'save-msg show success';
+    msg.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i>' + getText('profile.updateSuccess', '정보가 성공적으로 업데이트 되었습니다.');
+  } catch (err) {
+    msg.className = 'save-msg show error';
+    msg.textContent = err.message;
+  } finally {
+    btn.disabled = false;
+    setTimeout(() => { msg.className = 'save-msg'; }, 3000);
+  }
+}
 
-        async function updateProfile(event) {
-            event.preventDefault();
-            const btn = document.getElementById('update-btn');
-            const statusBox = document.getElementById('update-status');
+async function uploadProfileImage(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const box = document.getElementById('upload-status');
+  try {
+    box.className = 'save-msg show'; box.style.background = '#e3f2fd'; box.style.color = '#1565c0';
+    box.textContent = getText('profile.uploadLoading', '업로드 중입니다...');
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await window.api.fetchAPI('/users/me/profile-image', { method: 'POST', body: formData });
+    document.getElementById('profile-img-preview').src = window.api.resolveBackendUrl(res.profile_image_url);
+    box.className = 'save-msg show success';
+    box.textContent = getText('profile.uploadSuccess', '사진이 업데이트 되었습니다.');
+  } catch (err) {
+    box.className = 'save-msg show error';
+    box.textContent = err.message;
+  } finally {
+    setTimeout(() => { box.className = 'save-msg'; }, 3000);
+  }
+}
 
-            const data = {
-                name: document.getElementById('prof-name').value || null,
-                birthday: document.getElementById('prof-birth').value || null,
-                gender: document.getElementById('prof-gender').value || null,
-                phone_number: document.getElementById('prof-phone').value || null,
-            };
+document.addEventListener('DOMContentLoaded', loadProfile);
+</script>
 
-            try {
-                btn.disabled = true;
-                btn.querySelector('.btn-text').classList.add('d-none');
-                btn.querySelector('.spinner-border').classList.remove('d-none');
-                statusBox.classList.add('d-none');
-                statusBox.className = 'alert p-2 small';
-
-                const updated = await window.api.fetchAPI('/users/me', { method: 'PATCH', body: data });
-
-                statusBox.innerText = getText('profile.updateSuccess', '정보가 성공적으로 업데이트 되었습니다.');
-                statusBox.classList.add('alert-success');
-                statusBox.classList.remove('d-none', 'alert-danger');
-
-                localStorage.setItem('user_name', updated.name); // update sidebars name globally
-                renderSidebar();
-
-            } catch (err) {
-                statusBox.innerText = err.message;
-                statusBox.classList.add('alert-danger');
-                statusBox.classList.remove('d-none', 'alert-success');
-            } finally {
-                btn.disabled = false;
-                btn.querySelector('.btn-text').classList.remove('d-none');
-                btn.querySelector('.spinner-border').classList.add('d-none');
-                setTimeout(() => { statusBox.classList.add('d-none'); }, 3000);
-            }
-        }
-
-        async function uploadProfileImage(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const box = document.getElementById('upload-status');
-            try {
-                box.className = 'alert alert-info p-2 small';
-                box.innerText = getText('profile.uploadLoading', '업로드 중입니다...');
-
-                const formData = new FormData();
-                formData.append('file', file);
-
-                // fetch wrapper defaults to JSON unless formData is used
-                const res = await window.api.fetchAPI('/users/me/profile-image', { method: 'POST', body: formData });
-
-                document.getElementById('profile-img-preview').src = window.api.resolveBackendUrl(res.profile_image_url);
-                box.className = 'alert alert-success p-2 small';
-                box.innerText = getText('profile.uploadSuccess', '사진이 업데이트 되었습니다.');
-
-            } catch (err) {
-                box.className = 'alert alert-danger p-2 small';
-                box.innerText = err.message;
-            } finally {
-                setTimeout(() => { box.classList.add('d-none'); }, 3000);
-            }
-        }
-
-        document.addEventListener("DOMContentLoaded", loadProfile);
-    </script>
 </body>
-
 </html>

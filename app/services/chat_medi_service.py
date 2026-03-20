@@ -81,9 +81,10 @@ class ChatMediService(BaseService):
         logger.debug("AI 복약지도 결과: %s", ai_result)
 
         # 8. 복약이력 저장
+        saved_disease = request.disease_code or disease_name or anchor_code or ""
         await MediChat.create(
             patient_id=request.patient_id,
-            disease_code=request.disease_code,
+            disease_code=saved_disease,
             medications=", ".join(med_names),
             advice=ai_result.get("chat_answer", ""),
         )
