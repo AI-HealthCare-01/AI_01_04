@@ -49,7 +49,7 @@ async def get_user_context(
     user: Annotated[User, Depends(get_request_user)],
 ):
     """사용자의 질병, active 약품, 스캔 이력을 조회한다."""
-    if user.id != user_id and not user.is_admin:              #접속 유저 외 다른 유저 접근 차단 및 관리자 접근가능
+    if user.id != user_id and not user.is_admin:  # 접속 유저 외 다른 유저 접근 차단 및 관리자 접근가능
         raise HTTPException(status_code=403, detail="권한이 없습니다.")
     service = ChatContextService()
     return await service.get_user_context(user_id)
