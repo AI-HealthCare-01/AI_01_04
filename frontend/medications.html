@@ -1,249 +1,264 @@
 <!DOCTYPE html>
 <html lang="ko">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title data-text="medications.title">복약 기록 리스트</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>복약 관리 이력 - MEDIMATE</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <style>
+    body { background:#f5f7fb; }
+    .top-header { background:#fff; border-bottom:1px solid #eee; padding:0.7rem 2rem; }
+    .top-header .brand { font-weight:600; color:#6da285; font-size:0.95rem; }
+    .top-header .brand i { color:#6da285; }
+    .user-area { font-size:0.85rem; }
+    .user-area .btn-myinfo { background:#f0f0f0; border:none; border-radius:8px; font-size:0.8rem; padding:0.3rem 0.85rem; color:#333; }
 
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="css/style.css">
+    .dashboard-card { max-width:1200px; margin:32px auto; background:#fff; border-radius:20px; padding:32px 36px 40px; border:1px solid #e5e7eb; }
+    .hero-label { font-size:0.78rem; color:#6da285; font-weight:500; }
+    .hero-label i { color:#6da285; }
+    .hero-title { font-size:1.6rem; font-weight:700; color:#111; margin:4px 0 6px; }
+    .hero-desc { color:#888; font-size:0.88rem; margin:0 0 20px; }
 
-    <style>
-        .medication-check-item {
-            display: flex;
-            align-items: center;
-            padding: 16px;
-            border-radius: 12px;
-            margin-bottom: 12px;
-            transition: all 0.2s ease;
-            cursor: pointer;
-        }
+    .dashboard-tabs { display:flex; gap:4px; background:#f1f3f5; padding:5px; border-radius:999px; margin-bottom:24px; overflow-x:auto; }
+    .dashboard-tabs a { flex:1; text-align:center; padding:9px 18px; border-radius:999px; text-decoration:none; color:#6da285; font-size:0.84rem; font-weight:500; white-space:nowrap; transition:all .15s; }
+    .dashboard-tabs a.active { background:#fff; color:#111; font-weight:600; box-shadow:0 1px 4px rgba(0,0,0,.06); }
+    .dashboard-tabs a:hover:not(.active) { color:#4a8a68; }
 
-        .medication-check-item.done {
-            background-color: #f0fdf4 !important;
-            border: 1px solid #bbf7d0 !important;
-            opacity: 0.8;
-        }
+    .date-row { display:flex; align-items:center; padding:14px 18px; border:1px solid #e5e7eb; border-radius:12px; margin-bottom:8px; cursor:pointer; transition:all .15s; user-select:none; }
+    .date-row:hover { border-color:#6da285; background:#fafdfb; }
+    .date-row .dr-arrow { transition:transform .2s; color:#aaa; margin-right:12px; font-size:0.8rem; }
+    .date-row.open .dr-arrow { transform:rotate(90deg); }
+    .date-row .dr-date { font-weight:600; font-size:0.9rem; color:#111; flex:1; }
+    .date-row .dr-pct { font-size:0.82rem; font-weight:600; margin-right:8px; }
+    .date-row .dr-pct.full { color:#4caf50; }
+    .date-row .dr-pct.partial { color:#e8a735; }
+    .date-row .dr-pct.zero { color:#ccc; }
+    .date-row .progress { width:80px; height:5px; border-radius:3px; background:#eee; margin:0; }
+    .date-row .progress-bar { background:#6da285; border-radius:3px; }
 
-        .medication-check-item.pending {
-            background-color: #ffffff;
-            border: 1px solid var(--border-color);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
-        }
+    .date-detail { display:none; padding:4px 0 12px 0; }
+    .date-detail.show { display:block; }
 
-        .medication-check-item:hover {
-            border-color: var(--primary-color);
-        }
+    .timing-tabs { display:flex; gap:6px; padding:10px 18px 6px; }
+    .timing-tab { padding:6px 16px; border-radius:999px; font-size:0.8rem; font-weight:500; border:1px solid #ddd; background:#fff; color:#666; cursor:pointer; transition:all .15s; }
+    .timing-tab.active { background:#6da285; color:#fff; border-color:#6da285; }
+    .timing-tab:hover:not(.active) { border-color:#6da285; color:#6da285; }
+    .timing-tab .tab-count { font-size:0.7rem; margin-left:4px; opacity:.7; }
 
-        .status-badge {
-            font-size: 0.75rem;
-            padding: 4px 8px;
-        }
-    </style>
+    .timing-content { padding:6px 18px 4px; }
+
+    .med-row { display:flex; align-items:center; padding:11px 14px; border-bottom:1px solid #f2f2f2; }
+    .med-row:last-child { border-bottom:none; }
+    .med-row .mr-body { flex:1; }
+    .med-row .mr-name { font-weight:600; font-size:0.88rem; color:#111; }
+    .med-row .mr-dose { font-size:0.78rem; color:#888; margin-top:1px; }
+
+    .status-btn { border-radius:6px; font-weight:500; font-size:0.75rem; display:inline-block; padding:4px 10px; min-width:52px; text-align:center; cursor:pointer; border:none; transition:all .15s; }
+    .status-btn.done { background:#e8f5e9; color:#4caf50; }
+    .status-btn.pending { background:#f5f5f5; color:#555; border:1px solid #ddd; }
+    .status-btn.pending:hover { background:#eee; }
+
+    .floating-chatbot { position:fixed; right:24px; bottom:24px; background:#6da285; color:#fff; border:none; border-radius:999px; padding:14px 22px; font-size:0.88rem; font-weight:600; box-shadow:0 4px 18px rgba(109,162,133,.4); z-index:1050; text-decoration:none; display:flex; align-items:center; gap:8px; }
+    .floating-chatbot:hover { background:#5a8e72; color:#fff; }
+    .floating-chatbot .notif-dot { width:8px; height:8px; background:#ff5c5c; border-radius:50%; position:absolute; top:10px; right:14px; }
+
+    #loading-spinner { text-align:center; padding:60px 0; color:#aaa; }
+
+    @media(max-width:768px) {
+      .dashboard-card { margin:16px 10px; padding:20px 16px 28px; }
+      .top-header { padding:0.6rem 1rem; }
+      .dashboard-tabs a { padding:7px 12px; font-size:0.78rem; }
+      .med-row { padding-left:32px; }
+      .floating-chatbot { right:14px; bottom:14px; padding:11px 16px; font-size:0.8rem; }
+    }
+  </style>
 </head>
-
 <body>
 
-    <!-- Mobile Menu Button -->
-    <button class="btn btn-primary d-lg-none position-fixed top-0 end-0 m-3 z-3" type="button"
-        onclick="toggleSidebar()">
-        <i class="bi bi-list"></i>
-    </button>
+<nav class="top-header d-flex justify-content-between align-items-center sticky-top">
+  <div class="brand d-flex align-items-center gap-2">
+    <i class="bi bi-activity"></i> MEDIMATE <span style="font-weight:400;color:#999;font-size:0.78rem;margin-left:6px;">당신 곁의 똑똑한 건강 파트너</span>
+  </div>
+  <div class="user-area d-flex align-items-center gap-3">
+    <span class="text-muted" id="header-welcome">환영합니다</span>
+    <a href="profile.html" class="btn btn-myinfo"><i class="bi bi-person-fill me-1"></i>내 정보</a>
+  </div>
+</nav>
 
-    <div class="app-wrapper">
-        <!-- Sidebar -->
-        <nav id="sidebar-container" class="sidebar shadow-sm"></nav>
+<div class="dashboard-card">
+  <div class="mb-1">
+    <div class="hero-label"><i class="bi bi-activity me-1"></i>MEDIMATE</div>
+    <div class="hero-title">복약 관리 이력</div>
+    <p class="hero-desc">날짜를 클릭하면 상세 복약 내역을 확인하고 완료/미완 상태를 바로 변경할 수 있습니다.</p>
+  </div>
 
-        <!-- Main Content -->
-        <main class="main-content">
-            <div class="fade-in mb-4 pb-2 border-bottom d-flex justify-content-between align-items-center">
-                <div>
-                    <h3 class="fw-bold mb-0" data-text="medications.title">전체 복약 기록 관리</h3>
-                    <p class="text-soft mt-1 mb-0" data-text="medications.subtitle">오늘 드셔야 할 약과 지금까지의 이력을 확인하고 체크하세요.</p>
-                </div>
+  <div class="dashboard-tabs">
+    <a href="profile.html"><i class="bi bi-person me-1"></i>내 프로필</a>
+    <a href="dashboard.html"><i class="bi bi-grid-1x2 me-1"></i>대시보드</a>
+    <a href="scans.html"><i class="bi bi-file-earmark-plus me-1"></i>새 문서 등록</a>
+    <a href="medications.html" class="active"><i class="bi bi-capsule me-1"></i>복용 관리 이력</a>
+    <a href="health.html"><i class="bi bi-heart-pulse me-1"></i>건강 관리 이력</a>
+    <a href="chatbot.html"><i class="bi bi-chat-dots me-1"></i>AI 챗봇</a>
+  </div>
+
+  <div id="loading-spinner">
+    <div class="spinner-border text-secondary" role="status"></div>
+    <p class="mt-2" style="font-size:0.85rem;">복약 데이터를 불러오는 중입니다...</p>
+  </div>
+
+  <div id="med-accordion"></div>
+</div>
+
+<a href="chatbot.html" class="floating-chatbot">
+  <i class="bi bi-robot"></i> MEDIMATE 챗봇
+  <span class="notif-dot"></span>
+</a>
+
+<script src="js/utils.js"></script>
+<script src="js/api.js"></script>
+<script>
+if (!localStorage.getItem('access_token')) window.location.href = 'index.html';
+
+const TIMINGS = ['아침','점심','저녁','자기전'];
+let DATA = []; // [{date, items:[{id,label,status,drug_name,dose_amount,dose_unit,dose_timing}]}]
+const activeTab = {};
+
+// Group day items by slot_label (timing)
+function groupByTiming(items) {
+  const meds = {};
+  TIMINGS.forEach(t => meds[t] = []);
+  items.forEach(item => {
+    const slot = item.label || '아침';
+    if (!meds[slot]) meds[slot] = [];
+    meds[slot].push({
+      id: item.id,
+      name: item.drug_name || item.label || '약품',
+      dose: [item.dose_amount, item.dose_unit].filter(Boolean).join(' ') || '',
+      done: item.status === 'taken',
+      status: item.status,
+    });
+  });
+  return meds;
+}
+
+function allItems(day) { return TIMINGS.flatMap(t => day.meds[t]||[]); }
+function getPct(day) {
+  const all = allItems(day);
+  return all.length ? Math.round(all.filter(i=>i.done).length / all.length * 100) : 0;
+}
+function pctClass(p) { return p===100?'full':p>0?'partial':'zero'; }
+
+function render() {
+  const wrap = document.getElementById('med-accordion');
+  if (!DATA.length) {
+    wrap.innerHTML = '<div style="text-align:center;padding:40px 0;color:#bbb;font-size:0.88rem;"><i class="bi bi-inbox" style="font-size:2rem;"></i><div style="margin-top:8px;">등록된 복약 일정이 없습니다.</div></div>';
+    return;
+  }
+  wrap.innerHTML = DATA.map((day,di) => {
+    const all = allItems(day);
+    const doneN = all.filter(i=>i.done).length;
+    const pct = getPct(day);
+    const curTab = activeTab[di] || TIMINGS.find(t => (day.meds[t]||[]).length > 0) || '아침';
+    const items = day.meds[curTab] || [];
+    return `
+      <div class="date-row" onclick="toggle(${di})" id="dr-${di}">
+        <i class="bi bi-chevron-right dr-arrow"></i>
+        <span class="dr-date"><i class="bi bi-calendar-check me-2"></i>${day.date}</span>
+        <span class="dr-pct ${pctClass(pct)}">${doneN}/${all.length} (${pct}%)</span>
+        <div class="progress"><div class="progress-bar" style="width:${pct}%"></div></div>
+      </div>
+      <div class="date-detail" id="dd-${di}">
+        <div class="timing-tabs">
+          ${TIMINGS.map(t => {
+            const cnt = (day.meds[t]||[]).length;
+            return `<div class="timing-tab ${t===curTab?'active':''}" onclick="event.stopPropagation();switchTab(${di},'${t}')">${t}<span class="tab-count">(${cnt})</span></div>`;
+          }).join('')}
+        </div>
+        <div class="timing-content">
+          ${items.length ? items.map((item,ii) => `
+            <div class="med-row">
+              <div class="mr-body">
+                <div class="mr-name">${escapeHtml(item.name)}</div>
+                <div class="mr-dose">${escapeHtml(item.dose)}</div>
+              </div>
+              <button class="status-btn ${item.done?'done':'pending'}" onclick="event.stopPropagation();toggleItem(${di},'${curTab}',${ii},${item.id})">
+                ${item.done?'완료':'미완'}
+              </button>
             </div>
+          `).join('') : '<div style="padding:16px;color:#bbb;font-size:0.84rem;text-align:center;">해당 시간대에 복용할 약이 없습니다.</div>'}
+        </div>
+      </div>`;
+  }).join('');
+}
 
-            <!-- Error / Loading Overlay -->
-            <div id="loading" class="text-center py-5">
-                <div class="spinner-border text-primary-custom" role="status"></div>
-                <p class="mt-2 text-soft" data-text="medications.loading">복약 데이터를 불러오는 중입니다...</p>
-            </div>
+function toggle(di) {
+  const row = document.getElementById('dr-'+di);
+  const detail = document.getElementById('dd-'+di);
+  const isOpen = row.classList.contains('open');
+  document.querySelectorAll('.date-row').forEach(r=>r.classList.remove('open'));
+  document.querySelectorAll('.date-detail').forEach(d=>d.classList.remove('show'));
+  if (!isOpen) { row.classList.add('open'); detail.classList.add('show'); }
+}
 
-            <div class="row g-4 fade-in d-none" id="content-container">
-                <div class="col-12">
+function switchTab(di, timing) {
+  activeTab[di] = timing;
+  render();
+  document.getElementById('dr-'+di).classList.add('open');
+  document.getElementById('dd-'+di).classList.add('show');
+}
 
-                    <!-- Filters (Just visual for now, API supports from/to) -->
-                    <div class="card p-3 mb-4 flex-row justify-content-between align-items-center">
-                        <div class="d-flex align-items-center gap-2">
-                            <button class="btn btn-primary btn-sm rounded-pill" onclick="loadMedications()" data-text="medications.recentButton">최근 2주
-                                일정</button>
-                        </div>
-                        <a href="scans.html" class="btn btn-outline-primary btn-sm"><i class="bi bi-plus-lg me-1"></i><span data-text="medications.newScanButton">새
-                            처방전 등록</span></a>
-                    </div>
+async function toggleItem(di, timing, ii, logId) {
+  const item = DATA[di].meds[timing][ii];
+  const newStatus = item.done ? 'skipped' : 'taken';
+  try {
+    await window.api.updateMedicationLog(logId, newStatus);
+    item.done = !item.done;
+    item.status = newStatus;
+    render();
+    document.getElementById('dr-'+di).classList.add('open');
+    document.getElementById('dd-'+di).classList.add('show');
+  } catch(e) {
+    alert('업데이트 실패: ' + e.message);
+  }
+}
 
-                    <div id="medication-list" class="d-flex flex-column gap-2">
-                        <!-- Javascript items injected here -->
-                    </div>
+async function loadMedications() {
+  try {
+    const user = await window.api.getUserMe().catch(() => null);
+    const name = user?.name || localStorage.getItem('user_name') || '사용자';
+    document.getElementById('header-welcome').textContent = '환영합니다, ' + name + '님';
 
-                    <div id="empty-state" class="text-center py-5 d-none">
-                        <i class="bi bi-inbox text-soft display-1"></i>
-                        <h5 class="text-soft mt-3" data-text="medications.emptyTitle">등록된 복약 일정이 없습니다.</h5>
-                        <p class="text-secondary small" data-text="medications.emptySubtitle">처방전을 스캔하여 자동으로 복약 일정을 생성하세요.</p>
-                    </div>
+    const history = await window.api.getMedicationHistory('?size=14');
+    if (!history.items || !history.items.length) {
+      document.getElementById('loading-spinner').classList.add('d-none');
+      DATA = [];
+      render();
+      return;
+    }
 
-                </div>
-            </div>
-        </main>
-    </div>
+    const dates = history.items.map(item => item.detail_key || item.date);
+    const dayDetails = await Promise.all(
+      dates.map(date => window.api.fetchAPI(`/medications/history/${date}`))
+    );
 
-    <script src="js/utils.js"></script>
-    <script src="js/texts.js"></script>
-    <script src="js/api.js"></script>
-    <script src="js/components.js"></script>
+    DATA = dayDetails.map(day => ({
+      date: day.date,
+      meds: groupByTiming(day.items || []),
+    }));
 
-    <script>
-        function toggleSidebar() {
-            document.querySelector('.sidebar').classList.toggle('show');
-        }
+    document.getElementById('loading-spinner').classList.add('d-none');
+    render();
+  } catch(e) {
+    document.getElementById('loading-spinner').innerHTML =
+      '<div style="color:#d9534f;font-size:0.88rem;"><i class="bi bi-exclamation-circle me-1"></i>데이터를 불러오지 못했습니다: ' + escapeHtml(e.message) + '</div>';
+  }
+}
 
-        // Toggle Status API Call
-        async function toggleMedication(logId, currentStatus, elId) {
-            const checkbox = document.getElementById(elId);
-            const newItem = document.getElementById(`item-${logId}`);
-            const newStatus = currentStatus === 'taken' ? 'skipped' : 'taken';
+document.addEventListener('DOMContentLoaded', loadMedications);
+</script>
 
-            try {
-                checkbox.disabled = true;
-                await window.api.updateMedicationLog(logId, newStatus);
-
-                // visually update UI instantly to save fetch time
-                if (newStatus === 'taken') {
-                    newItem.classList.remove('pending');
-                    newItem.classList.add('done');
-                    checkbox.checked = true;
-
-                    // Update badge and text styling
-                    const title = newItem.querySelector('.med-title');
-                    title.classList.add('text-muted', 'text-decoration-line-through');
-                    title.classList.remove('text-dark');
-
-                    const badge = newItem.querySelector('.status-badge');
-                    badge.className = 'badge bg-success bg-opacity-10 text-success rounded-pill status-badge float-end';
-                    badge.innerText = getText('medications.taken', '복용 완료');
-
-                } else {
-                    newItem.classList.remove('done');
-                    newItem.classList.add('pending');
-                    checkbox.checked = false;
-
-                    const title = newItem.querySelector('.med-title');
-                    title.classList.remove('text-muted', 'text-decoration-line-through');
-                    title.classList.add('text-dark');
-
-                    const badge = newItem.querySelector('.status-badge');
-                    badge.className = 'badge bg-danger bg-opacity-10 text-danger rounded-pill status-badge float-end';
-                    badge.innerText = getText('medications.skipped', '미복용');
-                }
-
-                // Update data attribute for event delegation
-                newItem.dataset.status = newStatus;
-
-            } catch (err) {
-                alert(getText('medications.updateError', '업데이트 중 오류가 발생했습니다: ') + err.message);
-                checkbox.checked = currentStatus === 'taken'; // revert
-            } finally {
-                checkbox.disabled = false;
-            }
-        }
-
-        async function loadMedications() {
-            document.getElementById('loading').classList.remove('d-none');
-            document.getElementById('content-container').classList.add('d-none');
-            document.getElementById('empty-state').classList.add('d-none');
-
-            try {
-                applyTextBindings();
-                document.title = getText('medications.title', document.title);
-                // Get past 14 days and future 7 days
-                const data = await window.api.getMedicationHistory("?size=50");
-                const container = document.getElementById('medication-list');
-                container.innerHTML = '';
-
-                if (!data.items || data.items.length === 0) {
-                    document.getElementById('empty-state').classList.remove('d-none');
-                    return;
-                }
-
-                let medicationHtml = "";
-                const dates = data.items.map(item => item.detail_key || item.date);
-                const dayDetails = await Promise.all(
-                    dates.map(date => window.api.fetchAPI(`/medications/history/${date}`))
-                );
-
-                dayDetails.forEach(day => {
-                    medicationHtml += `<h6 class="fw-bold text-soft mt-3 mb-2 ms-2"><i class="bi bi-calendar-check me-2"></i>${day.date}${getText('medications.daySuffix', ' 일정')}</h6>`;
-
-                    if (!day.items || day.items.length === 0) {
-                        medicationHtml += `<div class="text-soft small ms-2 mb-3">${getText('medications.noItems', '등록된 복약 체크 항목이 없습니다.')}</div>`;
-                        return;
-                    }
-
-                    day.items.forEach(log => {
-                    const isDone = log.status === 'taken';
-                    const mainClass = isDone ? 'done' : 'pending';
-                    const elId = `chk-${log.id}`;
-                    const titleColor = isDone ? 'text-muted text-decoration-line-through' : 'text-dark';
-                    const badgeHtml = isDone
-                        ? `<span class="badge bg-success bg-opacity-10 text-success rounded-pill status-badge float-end">${getText('medications.taken', '복용 완료')}</span>`
-                        : `<span class="badge bg-danger bg-opacity-10 text-danger rounded-pill status-badge float-end">${getText('medications.skipped', '미복용')}</span>`;
-
-                    medicationHtml += `
-                <div class="medication-check-item ${mainClass}" id="item-${log.id}" data-log-id="${log.id}" data-status="${escapeHtml(log.status)}" data-el-id="${elId}">
-                    <div class="form-check fs-5 m-0 me-3" style="pointer-events: none;">
-                        <input class="form-check-input" type="checkbox" id="${elId}" ${isDone ? 'checked' : ''}>
-                    </div>
-                    <div class="flex-grow-1">
-                        <div class="d-flex justify-content-between align-items-center w-100 mb-1">
-                            <span class="fw-bold fs-6 med-title ${titleColor}">${escapeHtml(log.label)}</span>
-                            ${badgeHtml}
-                        </div>
-                        <div class="text-soft fs-6 small d-flex flex-wrap gap-2">
-                           <span><i class="bi bi-clock me-1"></i>${escapeHtml(log.intake_datetime || getText('medications.noRecord', '기록 없음'))}</span>
-                           <span><i class="bi bi-capsule me-1"></i>${escapeHtml(log.status)}</span>
-                        </div>
-                    </div>
-                </div>
-                `;
-                    });
-                });
-
-                container.innerHTML = medicationHtml;
-
-            } catch (err) {
-                alert(getText('medications.loadError', '데이터를 불러오지 못했습니다: ') + err.message);
-            } finally {
-                document.getElementById('loading').classList.add('d-none');
-                document.getElementById('content-container').classList.remove('d-none');
-            }
-        }
-
-        document.addEventListener("DOMContentLoaded", loadMedications);
-
-        // Event delegation for medication items
-        document.getElementById('medication-list').addEventListener('click', (e) => {
-            const item = e.target.closest('.medication-check-item');
-            if (!item) return;
-            const logId = parseInt(item.dataset.logId);
-            const status = item.dataset.status;
-            const elId = item.dataset.elId;
-            toggleMedication(logId, status, elId);
-        });
-
-    </script>
 </body>
-
 </html>

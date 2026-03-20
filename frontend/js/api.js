@@ -185,5 +185,8 @@ window.api = {
     sendFeedback: (recId, type) => fetchAPI(`/recommendations/${recId}/feedback?feedback_type=${type}`, { method: 'POST' }),
     checkChatbotPatient: (patientId) => fetchAPI(`/chatbot/check-patient/${encodeURIComponent(patientId)}`),
     getChatbotHistory: (patientId) => fetchAPI(`/chatbot/history/${encodeURIComponent(patientId)}`),
+    getChatbotHealthHistory: (patientId) => fetchAPI(`/chatbot/health-history/${encodeURIComponent(patientId)}`),
+    getUserContext: (userId) => fetchAPI(`/chatbot/context/${encodeURIComponent(userId)}`),
+    deactivateMedication: (prescriptionId) => fetchAPI('/chatbot/deactivate', { method: 'POST', body: { prescription_id: prescriptionId } }),
     sendChatMessage: (body) => fetchAPI('/chatbot/chat', { method: 'POST', body })
 };
