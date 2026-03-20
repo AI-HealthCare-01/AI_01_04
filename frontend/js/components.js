@@ -37,10 +37,6 @@ function renderSidebar() {
                     <div class="icon-box p-2 me-3"><i class="bi bi-file-earmark-medical-fill"></i></div>
                     <span>${window.getText('sidebar.menu.scans', '처방전 스캔')}</span>
                 </a>
-                <a href="recommendations.html" class="d-flex align-items-center menu-item px-3 py-2 ${activePage === 'recommendations.html' ? 'active' : ''}">
-                    <div class="icon-box p-2 me-3"><i class="bi bi-star-fill text-warning"></i></div>
-                    <span>${window.getText('sidebar.menu.recommendations', 'AI 맞춤 추천')}</span>
-                </a>
                 <a href="chatbot.html" class="d-flex align-items-center menu-item px-3 py-2 ${activePage === 'chatbot.html' ? 'active' : ''}">
                     <div class="icon-box p-2 me-3"><i class="bi bi-chat-dots-fill"></i></div>
                     <span>${window.getText('sidebar.menu.chatbot', 'AI 건강 상담')}</span>

@@ -798,6 +798,13 @@ class RecommendationService:
             await self.recommendation_repo.clear_active_for_user(user_id)
             await self.recommendation_repo.assign_active_many(user_id=user_id, recommendation_ids=target_ids)
 
+            # 활성화된 추천은 like, revoked된 추천은 dislike 피드백 자동 기록
+            revoked_ids = {r.id for r in recs if r.status == "revoked"} if recs else set()
+            for rid in target_ids:
+                await self.recommendation_repo.add_feedback(user_id, rid, feedback_type="like")
+            for rid in revoked_ids:
+                await self.recommendation_repo.add_feedback(user_id, rid, feedback_type="dislike")
+
             return {"scan_id": scan_id, "saved": True, "saved_count": len(target_ids)}
         except HTTPException:
             raise

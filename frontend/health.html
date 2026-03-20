@@ -1,214 +1,230 @@
 <!DOCTYPE html>
 <html lang="ko">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title data-text="health.title">일상 건강 기록</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>건강 관리 이력 - MEDIMATE</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <style>
+    body { background:#f5f7fb; }
+    .top-header { background:#fff; border-bottom:1px solid #eee; padding:0.7rem 2rem; }
+    .top-header .brand { font-weight:600; color:#6da285; font-size:0.95rem; }
+    .top-header .brand i { color:#6da285; }
+    .user-area { font-size:0.85rem; }
+    .user-area .btn-myinfo { background:#f0f0f0; border:none; border-radius:8px; font-size:0.8rem; padding:0.3rem 0.85rem; color:#333; }
 
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="css/style.css">
-    <style>
-        .health-card {
-            background-color: #fff;
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 1rem;
-            transition: all 0.2s;
-        }
+    .dashboard-card { max-width:1200px; margin:32px auto; background:#fff; border-radius:20px; padding:32px 36px 40px; border:1px solid #e5e7eb; }
+    .hero-label { font-size:0.78rem; color:#6da285; font-weight:500; }
+    .hero-label i { color:#6da285; }
+    .hero-title { font-size:1.6rem; font-weight:700; color:#111; margin:4px 0 6px; }
+    .hero-desc { color:#888; font-size:0.88rem; margin:0 0 20px; }
 
-        .health-card.selected {
-            border-color: var(--primary-color);
-            background-color: var(--secondary-color);
-            color: white !important;
-        }
+    .dashboard-tabs { display:flex; gap:4px; background:#f1f3f5; padding:5px; border-radius:999px; margin-bottom:24px; overflow-x:auto; }
+    .dashboard-tabs a { flex:1; text-align:center; padding:9px 18px; border-radius:999px; text-decoration:none; color:#6da285; font-size:0.84rem; font-weight:500; white-space:nowrap; transition:all .15s; }
+    .dashboard-tabs a.active { background:#fff; color:#111; font-weight:600; box-shadow:0 1px 4px rgba(0,0,0,.06); }
+    .dashboard-tabs a:hover:not(.active) { color:#4a8a68; }
 
-        .health-card.selected .text-muted {
-            color: rgba(255, 255, 255, 0.8) !important;
-        }
+    .date-row { display:flex; align-items:center; padding:14px 18px; border:1px solid #e5e7eb; border-radius:12px; margin-bottom:8px; cursor:pointer; transition:all .15s; user-select:none; }
+    .date-row:hover { border-color:#6da285; background:#fafdfb; }
+    .date-row .dr-arrow { transition:transform .2s; color:#aaa; margin-right:12px; font-size:0.8rem; }
+    .date-row.open .dr-arrow { transform:rotate(90deg); }
+    .date-row .dr-date { font-weight:600; font-size:0.9rem; color:#111; flex:1; }
+    .date-row .dr-pct { font-size:0.82rem; font-weight:600; margin-right:8px; }
+    .date-row .dr-pct.full { color:#4caf50; }
+    .date-row .dr-pct.partial { color:#e8a735; }
+    .date-row .dr-pct.zero { color:#ccc; }
+    .date-row .progress { width:80px; height:5px; border-radius:3px; background:#eee; margin:0; }
+    .date-row .progress-bar { background:#6da285; border-radius:3px; }
 
-        .icon-box-lg {
-            width: 48px;
-            height: 48px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 12px;
-            background-color: #f0f5f2;
-            color: var(--primary-color);
-            font-size: 1.5rem;
-        }
+    .date-detail { display:none; padding:4px 0 12px 0; }
+    .date-detail.show { display:block; }
 
-        .health-card.selected .icon-box-lg {
-            background-color: rgba(255, 255, 255, 0.2);
-            color: white;
-        }
-    </style>
+    .health-row { display:flex; align-items:center; padding:12px 16px 12px 48px; border-bottom:1px solid #f2f2f2; }
+    .health-row:last-child { border-bottom:none; }
+    .health-row .hr-icon { width:36px; height:36px; border-radius:10px; background:#f0f5f2; color:#6da285; display:flex; align-items:center; justify-content:center; margin-right:14px; flex-shrink:0; font-size:1rem; }
+    .health-row .hr-icon.done { background:#e8f5e9; color:#4caf50; }
+    .health-row .hr-body { flex:1; }
+    .health-row .hr-name { font-weight:600; font-size:0.88rem; color:#111; }
+    .health-row .hr-name.strike { text-decoration:line-through; color:#bbb; }
+
+    .status-btn { border-radius:6px; font-weight:500; font-size:0.75rem; display:inline-block; padding:4px 10px; min-width:52px; text-align:center; cursor:pointer; border:none; transition:all .15s; }
+    .status-btn.done { background:#e8f5e9; color:#4caf50; }
+    .status-btn.pending { background:#f5f5f5; color:#555; border:1px solid #ddd; }
+    .status-btn.pending:hover { background:#eee; }
+
+    .floating-chatbot { position:fixed; right:24px; bottom:24px; background:#6da285; color:#fff; border:none; border-radius:999px; padding:14px 22px; font-size:0.88rem; font-weight:600; box-shadow:0 4px 18px rgba(109,162,133,.4); z-index:1050; text-decoration:none; display:flex; align-items:center; gap:8px; }
+    .floating-chatbot:hover { background:#5a8e72; color:#fff; }
+    .floating-chatbot .notif-dot { width:8px; height:8px; background:#ff5c5c; border-radius:50%; position:absolute; top:10px; right:14px; }
+
+    #loading-spinner { text-align:center; padding:60px 0; color:#aaa; }
+
+    @media(max-width:768px) {
+      .dashboard-card { margin:16px 10px; padding:20px 16px 28px; }
+      .top-header { padding:0.6rem 1rem; }
+      .dashboard-tabs a { padding:7px 12px; font-size:0.78rem; }
+      .health-row { padding-left:32px; }
+      .floating-chatbot { right:14px; bottom:14px; padding:11px 16px; font-size:0.8rem; }
+    }
+  </style>
 </head>
-
 <body>
 
-    <!-- Mobile Menu Button -->
-    <button class="btn btn-primary d-lg-none position-fixed top-0 end-0 m-3 z-3" type="button"
-        onclick="toggleSidebar()">
-        <i class="bi bi-list"></i>
-    </button>
+<nav class="top-header d-flex justify-content-between align-items-center sticky-top">
+  <div class="brand d-flex align-items-center gap-2">
+    <i class="bi bi-activity"></i> MEDIMATE <span style="font-weight:400;color:#999;font-size:0.78rem;margin-left:6px;">당신 곁의 똑똑한 건강 파트너</span>
+  </div>
+  <div class="user-area d-flex align-items-center gap-3">
+    <span class="text-muted" id="header-welcome">환영합니다</span>
+    <a href="profile.html" class="btn btn-myinfo"><i class="bi bi-person-fill me-1"></i>내 정보</a>
+  </div>
+</nav>
 
-    <div class="app-wrapper">
-        <!-- Sidebar -->
-        <nav id="sidebar-container" class="sidebar shadow-sm"></nav>
+<div class="dashboard-card">
+  <div class="mb-1">
+    <div class="hero-label"><i class="bi bi-activity me-1"></i>MEDIMATE</div>
+    <div class="hero-title">건강 관리 이력</div>
+    <p class="hero-desc">날짜를 클릭하면 상세 건강 활동을 확인하고 완료/미완 상태를 바로 변경할 수 있습니다.</p>
+  </div>
 
-        <!-- Main Content -->
-        <main class="main-content">
-            <div class="fade-in mb-4 pb-2 border-bottom d-flex justify-content-between align-items-center">
-                <div>
-                    <h3 class="fw-bold mb-0" data-text="health.title">일상 건강 활동</h3>
-                    <p class="text-soft mt-1 mb-0" data-text="health.subtitle">수분 섭취, 운동, 수면 등 추천받은 일일 미션을 수행하세요.</p>
-                </div>
+  <div class="dashboard-tabs">
+    <a href="profile.html"><i class="bi bi-person me-1"></i>내 프로필</a>
+    <a href="dashboard.html"><i class="bi bi-grid-1x2 me-1"></i>대시보드</a>
+    <a href="scans.html"><i class="bi bi-file-earmark-plus me-1"></i>새 문서 등록</a>
+    <a href="medications.html"><i class="bi bi-capsule me-1"></i>복용 관리 이력</a>
+    <a href="health.html" class="active"><i class="bi bi-heart-pulse me-1"></i>건강 관리 이력</a>
+    <a href="chatbot.html"><i class="bi bi-chat-dots me-1"></i>AI 챗봇</a>
+  </div>
+
+  <div id="loading-spinner">
+    <div class="spinner-border text-secondary" role="status"></div>
+    <p class="mt-2" style="font-size:0.85rem;">건강 데이터를 불러오는 중입니다...</p>
+  </div>
+
+  <div id="health-accordion"></div>
+</div>
+
+<a href="chatbot.html" class="floating-chatbot">
+  <i class="bi bi-robot"></i> MEDIMATE 챗봇
+  <span class="notif-dot"></span>
+</a>
+
+<script src="js/utils.js"></script>
+<script src="js/api.js"></script>
+<script>
+if (!localStorage.getItem('access_token')) window.location.href = 'index.html';
+
+const ICONS = {'물':'bi-droplet-fill','운동':'bi-bicycle','식단':'bi-journal-text','혈압':'bi-heart-pulse','수면':'bi-moon-stars-fill'};
+function pickIcon(name) {
+  for (const [k,v] of Object.entries(ICONS)) { if (name.includes(k)) return v; }
+  return 'bi-activity';
+}
+
+let DATA = [];
+
+function getPct(items) {
+  if (!items.length) return 0;
+  return Math.round(items.filter(i => i.done).length / items.length * 100);
+}
+function pctClass(p) { return p===100?'full':p>0?'partial':'zero'; }
+
+function render() {
+  const wrap = document.getElementById('health-accordion');
+  if (!DATA.length) {
+    wrap.innerHTML = '<div style="text-align:center;padding:40px 0;color:#bbb;font-size:0.88rem;"><i class="bi bi-inbox" style="font-size:2rem;"></i><div style="margin-top:8px;">등록된 건강관리 활동이 없습니다.</div></div>';
+    return;
+  }
+  wrap.innerHTML = DATA.map((day, di) => {
+    const pct = getPct(day.items);
+    const doneN = day.items.filter(i=>i.done).length;
+    return `
+      <div class="date-row" onclick="toggle(${di})" id="dr-${di}">
+        <i class="bi bi-chevron-right dr-arrow"></i>
+        <span class="dr-date"><i class="bi bi-calendar2-check me-2"></i>${day.date}</span>
+        <span class="dr-pct ${pctClass(pct)}">${doneN}/${day.items.length} (${pct}%)</span>
+        <div class="progress"><div class="progress-bar" style="width:${pct}%"></div></div>
+      </div>
+      <div class="date-detail" id="dd-${di}">
+        ${day.items.map((item, ii) => `
+          <div class="health-row">
+            <div class="hr-icon ${item.done?'done':''}"><i class="bi ${pickIcon(item.name)}"></i></div>
+            <div class="hr-body">
+              <div class="hr-name ${item.done?'strike':''}">${escapeHtml(item.name)}</div>
             </div>
+            <button class="status-btn ${item.done?'done':'pending'}" onclick="event.stopPropagation();toggleItem(${di},${ii},${item.id})">
+              ${item.done?'완료':'미완'}
+            </button>
+          </div>
+        `).join('')}
+      </div>`;
+  }).join('');
+}
 
-            <div id="loading" class="text-center py-5">
-                <div class="spinner-border text-primary-custom" role="status"></div>
-            </div>
+function toggle(di) {
+  const row = document.getElementById('dr-'+di);
+  const detail = document.getElementById('dd-'+di);
+  const isOpen = row.classList.contains('open');
+  document.querySelectorAll('.date-row').forEach(r => r.classList.remove('open'));
+  document.querySelectorAll('.date-detail').forEach(d => d.classList.remove('show'));
+  if (!isOpen) { row.classList.add('open'); detail.classList.add('show'); }
+}
 
-            <div id="content-container" class="row g-4 d-none fade-in">
+async function toggleItem(di, ii, logId) {
+  const item = DATA[di].items[ii];
+  const newStatus = item.done ? 'skipped' : 'done';
+  try {
+    await window.api.updateHealthLog(logId, newStatus);
+    item.done = !item.done;
+    item.status = newStatus;
+    render();
+    document.getElementById('dr-'+di).classList.add('open');
+    document.getElementById('dd-'+di).classList.add('show');
+  } catch(e) {
+    alert('업데이트 실패: ' + e.message);
+  }
+}
 
-                <div class="col-12">
+async function loadHealth() {
+  try {
+    const user = await window.api.getUserMe().catch(() => null);
+    const name = user?.name || localStorage.getItem('user_name') || '사용자';
+    document.getElementById('header-welcome').textContent = '환영합니다, ' + name + '님';
 
-                    <h5 class="fw-bold text-primary-custom mb-3"><i class="bi bi-calendar2-check me-2"></i><span data-text="health.sectionTitle">오늘 및 최근 건강 기록</span>
-                    </h5>
-                    <div id="health-list" class="row g-3">
-                        <!-- Javascript items injected here -->
-                    </div>
+    const history = await window.api.getHealthHistory('?size=14');
+    if (!history.items || !history.items.length) {
+      document.getElementById('loading-spinner').classList.add('d-none');
+      DATA = [];
+      render();
+      return;
+    }
 
-                    <div id="empty-state" class="text-center py-5 d-none">
-                        <i class="bi bi-lungs text-soft display-1"></i>
-                        <h5 class="text-soft mt-3" data-text="health.emptyTitle">등록된 건강관리 활동이 없습니다.</h5>
-                        <p class="text-secondary small" data-text="health.emptySubtitle">목표를 설정하거나 처방 기반 추천을 받아 시작해보세요.</p>
-                    </div>
+    const dates = history.items.map(item => item.date);
+    const dayDetails = await Promise.all(
+      dates.map(date => window.api.fetchAPI(`/health/history/${date}`))
+    );
 
-                </div>
+    DATA = dayDetails.map(day => ({
+      date: day.date,
+      items: (day.items || []).map(item => ({
+        id: item.id,
+        name: item.label,
+        done: item.status === 'done',
+        status: item.status,
+      })),
+    }));
 
-            </div>
-        </main>
-    </div>
+    document.getElementById('loading-spinner').classList.add('d-none');
+    render();
+  } catch(e) {
+    document.getElementById('loading-spinner').innerHTML =
+      '<div style="color:#d9534f;font-size:0.88rem;"><i class="bi bi-exclamation-circle me-1"></i>데이터를 불러오지 못했습니다: ' + escapeHtml(e.message) + '</div>';
+  }
+}
 
-    <script src="js/utils.js"></script>
-    <script src="js/texts.js"></script>
-    <script src="js/api.js"></script>
-    <script src="js/components.js"></script>
+document.addEventListener('DOMContentLoaded', loadHealth);
+</script>
 
-    <script>
-        function toggleSidebar() {
-            document.querySelector('.sidebar').classList.toggle('show');
-        }
-
-        async function toggleHealthLog(logId, currentStatus, elId) {
-            let card = document.getElementById(elId);
-            let newStatus = currentStatus === 'done' ? 'skipped' : 'done';
-
-            try {
-                await window.api.fetchAPI(`/health/logs/${logId}`, {
-                    method: 'PATCH',
-                    body: { status: newStatus }
-                });
-
-                if (newStatus === 'done') {
-                    card.classList.add('selected');
-                    card.querySelector('.status-text').innerHTML = `<i class="bi bi-check-circle-fill me-1"></i>${getText('health.done', '완료')}`;
-                } else {
-                    card.classList.remove('selected');
-                    card.querySelector('.status-text').innerHTML = getText('health.pending', '미완료');
-                }
-
-                // Update data attribute for event delegation
-                card.dataset.status = newStatus;
-
-            } catch (err) {
-                alert(getText('health.updateError', '업데이트 중 오류가 발생했습니다: ') + err.message);
-            }
-        }
-
-        async function loadHealthHistory() {
-            document.getElementById('loading').classList.remove('d-none');
-            document.getElementById('content-container').classList.add('d-none');
-
-            try {
-                applyTextBindings();
-                document.title = getText('health.title', document.title);
-                const data = await window.api.getHealthHistory();
-                const container = document.getElementById('health-list');
-                container.innerHTML = '';
-
-                if (!data.items || data.items.length === 0) {
-                    document.getElementById('empty-state').classList.remove('d-none');
-                    return;
-                }
-
-                const dates = data.items.slice(0, 7).map(item => item.date);
-                const dayDetails = await Promise.all(
-                    dates.map(date => window.api.fetchAPI(`/health/history/${date}`))
-                );
-
-                let lastDate = "";
-
-                dayDetails.forEach(day => {
-                    if (lastDate !== day.date) {
-                        lastDate = day.date;
-                        container.innerHTML += `<div class="col-12 mt-4"><h6 class="text-soft fw-bold border-bottom pb-2">${day.date}</h6></div>`;
-                    }
-
-                    day.items.forEach(log => {
-                        const isDone = log.status === 'done';
-                        const elId = `hc-${log.id}`;
-
-                        let iconClass = "bi-activity";
-                        if (log.label.includes('물')) iconClass = "bi-droplet-fill";
-                        if (log.label.includes('운동')) iconClass = "bi-bicycle";
-                        if (log.label.includes('수면') || log.label.includes('잠')) iconClass = "bi-moon-stars-fill";
-
-                        const html = `
-                <div class="col-md-6 col-lg-4">
-                    <div class="health-card cursor-pointer shadow-sm d-flex align-items-center ${isDone ? 'selected' : ''}" id="${elId}" data-log-id="${log.id}" data-status="${escapeHtml(log.status)}" data-el-id="${elId}" style="cursor:pointer;">
-                        <div class="icon-box-lg shadow-sm me-3">
-                            <i class="bi ${iconClass}"></i>
-                        </div>
-                        <div class="flex-grow-1">
-                            <h6 class="fw-bold mb-1">${escapeHtml(log.label)}</h6>
-                            ${log.memo ? `<p class="mb-0 small opacity-75">${escapeHtml(log.memo)}</p>` : ''}
-                        </div>
-                        <div class="ms-2">
-                           <span class="status-text fw-bold small opacity-75">${isDone ? `<i class="bi bi-check-circle-fill me-1"></i>${getText('health.done', '완료')}` : getText('health.pending', '미완료')}</span>
-                        </div>
-                    </div>
-                </div>
-                `;
-                        container.innerHTML += html;
-                    });
-                });
-
-            } catch (err) {
-                alert(getText('health.loadError', '데이터를 불러오지 못했습니다: ') + err.message);
-            } finally {
-                document.getElementById('loading').classList.add('d-none');
-                document.getElementById('content-container').classList.remove('d-none');
-            }
-        }
-
-        document.addEventListener("DOMContentLoaded", loadHealthHistory);
-
-        // Event delegation for health cards
-        document.getElementById('health-list').addEventListener('click', (e) => {
-            const card = e.target.closest('.health-card');
-            if (!card) return;
-            const logId = parseInt(card.dataset.logId);
-            const status = card.dataset.status;
-            const elId = card.dataset.elId;
-            toggleHealthLog(logId, status, elId);
-        });
-    </script>
 </body>
-
 </html>

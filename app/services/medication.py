@@ -44,6 +44,31 @@ def _calc_rate_from_logs(logs: list[MedicationIntakeLog]) -> int:
     return int(round((taken / len(logs)) * 100))
 
 
+# dose_timing 문자열 → 슬롯 매핑
+_TIMING_SLOT_MAP: dict[str, list[str]] = {
+    "아침": ["아침"],
+    "점심": ["점심"],
+    "저녁": ["저녁"],
+    "자기전": ["자기전"],
+    "아침 점심": ["아침", "점심"],
+    "아침 저녁": ["아침", "저녁"],
+    "점심 저녁": ["점심", "저녁"],
+    "아침 점심 저녁": ["아침", "점심", "저녁"],
+    "아침 점심 저녁 자기전": ["아침", "점심", "저녁", "자기전"],
+}
+
+
+def _slots_for_prescription(p: Prescription) -> list[str]:
+    """처방전의 dose_timing 또는 dose_count 기반으로 복약 슬롯을 반환한다."""
+    timing = getattr(p, "dose_timing", None)
+    if timing:
+        timing = timing.strip()
+        if timing in _TIMING_SLOT_MAP:
+            return _TIMING_SLOT_MAP[timing]
+        # 식전/식후/공복 등 시점 정보만 있으면 dose_count 기반 폴백
+    return _slots_by_dose_count(p.dose_count)
+
+
 def _slots_by_dose_count(dose_count: int | None) -> list[str]:
     """일일 복용 횟수에 따른 복약 슬롯 목록을 반환한다 (아침/점심/저녁/자기전).
 
@@ -139,7 +164,7 @@ class MedicationService:
 
         logs_to_create: list[MedicationIntakeLog] = []
         for p in prescriptions:
-            for sl in _slots_by_dose_count(p.dose_count):
+            for sl in _slots_for_prescription(p):
                 logs_to_create.append(
                     MedicationIntakeLog(
                         prescription_id=p.id,
@@ -240,12 +265,18 @@ class MedicationService:
 
         items: list[dict] = []
         for lg in logs:
+            drug = getattr(getattr(lg, "prescription", None), "drug", None)
+            presc = getattr(lg, "prescription", None)
             items.append(
                 {
                     "id": lg.id,
                     "label": _make_label(lg),
                     "status": _normalize_status(lg.status),
                     "intake_datetime": lg.intake_datetime.isoformat() if lg.intake_datetime else None,
+                    "drug_name": getattr(drug, "name", None) if drug else None,
+                    "dose_amount": getattr(presc, "dose_amount", None) if presc else None,
+                    "dose_unit": getattr(presc, "dose_unit", None) if presc else None,
+                    "dose_timing": getattr(presc, "dose_timing", None) if presc else None,
                 }
             )
 

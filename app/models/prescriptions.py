@@ -50,7 +50,8 @@ class Prescription(models.Model):
 
     dose_count = fields.IntField(null=True)  # 1일 복용 횟수
     dose_amount = fields.CharField(max_length=50, null=True)  # 1회 복용량 (예: "1정")
-    dose_unit = fields.CharField(max_length=20, null=True)  # 단위 (정, ml 등)
+    dose_unit = fields.CharField(max_length=20, null=True)  # 단위 (정, ml, 캡슐, unit 등)
+    dose_timing = fields.CharField(max_length=50, null=True)  # 복용시점 (식전, 식후, 자기전, 아침 저녁 등)
     start_date = fields.DateField(null=True)
     end_date = fields.DateField(null=True)
     created_at = fields.DatetimeField(auto_now_add=True)

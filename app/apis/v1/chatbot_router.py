@@ -43,6 +43,15 @@ async def get_history(
     return await service.get_medi_history(patient_id)
 
 
+@chatbot_router.get("/health-history/{patient_id}")
+async def get_health_history(
+    patient_id: str,
+    user: Annotated[User, Depends(get_request_user)],
+):
+    service = BaseService()
+    return await service.get_health_history(patient_id)
+
+
 @chatbot_router.get("/context/{user_id}", response_model=UserContextResponse)
 async def get_user_context(
     user_id: int,

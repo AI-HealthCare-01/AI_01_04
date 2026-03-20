@@ -106,20 +106,20 @@ read -p "선택(ex. 1): " is_https
 echo ""
 
 # ---------- EC2 내에 배포 준비 파일 복사  ----------
-scp -i ~/.ssh/${ssh_key_file} envs/.prod.env ubuntu@${ec2_ip}:~/project/.env
-scp -i ~/.ssh/${ssh_key_file} docker-compose.prod.yml ubuntu@${ec2_ip}:~/project/docker-compose.yml
-scp -r -i ~/.ssh/${ssh_key_file} frontend ubuntu@${ec2_ip}:~/project/
+scp -i ~/.ssh/${ssh_key_file} envs/.prod.env ubuntu@${ec2_ip}:~/ai_project/.env
+scp -i ~/.ssh/${ssh_key_file} docker-compose.prod.yml ubuntu@${ec2_ip}:~/ai_project/docker-compose.yml
+scp -r -i ~/.ssh/${ssh_key_file} frontend ubuntu@${ec2_ip}:~/ai_project/
 if [[ "$is_https" == "1" ]]; then
   # ---------- prod_https.conf 파일의 server_name, ssl_certificate 자동 수정 ----------
   sed -i '' "s/server_name .*/server_name ${ec2_ip};/g" nginx/prod_http.conf
-  scp -i ~/.ssh/${ssh_key_file} nginx/prod_http.conf ubuntu@${ec2_ip}:~/project/nginx/default.conf
+  scp -i ~/.ssh/${ssh_key_file} nginx/prod_http.conf ubuntu@${ec2_ip}:~/ai_project/nginx/default.conf
 else
   echo "${COLOR_BLUE} 사용중인 도메인을 입력하세요. (ex. api.ozcoding.site)${COLOR_NC}"
   read -p "Domain: " domain
   # ---------- prod_https.conf 파일의 server_name, ssl_certificate 자동 수정 ----------
   sed -i '' "s/server_name .*/server_name ${domain};/g" nginx/prod_https.conf
   sed -i '' "s|/etc/letsencrypt/live/[^/]*|/etc/letsencrypt/live/${domain}|g" nginx/prod_https.conf
-  scp -i ~/.ssh/${ssh_key_file} nginx/prod_https.conf ubuntu@${ec2_ip}:~/project/nginx/default.conf
+  scp -i ~/.ssh/${ssh_key_file} nginx/prod_https.conf ubuntu@${ec2_ip}:~/ai_project/nginx/default.conf
 fi
 
 # ---------- EC2 배포 자동화  ----------
@@ -131,7 +131,7 @@ ssh -i ~/.ssh/${ssh_key_file} ubuntu@${ec2_ip} \
    DEPLOY_SERVICES='${DEPLOY_SERVICES[*]}' \
    bash -s" << 'EOF'
   set -e
-  cd project
+  cd ai_project
 
   echo "Docker login"
   echo "$DOCKER_PAT" | docker login -u "$DOCKER_USERNAME" --password-stdin
