@@ -43,8 +43,8 @@ class ChatHealthService(BaseService):
         """활성 추천 정보를 프롬프트 섹션으로 변환한다."""
         from app.models.recommendations import Recommendation, UserActiveRecommendation
 
-        rec_ids = await UserActiveRecommendation.filter(user_id=user_id).limit(5).values_list(
-            "recommendation_id", flat=True
+        rec_ids = (
+            await UserActiveRecommendation.filter(user_id=user_id).limit(5).values_list("recommendation_id", flat=True)
         )
         if not rec_ids:
             return ""
