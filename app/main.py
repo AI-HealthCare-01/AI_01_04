@@ -63,6 +63,10 @@ def _build_cors_origins() -> list[str]:
     extra = getattr(config, "CORS_ORIGINS", "")
     if extra:
         origins.extend([origin.strip() for origin in extra.split(",") if origin.strip()])
+    else:
+        # prod에서 CORS_ORIGINS가 비어있으면 경고 로그
+        if config.ENV == "prod":
+            logger.warning("CORS_ORIGINS is empty in production. Frontend API calls will be blocked.")
 
     return list(dict.fromkeys(origins))
 
