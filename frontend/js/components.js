@@ -60,7 +60,7 @@ function renderSidebar() {
 
                 <div class="mt-auto pt-4 border-top">
                     <button onclick="window.api.logout(); return false;" class="d-flex align-items-center text-danger text-decoration-none px-3 py-2 menu-item btn btn-link w-100 text-start">
-                        <i class="bi bi-box-arrow-right me-3 fs-5"></i><span class="fw-bold">\${window.getText('sidebar.menu.logout', '로그아웃')}</span>
+                        <i class="bi bi-box-arrow-right me-3 fs-5"></i><span class="fw-bold">${window.getText('sidebar.menu.logout', '로그아웃')}</span>
                     </button>
                 </div>
             </div>
