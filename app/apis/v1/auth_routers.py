@@ -63,6 +63,12 @@ async def login(
     resp = Response(
         content=LoginResponse(access_token=str(tokens["access_token"])).model_dump(), status_code=status.HTTP_200_OK
     )
+    # TODO: samesite 속성 미설정 상태
+    # 현재 프론트엔드와 API가 같은 IP/도메인(nginx 리버스 프록시)에서 서빙되므로 동작에 문제없음.
+    # 만약 향후 프론트엔드와 API를 다른 도메인으로 분리할 경우 (예: www.myapp.com ↔ api.myapp.com)
+    # samesite="None" + secure=True (HTTPS 필수) 설정이 필요함.
+    # 미설정 시 브라우저 기본값 Lax가 적용되어, 크로스 사이트 요청에서 refresh_token 쿠키가
+    # 전송되지 않아 토큰 갱신이 실패하고, CSRF 공격에도 노출될 수 있음.
     resp.set_cookie(
         key="refresh_token",
         value=str(tokens["refresh_token"]),
