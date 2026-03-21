@@ -56,17 +56,24 @@
       <option value="medical_record" data-text="scans.recordOption">진단서/소견서</option>
     </select>
 
-    <div class="scan-upload-zone" id="upload-zone" onclick="document.getElementById('file-upload').click()">
+    <div class="scan-upload-zone" id="upload-zone" onclick="document.getElementById('file-upload').click()"
+         ondragover="event.preventDefault();this.classList.add('dragover')"
+         ondragleave="this.classList.remove('dragover')"
+         ondrop="event.preventDefault();this.classList.remove('dragover');handleDropUpload(event)">
       <i class="bi bi-cloud-arrow-up"></i>
-      <h6 data-text="scans.uploadTitle">클릭하여 파일 선택 또는 여기에 드래그</h6>
-      <p data-text="scans.uploadSubtitle">JPG, PNG, PDF 지원 · 10MB 이하</p>
+      <h6 data-text="scans.uploadTitle">이미지 선택하기</h6>
+      <p data-text="scans.uploadSubtitle">또는 여기에 파일을 끌어다 놓으세요.</p>
       <input type="file" id="file-upload" class="d-none" accept="image/png,image/jpeg,image/jpg,application/pdf" onchange="handleFileUpload(event)">
     </div>
 
     <div id="file-info-box" class="scan-file-info d-none">
-      <div class="file-name"><i class="bi bi-file-earmark-image"></i> <span id="file-name-text"></span></div>
+      <div class="file-name"><i class="bi bi-file-earmark-image"></i> <span id="file-name-text"></span> <span id="file-size-text" class="text-muted" style="font-size:.8rem;margin-left:8px"></span></div>
       <button class="remove-btn" onclick="removeFile()"><i class="bi bi-x-lg"></i></button>
     </div>
+
+    <button class="btn-analyze d-none" id="retry-upload-btn" onclick="retryUpload()">
+      <i class="bi bi-arrow-clockwise me-2"></i>다시 업로드하기
+    </button>
 
     <button class="btn-analyze d-none" id="analyze-btn" onclick="startAnalysis()">
       <i class="bi bi-magic me-2"></i><span data-text="scans.analyzeButton">AI 분석 시작하기</span>
@@ -196,18 +203,58 @@ function removeFile() {
   document.getElementById('file-upload').value = '';
   document.getElementById('file-info-box').classList.add('d-none');
   document.getElementById('analyze-btn').classList.add('d-none');
+  document.getElementById('retry-upload-btn').classList.add('d-none');
+  setStatus('');
   currentScanId = null;
+  lastFile = null;
+}
+
+function retryUpload() {
+  if (!lastFile) return;
+  const docType = lastDocType || document.getElementById('docType').value;
+  setStatus('<span class="spinner-border spinner-border-sm me-2"></span>업로드 중...', 'info');
+  uploadFile(lastFile, docType);
 }
 
 async function handleFileUpload(event) {
   const file = event.target.files[0];
   if (!file) return;
 
-  document.getElementById('file-name-text').textContent = file.name;
-  document.getElementById('file-info-box').classList.remove('d-none');
+  showFileInfo(file);
 
   const docType = document.getElementById('docType').value;
   setStatus('<span class="spinner-border spinner-border-sm me-2"></span>업로드 중...', 'info');
+
+  await uploadFile(file, docType);
+}
+
+function handleDropUpload(event) {
+  const file = event.dataTransfer.files[0];
+  if (!file) return;
+  const allowed = ['image/png','image/jpeg','image/jpg','application/pdf'];
+  if (!allowed.includes(file.type)) { setStatus('JPG, PNG, PDF 파일만 업로드 가능합니다.', 'danger'); return; }
+  if (file.size > 10 * 1024 * 1024) { setStatus('10MB 이하 파일만 업로드 가능합니다.', 'danger'); return; }
+  showFileInfo(file);
+  const docType = document.getElementById('docType').value;
+  setStatus('<span class="spinner-border spinner-border-sm me-2"></span>업로드 중...', 'info');
+  uploadFile(file, docType);
+}
+
+function showFileInfo(file) {
+  document.getElementById('file-name-text').textContent = file.name;
+  const sizeKB = (file.size / 1024);
+  document.getElementById('file-size-text').textContent = sizeKB >= 1024 ? (sizeKB / 1024).toFixed(1) + 'MB' : sizeKB.toFixed(1) + 'KB';
+  document.getElementById('file-info-box').classList.remove('d-none');
+}
+
+let lastFile = null;
+let lastDocType = null;
+
+async function uploadFile(file, docType) {
+  lastFile = file;
+  lastDocType = docType;
+  document.getElementById('analyze-btn').classList.add('d-none');
+  document.getElementById('retry-upload-btn').classList.add('d-none');
 
   const formData = new FormData();
   formData.append('file', file);
@@ -220,9 +267,11 @@ async function handleFileUpload(event) {
     selectedDrugs = [];
     setStatus('<i class="bi bi-check-circle me-1"></i>업로드 완료! 분석을 시작하세요.', 'success');
     document.getElementById('analyze-btn').classList.remove('d-none');
+    document.getElementById('retry-upload-btn').classList.add('d-none');
   } catch (err) {
-    setStatus(err.message, 'danger');
+    setStatus(err.message + ' 다시 시도해 주세요.', 'danger');
     currentScanId = null;
+    document.getElementById('retry-upload-btn').classList.remove('d-none');
   }
 }
 
