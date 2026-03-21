@@ -80,6 +80,24 @@ async def login(
     return resp
 
 
+@auth_router.post("/logout", status_code=status.HTTP_200_OK)
+async def logout() -> Response:
+    """
+    로그아웃: refresh_token 쿠키를 삭제한다.
+
+    Returns:
+        Response: 로그아웃 완료 메시지.
+    """
+    resp = Response(content={"detail": "로그아웃 되었습니다."}, status_code=status.HTTP_200_OK)
+    resp.delete_cookie(
+        key="refresh_token",
+        httponly=True,
+        secure=True if config.ENV == Env.PROD else False,
+        domain=config.COOKIE_DOMAIN or None,
+    )
+    return resp
+
+
 @auth_router.get("/token/refresh", response_model=TokenRefreshResponse, status_code=status.HTTP_200_OK)
 async def token_refresh(
     jwt_service: Annotated[JwtService, Depends(JwtService)],

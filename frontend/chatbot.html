@@ -3,144 +3,12 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title data-text="chatbot.title">AI 건강 상담 - MEDIMATE</title>
+  <title data-text="chatbot.title">MEDIMATE AI 상담</title>
 
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"/>
   <link rel="stylesheet" href="css/style.css"/>
-
-  <style>
-    body { background:#f5f7fb; }
-
-    .top-header { background:#fff; border-bottom:1px solid #eee; padding:.7rem 2rem; }
-    .top-header .brand { font-weight:600; color:#6da285; font-size:.95rem; }
-    .top-header .brand i { color:#6da285; }
-    .user-area { font-size:.85rem; }
-    .user-area .btn-myinfo {
-      background:#f0f0f0; border:none; border-radius:8px;
-      font-size:.8rem; padding:.3rem .85rem; color:#333; text-decoration:none;
-    }
-
-    .dashboard-card {
-      max-width:1200px; margin:32px auto; background:#fff;
-      border-radius:20px; padding:32px 36px 40px; border:1px solid #e5e7eb;
-    }
-
-    .hero-label { font-size:.78rem; color:#6da285; font-weight:500; }
-    .hero-label i { color:#6da285; }
-    .hero-title { font-size:1.6rem; font-weight:700; color:#111; margin:4px 0 6px; }
-    .hero-desc { color:#888; font-size:.88rem; margin:0 0 20px; }
-
-    .dashboard-tabs {
-      display:flex; gap:4px; background:#f1f3f5; padding:5px;
-      border-radius:999px; margin-bottom:24px; overflow-x:auto;
-    }
-    .dashboard-tabs a {
-      flex:1; text-align:center; padding:9px 18px; border-radius:999px;
-      text-decoration:none; color:#6da285; font-size:.84rem; font-weight:500;
-      white-space:nowrap; transition:all .15s;
-    }
-    .dashboard-tabs a.active { background:#fff; color:#111; font-weight:600; box-shadow:0 1px 4px rgba(0,0,0,.06); }
-    .dashboard-tabs a:hover:not(.active) { color:#4a8a68; }
-
-    /* Chat layout */
-    .chat-layout { display:grid; grid-template-columns:300px 1fr; gap:20px; align-items:start; }
-    @media(max-width:992px) { .chat-layout { grid-template-columns:1fr; } }
-
-    /* Sidebar panels */
-    .sb-card {
-      border:1px solid #e5e7eb; border-radius:14px; padding:16px 18px; background:#fff; margin-bottom:12px;
-    }
-    .sb-card:last-child { margin-bottom:0; }
-    .sb-card .sb-title { font-size:.8rem; font-weight:600; color:#888; margin-bottom:10px; }
-    .sb-card select, .sb-card input, .sb-card textarea {
-      border:1px solid #e5e7eb; border-radius:8px; padding:8px 10px; font-size:.82rem; width:100%;
-    }
-    .sb-card select:focus, .sb-card input:focus, .sb-card textarea:focus {
-      border-color:#6da285; outline:none; box-shadow:0 0 0 2px rgba(109,162,133,.15);
-    }
-
-    .history-list { display:flex; flex-wrap:wrap; gap:6px; }
-    .history-pill {
-      border-radius:999px; background:rgba(109,162,133,.12); color:#6da285;
-      padding:4px 10px; font-size:.76rem; font-weight:600;
-    }
-
-    .quick-chip-wrap { display:flex; flex-wrap:wrap; gap:6px; }
-    .quick-chip {
-      border:1px solid #d5e5dc; background:#f0f5f2; color:#6da285;
-      border-radius:999px; padding:5px 12px; font-size:.76rem; font-weight:500;
-      cursor:pointer; transition:all .15s;
-    }
-    .quick-chip:hover { background:#6da285; color:#fff; border-color:#6da285; }
-
-    .context-card {
-      background:#fafdfb; border:1px solid #eef3f0; border-radius:8px;
-      padding:8px 10px; font-size:.78rem; color:#555; margin-bottom:6px;
-    }
-    .context-card:last-child { margin-bottom:0; }
-    .context-label { font-size:.68rem; color:#aaa; margin-bottom:2px; }
-
-    /* Chat area */
-    .chat-area {
-      border:1px solid #e5e7eb; border-radius:16px; background:#fafdfb;
-      display:flex; flex-direction:column; min-height:540px;
-    }
-    .chat-header {
-      padding:14px 18px; border-bottom:1px solid #eef3f0;
-      display:flex; justify-content:space-between; align-items:center;
-    }
-    .chat-header .ch-title { font-weight:600; font-size:.9rem; color:#111; }
-    .btn-reset {
-      background:#f5f5f5; border:1px solid #ddd; border-radius:8px;
-      padding:5px 12px; font-size:.75rem; color:#666; cursor:pointer;
-    }
-    .btn-reset:hover { background:#eee; }
-
-    .chat-log { flex:1; overflow-y:auto; padding:16px 18px; max-height:400px; }
-    .chat-bubble {
-      max-width:80%; border-radius:14px; padding:10px 14px;
-      margin-bottom:10px; font-size:.86rem; line-height:1.55; white-space:pre-wrap;
-    }
-    .chat-bubble.user {
-      margin-left:auto; background:linear-gradient(135deg,#6da285,#a3c9b6);
-      color:#fff; border-bottom-right-radius:4px;
-    }
-    .chat-bubble.assistant {
-      margin-right:auto; background:#fff; color:#333;
-      border:1px solid #e5e7eb; border-bottom-left-radius:4px;
-    }
-    .chat-bubble .cb-meta { font-size:.68rem; color:rgba(255,255,255,.7); margin-bottom:3px; }
-    .chat-bubble.assistant .cb-meta { color:#aaa; }
-
-    .chat-input-area {
-      padding:14px 18px; border-top:1px solid #eef3f0;
-      display:flex; gap:10px; align-items:flex-end;
-    }
-    .chat-input-area textarea {
-      flex:1; border:1px solid #e5e7eb; border-radius:10px;
-      padding:10px 12px; font-size:.85rem; resize:none; min-height:44px; max-height:100px;
-    }
-    .chat-input-area textarea:focus { border-color:#6da285; outline:none; box-shadow:0 0 0 2px rgba(109,162,133,.15); }
-    .btn-send {
-      background:#6da285; color:#fff; border:none; border-radius:10px;
-      padding:10px 18px; font-size:.84rem; font-weight:600; cursor:pointer; white-space:nowrap;
-    }
-    .btn-send:hover { background:#5a8e72; }
-    .btn-send:disabled { opacity:.6; cursor:not-allowed; }
-
-    #chatbot-status:empty { display:none !important; }
-
-    .floating-chatbot { display:none; }
-
-    @media(max-width:768px) {
-      .dashboard-card { margin:16px 10px; padding:20px 16px 28px; }
-      .top-header { padding:.6rem 1rem; }
-      .dashboard-tabs a { padding:7px 12px; font-size:.78rem; }
-      .chat-log { max-height:300px; }
-    }
-  </style>
 </head>
 <body>
 
@@ -161,8 +29,8 @@
   <!-- Hero -->
   <div class="mb-1">
     <div class="hero-label"><i class="bi bi-activity me-1"></i>MEDIMATE</div>
-    <div class="hero-title" data-text="chatbot.title">AI 건강 상담</div>
-    <p class="hero-desc" data-text="chatbot.subtitle">복약 상담과 생활 건강 질문을 한 화면에서 바로 이어갈 수 있습니다.</p>
+    <div class="hero-title" data-text="chatbot.title">MEDIMATE AI 상담</div>
+    <p class="hero-desc" data-text="chatbot.subtitle">복약과 건강 고민, 메디메이트와 편하게 이야기해보세요.</p>
   </div>
 
   <!-- Tabs -->
@@ -232,12 +100,7 @@
         <button class="btn-reset" onclick="resetConversation()"><i class="bi bi-arrow-counterclockwise me-1"></i><span data-text="chatbot.resetButton">대화 비우기</span></button>
       </div>
 
-      <div class="chat-log" id="chat-log">
-        <div class="chat-bubble assistant">
-          <div class="cb-meta" data-text="chatbot.assistantName">AI 상담사</div>
-          <div data-text="chatbot.welcomeMessage">안녕하세요. 복약 상담이나 생활 건강 고민을 편하게 남겨 주세요.</div>
-        </div>
-      </div>
+      <div class="chat-log" id="chat-log"></div>
 
       <div class="chat-input-area">
         <textarea id="chat-question" rows="1" data-placeholder="chatbot.questionPlaceholder" placeholder="예: 이 약은 식후에 먹어야 하나요?" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat(event)}"></textarea>
@@ -277,14 +140,19 @@ function renderMarkdown(text) {
 
 function appendMessage(role, content) {
   const log = document.getElementById('chat-log');
-  const div = document.createElement('div');
-  div.className = 'chat-bubble ' + role;
-  const meta = role === 'user'
-    ? escapeHtml(getText('chatbot.userName', '나'))
-    : escapeHtml(getText('chatbot.assistantName', 'AI 상담사'));
-  const body = role === 'assistant' ? renderMarkdown(content) : escapeHtml(content);
-  div.innerHTML = `<div class="cb-meta">${meta}</div><div>${body}</div>`;
-  log.appendChild(div);
+  const isUser = role === 'user';
+  const name = isUser ? escapeHtml(getText('chatbot.userName', '나')) : escapeHtml(getText('chatbot.assistantName', '메디메이트'));
+  const body = isUser ? escapeHtml(content) : renderMarkdown(content);
+  const avatar = isUser ? '' : '<div class="chat-avatar">🤖</div>';
+  const html = `
+    <div class="chat-msg ${role}">
+      ${avatar}
+      <div class="chat-msg-body">
+        <div class="chat-msg-name">${name}</div>
+        <div class="chat-bubble">${body}</div>
+      </div>
+    </div>`;
+  log.insertAdjacentHTML('beforeend', html);
   log.scrollTop = log.scrollHeight;
 }
 
@@ -330,12 +198,31 @@ function renderHistory(items) {
     list.innerHTML = `<span style="font-size:.76rem;color:#aaa">${escapeHtml(getText('chatbot.historyEmpty', '아직 저장된 복약 상담 참고 이력이 없습니다.'))}</span>`;
     return;
   }
-  items.slice(0, 8).forEach(item => {
+  const seen = new Set();
+  items.forEach(item => {
+    const key = `${item.disease_code || ''}_${item.medications || ''}`;
+    if (seen.has(key)) return;
+    seen.add(key);
     const pill = document.createElement('span');
     pill.className = 'history-pill';
+    pill.dataset.disease = item.disease_code || '';
+    pill.dataset.meds = item.medications || '';
     pill.textContent = `${item.disease_code || getText('chatbot.historyNoDisease', '질환 정보 없음')} · ${item.medications || getText('chatbot.historyNoMedication', '약 정보 없음')}`;
+    pill.onclick = () => { pill.classList.toggle('selected'); syncHistoryToInputs(); };
     list.appendChild(pill);
   });
+}
+
+function syncHistoryToInputs() {
+  const pills = document.querySelectorAll('.history-pill.selected');
+  const diseases = new Set();
+  const meds = new Set();
+  pills.forEach(p => {
+    if (p.dataset.disease) p.dataset.disease.split(',').forEach(d => diseases.add(d.trim()));
+    if (p.dataset.meds) p.dataset.meds.split(',').forEach(m => meds.add(m.trim()));
+  });
+  document.getElementById('disease-code').value = [...diseases].filter(Boolean).join(', ');
+  document.getElementById('medications-input').value = [...meds].filter(Boolean).join(', ');
 }
 
 function renderUserContext(context, recommendations = []) {
@@ -415,11 +302,8 @@ async function loadMedicationHistory() {
 }
 
 function resetConversation() {
-  document.getElementById('chat-log').innerHTML = `
-    <div class="chat-bubble assistant">
-      <div class="cb-meta">${escapeHtml(getText('chatbot.assistantName', 'AI 상담사'))}</div>
-      <div>${escapeHtml(getText('chatbot.welcomeMessage', '안녕하세요. 복약 상담이나 생활 건강 고민을 편하게 남겨 주세요.'))}</div>
-    </div>`;
+  document.getElementById('chat-log').innerHTML = '';
+  appendMessage('assistant', getText('chatbot.welcomeMessage', '안녕하세요 😊\n메디메이트입니다.\n지금 드시는 약이나 건강 상태에 대해 궁금한 점 있으신가요?'));
   document.getElementById('chat-question').value = '';
   setStatus('');
 }
@@ -529,7 +413,10 @@ async function initChatbotPage() {
 if (!localStorage.getItem('access_token')) {
   window.location.href = 'index.html';
 } else {
-  document.addEventListener('DOMContentLoaded', initChatbotPage);
+  document.addEventListener('DOMContentLoaded', () => {
+    initChatbotPage();
+    appendMessage('assistant', getText('chatbot.welcomeMessage', '안녕하세요 😊\n메디메이트입니다.\n지금 드시는 약이나 건강 상태에 대해 궁금한 점 있으신가요?'));
+  });
 }
 </script>
 
