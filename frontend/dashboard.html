@@ -114,19 +114,7 @@
   if (!localStorage.getItem('access_token')) window.location.href = 'index.html';
 
   /* ── Mock data (replace with real API later) ── */
-  const MOCK_MEDS = [
-    { time:'아침', drug:'글루메피리드 1정', note:'식후 30분', done:false },
-    { time:'점심', drug:'',                 note:'식후 30분', done:false },
-    { time:'저녁', drug:'',                 note:'식후 30분', done:false },
-    { time:'자기 전', drug:'',              note:'취침 30분 전', done:false },
-  ];
 
-  const MOCK_GOALS = [
-    { label:'혈압 규칙적으로 측정하기', done:false },
-    { label:'하루 30분 유산소 운동',    done:false },
-    { label:'건강한 식단 수첩 기록',    done:false },
-    { label:'하루 수분 2L 섭취하기',    done:false },
-  ];
 
   /* ── Render helpers ── */
 
@@ -154,9 +142,19 @@
   }
 
   function renderMedicationSchedule(s) {
-    const meds = MOCK_MEDS.map(m => ({...m}));
-    if (s.today_medication_completed) meds[0].done = true;
-    if (s.recent_prescription?.drug_name) meds[0].drug = s.recent_prescription.drug_name;
+    const todayMeds = s.today_medications || [];
+    if (!todayMeds.length && !s.recent_prescription) {
+      document.getElementById('med-prog-label').textContent = '진행도: 0 / 0 달성';
+      document.getElementById('med-prog-bar').style.width = '0%';
+      document.getElementById('med-list').innerHTML = '<div class="text-center text-muted py-4">등록된 약물 정보가 없습니다.</div>';
+      return;
+    }
+    const meds = todayMeds.map(m => ({
+      time: m.label || m.dose_timing || '아침',
+      drug: m.drug_name || '',
+      note: [m.dose_amount, m.dose_unit].filter(Boolean).join(' ') || '',
+      done: m.status === 'taken',
+    }));
 
     const done = meds.filter(m => m.done).length;
     document.getElementById('med-prog-label').textContent = '진행도: ' + done + ' / ' + meds.length + ' 달성';
@@ -176,8 +174,17 @@
   }
 
   function renderHealthGoals(s) {
-    const goals = MOCK_GOALS.map(g => ({...g}));
-    if (s.today_health_completed) goals[0].done = true;
+    const todayHealth = s.today_health_goals || [];
+    if (!todayHealth.length && !s.recent_prescription) {
+      document.getElementById('health-prog-label').textContent = '진행도: 0 / 0 달성';
+      document.getElementById('health-prog-bar').style.width = '0%';
+      document.getElementById('health-list').innerHTML = '<div class="text-center text-muted py-4">건강관리 목표를 설정해놓지 않았습니다.</div>';
+      return;
+    }
+    const goals = todayHealth.map(g => ({
+      label: g.label || g.content || '-',
+      done: g.status === 'done',
+    }));
 
     const done = goals.filter(g => g.done).length;
     document.getElementById('health-prog-label').textContent = '진행도: ' + done + ' / ' + goals.length + ' 달성';
@@ -201,7 +208,8 @@
 
     const fallback = {
       remaining_medication_days:0, today_medication_completed:false,
-      today_health_completed:false, recent_prescription:null, active_recommendations:[]
+      today_health_completed:false, recent_prescription:null, active_recommendations:[],
+      today_medications:[], today_health_goals:[]
     };
 
     let summary;
@@ -211,6 +219,20 @@
     renderSummaryCards(summary);
     renderMedicationSchedule(summary);
     renderHealthGoals(summary);
+
+    const hasData = !!summary.recent_prescription;
+    if (!hasData) {
+      document.querySelectorAll('.btn-act-outline').forEach(btn => {
+        btn.classList.add('disabled');
+        btn.setAttribute('aria-disabled', 'true');
+        btn.style.pointerEvents = 'none';
+        btn.style.opacity = '0.5';
+      });
+      const warn = document.createElement('div');
+      warn.className = 'text-center mt-3';
+      warn.innerHTML = '<span style="color:#dc3545;font-size:0.9rem;">등록된 문서가 없습니다. <a href="scans.html" style="color:#dc3545;text-decoration:underline;">문서를 등록해주세요.</a></span>';
+      document.querySelector('.action-btns').after(warn);
+    }
   }
 
   document.addEventListener('DOMContentLoaded', loadDashboard);
