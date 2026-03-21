@@ -26,3 +26,6 @@ scripts/raw_drug_license_info.xlsx
 
 .mcp.json
 .claude
+
+# Preview HTML (디자인 확인용, 배포 불필요)
+*_preview*.html

@@ -4,142 +4,10 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title data-text="scans.title">처방전 및 진단서 등록 - MEDIMATE</title>
-
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"/>
   <link rel="stylesheet" href="css/style.css"/>
-  <style>
-    body { background:#f5f7fb; }
-
-    .top-header { background:#fff; border-bottom:1px solid #eee; padding:.7rem 2rem; }
-    .top-header .brand { font-weight:600; color:#6da285; font-size:.95rem; }
-    .top-header .brand i { color:#6da285; }
-    .user-area { font-size:.85rem; }
-    .user-area .btn-myinfo {
-      background:#f0f0f0; border:none; border-radius:8px;
-      font-size:.8rem; padding:.3rem .85rem; color:#333; text-decoration:none;
-    }
-
-    .dashboard-card {
-      max-width:1200px; margin:32px auto; background:#fff;
-      border-radius:20px; padding:32px 36px 40px; border:1px solid #e5e7eb;
-    }
-
-    .hero-label { font-size:.78rem; color:#6da285; font-weight:500; }
-    .hero-label i { color:#6da285; }
-    .hero-title { font-size:1.6rem; font-weight:700; color:#111; margin:4px 0 6px; }
-    .hero-desc { color:#888; font-size:.88rem; margin:0 0 20px; }
-
-    .dashboard-tabs {
-      display:flex; gap:4px; background:#f1f3f5; padding:5px;
-      border-radius:999px; margin-bottom:24px; overflow-x:auto;
-    }
-    .dashboard-tabs a {
-      flex:1; text-align:center; padding:9px 18px; border-radius:999px;
-      text-decoration:none; color:#6da285; font-size:.84rem; font-weight:500;
-      white-space:nowrap; transition:all .15s;
-    }
-    .dashboard-tabs a.active { background:#fff; color:#111; font-weight:600; box-shadow:0 1px 4px rgba(0,0,0,.06); }
-    .dashboard-tabs a:hover:not(.active) { color:#4a8a68; }
-
-    .floating-chatbot {
-      position:fixed; right:24px; bottom:24px;
-      background:#6da285; color:#fff; border:none; border-radius:999px;
-      padding:14px 22px; font-size:.88rem; font-weight:600;
-      box-shadow:0 4px 18px rgba(109,162,133,.4); z-index:1050;
-      text-decoration:none; display:flex; align-items:center; gap:8px;
-    }
-    .floating-chatbot:hover { background:#5a8e72; color:#fff; }
-    .floating-chatbot .notif-dot {
-      width:8px; height:8px; background:#ff5c5c; border-radius:50%;
-      position:absolute; top:10px; right:14px;
-    }
-
-    @media(max-width:768px) {
-      .dashboard-card { margin:16px 10px; padding:20px 16px 28px; }
-      .top-header { padding:.6rem 1rem; }
-      .dashboard-tabs a { padding:7px 12px; font-size:.78rem; }
-    }
-        .drug-chip {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.35rem 0.75rem;
-            border-radius: 999px;
-            background: rgba(93, 120, 94, 0.12);
-            color: var(--primary-color);
-            font-size: 0.875rem;
-            font-weight: 600;
-        }
-
-        .drug-suggestion-list {
-            position: absolute;
-            top: calc(100% + 4px);
-            left: 0;
-            right: 0;
-            z-index: 20;
-            max-height: 220px;
-            overflow-y: auto;
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            background: #fff;
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
-        }
-
-        .drug-suggestion-item {
-            width: 100%;
-            border: 0;
-            background: transparent;
-            text-align: left;
-            padding: 0.75rem 1rem;
-        }
-
-        .drug-suggestion-item:hover {
-            background: rgba(93, 120, 94, 0.08);
-        }
-
-        .diagnosis-row {
-            display: flex;
-            gap: 0.5rem;
-            align-items: center;
-            margin-bottom: 0.5rem;
-        }
-
-        .diagnosis-row input { flex: 1; }
-
-        .drug-entry-card {
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 0.75rem;
-            margin-bottom: 0.5rem;
-            background: #fff;
-        }
-
-        .drug-entry-card .drug-entry-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.5rem;
-        }
-
-        .drug-entry-card .dose-fields {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 0.5rem;
-        }
-
-        .dose-fields input, .dose-fields select {
-            font-size: 0.8rem;
-            padding: 0.3rem 0.5rem;
-        }
-
-        .dose-fields label {
-            font-size: 0.7rem;
-            margin-bottom: 0.15rem;
-            color: #888;
-        }
-    </style>
 </head>
 <body>
 
@@ -157,8 +25,8 @@
 <div class="dashboard-card">
   <div class="mb-1">
     <div class="hero-label"><i class="bi bi-activity me-1"></i>MEDIMATE</div>
-    <div class="hero-title" data-text="scans.title">처방전 자동 입력</div>
-    <p class="hero-desc" data-text="scans.subtitle">사진을 올리시면 AI가 약물 정보를 분석해 복약 일정에 자동으로 넣어드립니다.</p>
+    <div class="hero-title" data-text="scans.heroTitle">새 문서 등록</div>
+    <p class="hero-desc" id="hero-desc" data-text="scans.heroDesc">처방전이나 진단서를 업로드하면 AI가 분석하여 복약 일정과 건강 관리 목표를 자동으로 생성합니다.</p>
   </div>
 
   <div class="dashboard-tabs">
@@ -170,591 +38,451 @@
     <a href="chatbot.html"><i class="bi bi-chat-dots me-1"></i>AI 챗봇</a>
   </div>
 
-            <div class="row g-4">
-                <div class="col-md-5">
-                    <div class="card p-4 h-100 text-center">
-                        <h5 class="fw-bold text-primary-custom mb-3" data-text="scans.cardTitle">새 처방전/기록 등록</h5>
+  <!-- Step Indicator -->
+  <div class="d-flex justify-content-center mb-4">
+    <div class="d-flex gap-2">
+      <div id="step-1" class="step active">1. 업로드</div>
+      <div id="step-2" class="step">2. 분석/수정</div>
+      <div id="step-3" class="step">3. 건강목표</div>
+    </div>
+  </div>
 
-                        <div id="upload-status" class="alert d-none small p-2 mb-3"></div>
+  <div id="upload-status" class="alert d-none small p-2 mb-3"></div>
 
-                        <div class="mb-3 text-start">
-                            <label class="form-label text-secondary small fw-bold" data-text="scans.docTypeLabel">문서 종류 선택</label>
-                            <select id="docType" class="form-select border-1 px-3 py-2 bg-light">
-                                <option value="prescription" data-text="scans.prescriptionOption">처방전 (약국 봉투)</option>
-                                <option value="medical_record" data-text="scans.recordOption">진단서/소견서</option>
-                            </select>
-                        </div>
+  <!-- ═══ STEP 1: Upload ═══ -->
+  <div id="step1">
+    <select id="docType" class="doc-type-select">
+      <option value="prescription" data-text="scans.prescriptionOption">처방전 (약국 봉투)</option>
+      <option value="medical_record" data-text="scans.recordOption">진단서/소견서</option>
+    </select>
 
-                        <div class="upload-area p-4 mt-2" onclick="document.getElementById('file-upload').click()">
-                            <i class="bi bi-cloud-arrow-up display-3 text-primary-custom mb-2"></i>
-                            <h6 class="fw-bold mb-1" data-text="scans.uploadTitle">이미지 선택하기</h6>
-                            <p class="small text-soft mb-0" data-text="scans.uploadSubtitle">또는 여기에 파일을 끌어다 놓으세요.</p>
-                            <input type="file" id="file-upload" class="d-none" accept="image/png, image/jpeg, image/jpg, application/pdf"
-                                onchange="handleFileUpload(event)">
-                        </div>
+    <div class="scan-upload-zone" id="upload-zone" onclick="document.getElementById('file-upload').click()">
+      <i class="bi bi-cloud-arrow-up"></i>
+      <h6 data-text="scans.uploadTitle">클릭하여 파일 선택 또는 여기에 드래그</h6>
+      <p data-text="scans.uploadSubtitle">JPG, PNG, PDF 지원 · 10MB 이하</p>
+      <input type="file" id="file-upload" class="d-none" accept="image/png,image/jpeg,image/jpg,application/pdf" onchange="handleFileUpload(event)">
+    </div>
 
-                        <div id="preview-container" class="mt-3 d-none">
-                            <img id="img-preview" src="" class="img-fluid rounded border mb-3"
-                                style="max-height: 200px;">
-                            <button class="btn btn-primary w-100" id="analyze-btn" onclick="startAnalysis()">
-                                <i class="bi bi-magic me-2"></i><span data-text="scans.analyzeButton">AI 분석 시작하기</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
+    <div id="file-info-box" class="scan-file-info d-none">
+      <div class="file-name"><i class="bi bi-file-earmark-image"></i> <span id="file-name-text"></span></div>
+      <button class="remove-btn" onclick="removeFile()"><i class="bi bi-x-lg"></i></button>
+    </div>
 
-                <div class="col-md-7">
-                    <div class="card p-4 h-100" id="result-card">
-                        <div class="d-flex justify-content-center align-items-center h-100 text-center" id="result-empty">
-                            <div>
-                                <i class="bi bi-file-text display-1 text-soft opacity-50 mb-3"></i>
-                                <h5 class="text-secondary" data-text="scans.emptyTitle">아직 분석된 문서가 없습니다.</h5>
-                                <p class="text-soft small" data-text="scans.emptySubtitle">좌측에서 이미지를 업로드하고 분석을 시작하세요.</p>
-                            </div>
-                        </div>
+    <button class="btn-analyze d-none" id="analyze-btn" onclick="startAnalysis()">
+      <i class="bi bi-magic me-2"></i><span data-text="scans.analyzeButton">AI 분석 시작하기</span>
+    </button>
+  </div>
 
-                        <div id="result-content" class="d-none d-flex flex-column h-100">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5 class="fw-bold text-primary-custom mb-0"><i class="bi bi-list-check me-2"></i><span data-text="scans.resultTitle">분석 결과</span></h5>
-                                <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2" data-text="scans.resultReady">확인 가능</span>
-                            </div>
+  <!-- ═══ STEP 2: Analysis / Edit ═══ -->
+  <div id="step2" class="d-none">
+    <div class="sub-tabs mb-3">
+      <a class="sub-tab active" id="subtab-result" onclick="switchSubTab('result')"><i class="bi bi-file-earmark-medical"></i> 처방전 분석결과</a>
+      <a class="sub-tab" id="subtab-goals" onclick="switchSubTab('goals')"><i class="bi bi-heart-pulse"></i> 건강 목표 추천</a>
+    </div>
 
-                            <div class="flex-grow-1 overflow-auto" id="analysis-text-container"></div>
+    <!-- Sub: Result Edit -->
+    <div id="sub-result">
+      <div id="analysis-warning" class="alert alert-warning small d-none"></div>
 
-                            <div class="mt-4 p-3 bg-light rounded" id="edit-section">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <h6 class="fw-bold mb-0" data-text="scans.editTitle">분석 결과 수정</h6>
-                                    <span class="small text-soft" data-text="scans.editSubtitle">날짜와 약품을 직접 다듬은 뒤 저장할 수 있습니다.</span>
-                                </div>
+      <div class="mb-3">
+        <div class="form-label-sm" data-text="scans.documentDate">문서 날짜</div>
+        <input type="date" id="edit-document-date" class="form-control" style="max-width:400px;"/>
+      </div>
 
-                                <div id="analysis-warning" class="alert alert-warning small d-none"></div>
+      <div class="mb-3">
+        <div class="form-label-sm" data-text="scans.diagnosis">진단명</div>
+        <div id="diagnosis-list-editor"></div>
+        <button type="button" class="btn-add-diag" onclick="addDiagnosisRow()"><i class="bi bi-plus-circle"></i> 진단명 추가</button>
+      </div>
 
-                                <div class="mb-3">
-                                    <label class="form-label small fw-bold text-secondary" data-text="scans.documentDate">문서 날짜</label>
-                                    <input type="date" id="edit-document-date" class="form-control">
-                                </div>
+      <div class="mb-3 d-none" id="clinical-note-group">
+        <div class="form-label-sm" data-text="scans.clinicalNote">진료 요약</div>
+        <textarea id="edit-clinical-note" class="form-control" rows="4" placeholder="진료기록지 내용을 정리해 입력하세요."></textarea>
+      </div>
 
-                                <div class="mb-3">
-                                    <label class="form-label small fw-bold text-secondary" data-text="scans.diagnosis">진단명</label>
-                                    <div id="diagnosis-list-editor"></div>
-                                    <button type="button" class="btn btn-outline-secondary btn-sm mt-1" onclick="addDiagnosisRow()">
-                                        <i class="bi bi-plus-circle me-1"></i>진단명 추가
-                                    </button>
-                                </div>
+      <div class="mb-3" id="drug-editor-group">
+        <div class="form-label-sm" data-text="scans.drugLabel">약품 목록</div>
+        <div class="position-relative mb-2">
+          <input type="text" id="drug-search-input" class="form-control" placeholder="약 이름을 검색하세요">
+          <div id="drug-suggestion-list" class="drug-suggestion-list d-none"></div>
+        </div>
+        <div id="selected-drugs"></div>
+      </div>
 
-                                <div class="mb-3 d-none" id="clinical-note-group">
-                                    <label class="form-label small fw-bold text-secondary" data-text="scans.clinicalNote">진료 요약</label>
-                                    <textarea id="edit-clinical-note" class="form-control" rows="4" data-placeholder="scans.clinicalNotePlaceholder" placeholder="진료기록지 내용을 정리해 입력하세요."></textarea>
-                                </div>
+      <button class="btn-save-main" id="save-result-btn" onclick="saveResult()">
+        <i class="bi bi-check-circle me-2"></i><span data-text="scans.saveButton">수정 내용 저장 → 복약 일정에 반영</span>
+      </button>
 
-                                <div class="mb-3" id="drug-editor-group">
-                                    <label class="form-label small fw-bold text-secondary" data-text="scans.drugLabel">약품 목록</label>
-                                    <div class="position-relative mb-2">
-                                        <input type="text" id="drug-search-input" class="form-control" data-placeholder="scans.drugPlaceholder" placeholder="약 이름을 검색하세요. 예: 무스리">
-                                        <div id="drug-suggestion-list" class="drug-suggestion-list d-none"></div>
-                                    </div>
-                                    <div id="selected-drugs"></div>
-                                    <div class="form-text" data-text="scans.drugHelp">약품은 DB 검색 결과에서 선택해 추가합니다.</div>
-                                </div>
+      <div id="save-result-summary" class="mt-3 d-none"></div>
+    </div>
 
-                                <div class="d-flex gap-2 mt-4">
-                                    <button class="btn btn-outline-primary flex-fill" id="refresh-result-btn" onclick="reloadResult()">
-                                        <span data-text="scans.refreshButton">최신 결과 다시 불러오기</span>
-                                    </button>
-                                    <button class="btn btn-primary flex-fill" id="update-result-btn" onclick="updateResult()">
-                                        <span data-text="scans.updateButton">수정 내용 반영</span>
-                                    </button>
-                                </div>
-                            </div>
+    <!-- Sub: Goals Preview (shown after save) -->
+    <div id="sub-goals" class="d-none"></div>
+  </div>
 
-                            <div class="mt-4 pt-3 border-top">
-                                <button class="btn btn-success w-100 py-2 fs-5 fw-bold shadow-sm" id="save-result-btn"
-                                    onclick="saveResult()">
-                                    <i class="bi bi-calendar-check me-2"></i><span data-text="scans.saveButton">내 복약 및 추천 목록에 적용하기</span>
-                                </button>
-                            </div>
+  <!-- ═══ STEP 3: Health Goals ═══ -->
+  <div id="step3" class="d-none">
+    <div class="section-title"><i class="bi bi-check-circle-fill"></i> 현재 이행 중인 건강 목표</div>
+    <div class="goal-list-card" id="existing-goals-list">
+      <div class="scan-goal-item" style="color:#aaa;justify-content:center;">불러오는 중...</div>
+    </div>
 
-                            <div id="save-result-summary" class="mt-3 d-none"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <div class="section-title"><i class="bi bi-stars"></i> 새로운 추천 항목</div>
+    <div class="goal-list-card" id="new-goals-list">
+      <div class="scan-goal-item" style="color:#aaa;justify-content:center;">저장 후 표시됩니다.</div>
+    </div>
+
+    <div class="add-goal-row">
+      <input type="text" id="custom-goal-input" placeholder="새 건강 관리 목표를 입력하세요"/>
+      <button class="btn-add-goal" onclick="addCustomGoal()">+ 추가</button>
+    </div>
+
+    <button class="btn-save-goals" onclick="window.location.href='health.html'">
+      <i class="bi bi-check2-all me-2"></i>건강 관리 이력 보러 가기
+    </button>
+  </div>
 </div>
 
-<a href="chatbot.html" class="floating-chatbot">
-  <i class="bi bi-robot"></i> MEDIMATE 챗봇
-  <span class="notif-dot"></span>
-</a>
+<script src="js/utils.js"></script>
+<script src="js/texts.js"></script>
+<script src="js/api.js"></script>
+<script src="js/chat-widget.js"></script>
+<script>
+if (!localStorage.getItem('access_token')) window.location.href = 'index.html';
 
-    <script src="js/utils.js"></script>
-    <script src="js/texts.js"></script>
-    <script src="js/api.js"></script>
+let currentScanId = null;
+let currentScanResult = null;
+let selectedDrugs = [];
+let drugSearchTimer = null;
+let savedRecommendations = [];
 
-    <script>
-        if (!localStorage.getItem('access_token')) window.location.href = 'index.html';
-        let currentScanId = null;
-        let currentScanResult = null;
-        let selectedDrugs = [];  // Array of DrugEntry objects: {name, dose_count, dose_timing, dose_days, dose_amount, dose_unit}
-        let drugSearchTimer = null;
+const UNIT_OPTIONS = ['정','캡슐','ml','unit','포','방울'];
+const TIMING_OPTIONS = ['식전','식후','식후 30분','공복','자기전','아침','점심','저녁','아침 점심','아침 저녁','점심 저녁','아침 점심 저녁','아침 점심 저녁 자기전'];
 
-        function setWarning(message = '') {
-            const warningBox = document.getElementById('analysis-warning');
-            if (!message) {
-                warningBox.classList.add('d-none');
-                warningBox.innerText = '';
-                return;
-            }
-            warningBox.innerText = message;
-            warningBox.classList.remove('d-none');
+/* ── Step Navigation ── */
+function goToStep(n) {
+  [1,2,3].forEach(i => {
+    document.getElementById('step'+i).classList.toggle('d-none', i !== n);
+    document.getElementById('step-'+i).classList.toggle('active', i === n);
+  });
+  const desc = document.getElementById('hero-desc');
+  if (n === 1) desc.textContent = '처방전이나 진단서를 업로드하면 AI가 분석하여 복약 일정과 건강 관리 목표를 자동으로 생성합니다.';
+  else if (n === 2) desc.textContent = 'AI 분석이 완료되었습니다. 결과를 확인하고 필요한 부분을 수정한 뒤 저장하세요.';
+  else desc.textContent = '저장이 완료되었습니다. 건강 관리 목표를 확인하고 관리하세요.';
+}
+
+function switchSubTab(tab) {
+  document.getElementById('subtab-result').classList.toggle('active', tab === 'result');
+  document.getElementById('subtab-goals').classList.toggle('active', tab === 'goals');
+  document.getElementById('sub-result').classList.toggle('d-none', tab !== 'result');
+  document.getElementById('sub-goals').classList.toggle('d-none', tab !== 'goals');
+}
+
+/* ── Status ── */
+function setStatus(msg, type='info') {
+  const el = document.getElementById('upload-status');
+  if (!msg) { el.className = 'alert d-none small p-2 mb-3'; return; }
+  el.className = `alert alert-${type} d-block small p-2 mb-3`;
+  el.innerHTML = msg;
+}
+function setWarning(msg) {
+  const el = document.getElementById('analysis-warning');
+  if (!msg) { el.classList.add('d-none'); el.innerText = ''; return; }
+  el.innerText = msg; el.classList.remove('d-none');
+}
+
+/* ── Step 1: Upload ── */
+function removeFile() {
+  document.getElementById('file-upload').value = '';
+  document.getElementById('file-info-box').classList.add('d-none');
+  document.getElementById('analyze-btn').classList.add('d-none');
+  currentScanId = null;
+}
+
+async function handleFileUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  document.getElementById('file-name-text').textContent = file.name;
+  document.getElementById('file-info-box').classList.remove('d-none');
+
+  const docType = document.getElementById('docType').value;
+  setStatus('<span class="spinner-border spinner-border-sm me-2"></span>업로드 중...', 'info');
+
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('document_type', docType);
+
+  try {
+    const res = await window.api.uploadScan(formData);
+    currentScanId = res.scan_id;
+    currentScanResult = null;
+    selectedDrugs = [];
+    setStatus('<i class="bi bi-check-circle me-1"></i>업로드 완료! 분석을 시작하세요.', 'success');
+    document.getElementById('analyze-btn').classList.remove('d-none');
+  } catch (err) {
+    setStatus(err.message, 'danger');
+    currentScanId = null;
+  }
+}
+
+/* ── Step 1→2: Analyze ── */
+async function startAnalysis() {
+  if (!currentScanId) return alert('먼저 파일을 업로드해주세요.');
+  const btn = document.getElementById('analyze-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>AI가 분석 중입니다...';
+
+  try {
+    await window.api.analyzeScan(currentScanId);
+    const res = await pollScanResult(currentScanId);
+    populateEditForm(res);
+    goToStep(2);
+    if (res.status === 'failed') setWarning('분석에 실패했습니다. 아래에서 직접 수정할 수 있습니다.');
+  } catch (err) {
+    setStatus(err.message, 'danger');
+    // Still move to step 2 with empty form for manual entry
+    populateEditForm({ document_type: document.getElementById('docType').value, document_date: null, diagnosis_list: [], drugs: [], clinical_note: null });
+    goToStep(2);
+    setWarning('분석 중 오류가 발생했습니다. 직접 입력해 주세요.');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="bi bi-magic me-2"></i>AI 분석 시작하기';
+  }
+}
+
+async function pollScanResult(scanId) {
+  for (let i = 0; i < 20; i++) {
+    const res = await window.api.getScanResult(scanId);
+    if (res.status === 'done' || res.status === 'failed') return res;
+    await new Promise(r => setTimeout(r, 1500));
+  }
+  return await window.api.getScanResult(scanId);
+}
+
+/* ── Step 2: Edit Form ── */
+function addDiagnosisRow(value = '') {
+  const editor = document.getElementById('diagnosis-list-editor');
+  const row = document.createElement('div');
+  row.className = 'diagnosis-row';
+  row.innerHTML = `<input type="text" class="form-control form-control-sm diagnosis-input" value="${escapeHtml(value)}" placeholder="진단명 입력">
+    <button type="button" class="btn-remove" onclick="this.parentElement.remove()"><i class="bi bi-x-lg"></i></button>`;
+  editor.appendChild(row);
+}
+
+function getDiagnosisList() {
+  return Array.from(document.querySelectorAll('.diagnosis-input')).map(el => el.value.trim()).filter(Boolean);
+}
+
+function populateEditForm(res) {
+  currentScanResult = res;
+  document.getElementById('edit-document-date').value = res.document_date || '';
+  const noteEl = document.getElementById('edit-clinical-note');
+  if (noteEl) noteEl.value = res.clinical_note || '';
+
+  const diagEditor = document.getElementById('diagnosis-list-editor');
+  diagEditor.innerHTML = '';
+  const diagList = res.diagnosis_list || (res.diagnosis ? [res.diagnosis] : []);
+  if (!diagList.length) addDiagnosisRow('');
+  else diagList.forEach(d => addDiagnosisRow(d));
+
+  selectedDrugs = Array.isArray(res.drugs) ? res.drugs.map(d =>
+    typeof d === 'string'
+      ? { name: d, dose_count: null, dose_timing: null, dose_days: null, dose_amount: null, dose_unit: null }
+      : { name: d.name || '', dose_count: d.dose_count ?? null, dose_timing: d.dose_timing ?? null, dose_days: d.dose_days ?? null, dose_amount: d.dose_amount ?? null, dose_unit: d.dose_unit ?? null }
+  ) : [];
+  renderSelectedDrugs();
+
+  const isMedical = res.document_type === 'medical_record';
+  document.getElementById('clinical-note-group').classList.toggle('d-none', !isMedical);
+  document.getElementById('drug-editor-group').classList.toggle('d-none', isMedical);
+}
+
+function renderSelectedDrugs() {
+  const container = document.getElementById('selected-drugs');
+  container.innerHTML = '';
+  if (!selectedDrugs.length) {
+    container.innerHTML = '<span class="text-soft small">선택된 약품이 없습니다.</span>';
+    return;
+  }
+  selectedDrugs.forEach((drug, idx) => {
+    const unitOpts = UNIT_OPTIONS.map(u => `<option value="${u}" ${drug.dose_unit===u?'selected':''}>${u}</option>`).join('');
+    const timingOpts = TIMING_OPTIONS.map(t => `<option value="${t}" ${drug.dose_timing===t?'selected':''}>${t}</option>`).join('');
+    const card = document.createElement('div');
+    card.className = 'drug-card';
+    card.innerHTML = `
+      <div class="drug-card-header">
+        <h6>${escapeHtml(drug.name)}</h6>
+        <button class="btn-remove" onclick="selectedDrugs.splice(${idx},1);renderSelectedDrugs()"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <div class="dose-grid">
+        <div><label>약품명</label><input type="text" value="${escapeHtml(drug.name)}" readonly style="background:#f5f5f5"/></div>
+        <div><label>1회 투여량</label><input type="text" value="${escapeHtml(drug.dose_amount||'')}" onchange="selectedDrugs[${idx}].dose_amount=this.value||null"></div>
+        <div><label>단위</label><select onchange="selectedDrugs[${idx}].dose_unit=this.value||null"><option value="">선택</option>${unitOpts}</select></div>
+        <div><label>1일 횟수</label><input type="number" value="${drug.dose_count??''}" onchange="selectedDrugs[${idx}].dose_count=this.value?Number(this.value):null"></div>
+        <div><label>복용시점</label><select onchange="selectedDrugs[${idx}].dose_timing=this.value||null"><option value="">선택</option>${timingOpts}</select></div>
+        <div><label>투약일수</label><input type="number" value="${drug.dose_days??''}" onchange="selectedDrugs[${idx}].dose_days=this.value?Number(this.value):null"></div>
+      </div>`;
+    container.appendChild(card);
+  });
+}
+
+/* ── Drug Search ── */
+async function searchDrugs() {
+  const kw = document.getElementById('drug-search-input').value.trim();
+  const list = document.getElementById('drug-suggestion-list');
+  if (kw.length < 2) { list.classList.add('d-none'); list.innerHTML = ''; return; }
+  try {
+    const items = await window.api.searchDrugs(kw, 10);
+    list.innerHTML = '';
+    if (!items.length) { list.classList.add('d-none'); return; }
+    items.forEach(item => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'drug-suggestion-item';
+      btn.innerHTML = `<div class="fw-bold">${escapeHtml(item.name)}</div><div class="small text-soft">${escapeHtml(item.manufacturer||'제조사 정보 없음')}</div>`;
+      btn.onclick = () => {
+        if (!selectedDrugs.some(d => d.name === item.name)) {
+          selectedDrugs.push({ name: item.name, dose_count: null, dose_timing: null, dose_days: null, dose_amount: null, dose_unit: null });
+          renderSelectedDrugs();
         }
+        document.getElementById('drug-search-input').value = '';
+        list.classList.add('d-none');
+      };
+      list.appendChild(btn);
+    });
+    list.classList.remove('d-none');
+  } catch { list.classList.add('d-none'); }
+}
 
-        function addDiagnosisRow(value = '') {
-            const editor = document.getElementById('diagnosis-list-editor');
-            const row = document.createElement('div');
-            row.className = 'diagnosis-row';
-            row.innerHTML = `<input type="text" class="form-control form-control-sm diagnosis-input" value="${escapeHtml(value)}" placeholder="진단명 입력">
-                <button type="button" class="btn btn-outline-danger btn-sm" onclick="this.parentElement.remove()"><i class="bi bi-x"></i></button>`;
-            editor.appendChild(row);
-        }
+/* ── Step 2→3: Save ── */
+async function saveResult() {
+  if (!currentScanId) return;
+  const btn = document.getElementById('save-result-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>저장 중...';
 
-        function getDiagnosisList() {
-            return Array.from(document.querySelectorAll('.diagnosis-input'))
-                .map(el => el.value.trim())
-                .filter(v => v.length > 0);
-        }
+  try {
+    // First update with edited values
+    const diagList = getDiagnosisList();
+    await window.api.updateScanResult(currentScanId, {
+      document_date: document.getElementById('edit-document-date').value || null,
+      diagnosis_list: diagList.length ? diagList : null,
+      clinical_note: document.getElementById('edit-clinical-note')?.value.trim() || null,
+      drugs: document.getElementById('drug-editor-group').classList.contains('d-none') ? null : selectedDrugs,
+    });
 
-        const UNIT_OPTIONS = ['정','캡슐','ml','unit','포','방울'];
-        const TIMING_OPTIONS = ['식전','식후','식후 30분','공복','자기전','아침','점심','저녁','아침 점심','아침 저녁','점심 저녁','아침 점심 저녁','아침 점심 저녁 자기전'];
+    // Save to medication schedule
+    const saveRes = await window.api.saveScanResult(currentScanId);
 
-        function renderSelectedDrugs() {
-            const container = document.getElementById('selected-drugs');
-            container.innerHTML = '';
+    // Save recommendations
+    try {
+      await window.api.getRecommendationsForScan(currentScanId);
+      const recSave = await window.api.saveRecommendationsForScan(currentScanId);
+      savedRecommendations = recSave?.items || [];
+    } catch { savedRecommendations = []; }
 
-            if (selectedDrugs.length === 0) {
-                container.innerHTML = `<span class="text-soft small">${getText('scans.noSelectedDrugs', '선택된 약품이 없습니다.')}</span>`;
-                return;
-            }
+    // Show summary
+    const summaryBox = document.getElementById('save-result-summary');
+    const created = Number(saveRes.created_count || 0);
+    const skipped = Number(saveRes.skipped_count || 0);
+    summaryBox.innerHTML = `<div class="alert alert-success mb-0"><i class="bi bi-check-circle-fill me-1"></i>저장 완료! 복약 일정 ${created}건 생성, 중복 ${skipped}건 건너뜀.</div>`;
+    summaryBox.classList.remove('d-none');
 
-            selectedDrugs.forEach((drug, idx) => {
-                const unitOpts = UNIT_OPTIONS.map(u => `<option value="${u}" ${drug.dose_unit===u?'selected':''}>${u}</option>`).join('');
-                const timingOpts = TIMING_OPTIONS.map(t => `<option value="${t}" ${drug.dose_timing===t?'selected':''}>${t}</option>`).join('');
-                const card = document.createElement('div');
-                card.className = 'drug-entry-card';
-                card.innerHTML = `
-                    <div class="drug-entry-header">
-                        <span class="fw-bold small">${escapeHtml(drug.name)}</span>
-                        <button type="button" class="btn btn-outline-danger btn-sm py-0 px-1" onclick="removeDrug(${idx})"><i class="bi bi-x"></i></button>
-                    </div>
-                    <div class="dose-fields">
-                        <div><label>1회 투여량</label><input type="text" class="form-control" value="${escapeHtml(drug.dose_amount || '')}" onchange="selectedDrugs[${idx}].dose_amount=this.value||null"></div>
-                        <div><label>단위</label><select class="form-control" onchange="selectedDrugs[${idx}].dose_unit=this.value||null"><option value="">선택</option>${unitOpts}</select></div>
-                        <div><label>1일 횟수</label><input type="number" class="form-control" value="${drug.dose_count ?? ''}" onchange="selectedDrugs[${idx}].dose_count=this.value?Number(this.value):null"></div>
-                        <div><label>복용시점</label><select class="form-control" onchange="selectedDrugs[${idx}].dose_timing=this.value||null"><option value="">선택</option>${timingOpts}</select></div>
-                        <div><label>투약일수</label><input type="number" class="form-control" value="${drug.dose_days ?? ''}" onchange="selectedDrugs[${idx}].dose_days=this.value?Number(this.value):null"></div>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-        }
+    // Move to step 3
+    setTimeout(() => {
+      renderGoalsStep();
+      goToStep(3);
+    }, 1200);
 
-        function removeDrug(idx) {
-            selectedDrugs.splice(idx, 1);
-            renderSelectedDrugs();
-        }
+  } catch (err) {
+    alert('저장 실패: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="bi bi-check-circle me-2"></i>수정 내용 저장 → 복약 일정에 반영';
+  }
+}
 
-        function renderDrugSuggestions(items) {
-            const list = document.getElementById('drug-suggestion-list');
-            list.innerHTML = '';
+/* ── Step 3: Goals ── */
+async function renderGoalsStep() {
+  // Existing goals
+  const existingList = document.getElementById('existing-goals-list');
+  try {
+    const recs = await window.api.getActiveRecommendations();
+    if (recs?.length) {
+      existingList.innerHTML = recs.map(r => `
+        <div class="scan-goal-item">
+          <div class="goal-left">
+            <div class="goal-icon"><i class="bi bi-check-circle"></i></div>
+            <span class="goal-badge">활성</span>
+            <span class="goal-text">${escapeHtml(r.content || '-')}</span>
+          </div>
+          <span class="goal-status">이행 중</span>
+        </div>`).join('');
+    } else {
+      existingList.innerHTML = '<div class="scan-goal-item" style="color:#aaa;justify-content:center;">등록된 건강 목표가 없습니다.</div>';
+    }
+  } catch {
+    existingList.innerHTML = '<div class="scan-goal-item" style="color:#aaa;justify-content:center;">목표를 불러오지 못했습니다.</div>';
+  }
 
-            if (!items || items.length === 0) {
-                list.classList.add('d-none');
-                return;
-            }
+  // New recommendations from this scan
+  const newList = document.getElementById('new-goals-list');
+  if (savedRecommendations.length) {
+    newList.innerHTML = savedRecommendations.map(r => `
+      <div class="scan-goal-item">
+        <div class="goal-left">
+          <div class="goal-icon"><i class="bi bi-stars"></i></div>
+          <span class="goal-badge">새 추천</span>
+          <span class="goal-text">${escapeHtml(r.content || '-')}</span>
+        </div>
+      </div>`).join('');
+  } else {
+    newList.innerHTML = '<div class="scan-goal-item" style="color:#aaa;justify-content:center;">이번 스캔에서 새 추천이 없습니다.</div>';
+  }
+}
 
-            items.forEach((item) => {
-                const button = document.createElement('button');
-                button.type = 'button';
-                button.className = 'drug-suggestion-item';
-                button.innerHTML = `<div class="fw-bold">${escapeHtml(item.name)}</div><div class="small text-soft">${escapeHtml(item.manufacturer || getText('scans.noManufacturer', '제조사 정보 없음'))}</div>`;
-                button.addEventListener('click', () => {
-                    if (!selectedDrugs.some(d => d.name === item.name)) {
-                        selectedDrugs.push({ name: item.name, dose_count: null, dose_timing: null, dose_days: null, dose_amount: null, dose_unit: null });
-                        renderSelectedDrugs();
-                    }
-                    document.getElementById('drug-search-input').value = '';
-                    list.classList.add('d-none');
-                });
-                list.appendChild(button);
-            });
+function addCustomGoal() {
+  const input = document.getElementById('custom-goal-input');
+  const text = input.value.trim();
+  if (!text) return;
+  const list = document.getElementById('new-goals-list');
+  const placeholder = list.querySelector('[style*="color:#aaa"]');
+  if (placeholder) placeholder.remove();
+  list.insertAdjacentHTML('beforeend', `
+    <div class="scan-goal-item">
+      <div class="goal-left">
+        <div class="goal-icon"><i class="bi bi-plus-circle"></i></div>
+        <span class="goal-badge">직접 추가</span>
+        <span class="goal-text">${escapeHtml(text)}</span>
+      </div>
+      <button class="goal-remove" onclick="this.closest('.scan-goal-item').remove()"><i class="bi bi-x-lg"></i></button>
+    </div>`);
+  input.value = '';
+}
 
-            list.classList.remove('d-none');
-        }
+/* ── Init ── */
+document.addEventListener('DOMContentLoaded', async () => {
+  applyTextBindings();
+  document.title = getText('scans.title', document.title);
+  goToStep(1);
+  try {
+    const user = await window.api.getUserMe();
+    document.getElementById('header-user-name').textContent = '환영합니다, ' + (user.name || '사용자') + '님';
+  } catch {}
+});
 
-        async function searchDrugs() {
-            const keyword = document.getElementById('drug-search-input').value.trim();
-            if (keyword.length < 2) {
-                renderDrugSuggestions([]);
-                return;
-            }
+document.getElementById('drug-search-input').addEventListener('input', () => {
+  clearTimeout(drugSearchTimer);
+  drugSearchTimer = setTimeout(searchDrugs, 250);
+});
 
-            try {
-                const items = await window.api.searchDrugs(keyword, 10);
-                renderDrugSuggestions(items);
-            } catch (err) {
-                renderDrugSuggestions([]);
-            }
-        }
+document.addEventListener('click', (e) => {
+  const sl = document.getElementById('drug-suggestion-list');
+  const si = document.getElementById('drug-search-input');
+  if (!sl.contains(e.target) && e.target !== si) sl.classList.add('d-none');
+});
+</script>
 
-        function populateEditForm(res) {
-            currentScanResult = res;
-            document.getElementById('edit-document-date').value = res.document_date || '';
-            document.getElementById('edit-clinical-note').value = res.clinical_note || '';
-
-            // diagnosis_list
-            const diagEditor = document.getElementById('diagnosis-list-editor');
-            diagEditor.innerHTML = '';
-            const diagList = res.diagnosis_list || (res.diagnosis ? [res.diagnosis] : []);
-            if (diagList.length === 0) {
-                addDiagnosisRow('');
-            } else {
-                diagList.forEach(d => addDiagnosisRow(d));
-            }
-
-            // drugs as DrugEntry objects
-            selectedDrugs = Array.isArray(res.drugs) ? res.drugs.map(d =>
-                typeof d === 'string'
-                    ? { name: d, dose_count: null, dose_timing: null, dose_days: null, dose_amount: null, dose_unit: null }
-                    : { name: d.name || '', dose_count: d.dose_count ?? null, dose_timing: d.dose_timing ?? null, dose_days: d.dose_days ?? null, dose_amount: d.dose_amount ?? null, dose_unit: d.dose_unit ?? null }
-            ) : [];
-            renderSelectedDrugs();
-
-            const isMedicalRecord = res.document_type === 'medical_record';
-            document.getElementById('clinical-note-group').classList.toggle('d-none', !isMedicalRecord);
-            document.getElementById('drug-editor-group').classList.toggle('d-none', isMedicalRecord);
-        }
-
-        function renderAnalysisResult(res, warningMessage = '') {
-            document.getElementById('result-empty').classList.add('d-none');
-            document.getElementById('result-content').classList.remove('d-none');
-            document.getElementById('save-result-summary').classList.add('d-none');
-            document.getElementById('save-result-summary').innerHTML = '';
-            setWarning(warningMessage);
-
-            const txtBox = document.getElementById('analysis-text-container');
-            let html = '';
-
-            const diagList = res.diagnosis_list || (res.diagnosis ? [res.diagnosis] : []);
-            const diagDisplay = diagList.length > 0 ? escapeHtml(diagList.join(', ')) : '-';
-
-            if (res.document_type === 'prescription') {
-                html += `<h6 class="fw-bold mb-3 p-2 bg-light rounded text-center">${getText('scans.extractedDrugTitle', '발견된 약품 정보')}</h6>`;
-                if (res.drugs && res.drugs.length > 0) {
-                    html += `<ul class="list-group mb-3 shadow-sm rounded">`;
-                    res.drugs.forEach((drug) => {
-                        const name = typeof drug === 'string' ? drug : drug.name;
-                        let doseInfo = '';
-                        if (typeof drug === 'object') {
-                            const parts = [];
-                            if (drug.dose_amount) parts.push(`${drug.dose_amount}${drug.dose_unit || ''}`);
-                            if (drug.dose_count) parts.push(`1일 ${drug.dose_count}회`);
-                            if (drug.dose_timing) parts.push(drug.dose_timing);
-                            if (drug.dose_days) parts.push(`${drug.dose_days}일분`);
-                            doseInfo = parts.length > 0 ? parts.join(' · ') : '';
-                        }
-                        html += `
-                            <li class="list-group-item">
-                                <span class="fw-bold">${escapeHtml(name)}</span>
-                                ${doseInfo ? `<div class="small text-soft">${escapeHtml(doseInfo)}</div>` : ''}
-                            </li>
-                        `;
-                    });
-                    html += `</ul>`;
-                } else {
-                    html += `<p class="text-danger small">${getText('scans.noDrugsDetected', '인식된 약물이 없습니다. 아래에서 직접 선택해 주세요.')}</p>`;
-                }
-                html += `<div class="p-3 bg-light rounded shadow-sm mt-3">`;
-                html += `<p class="mb-1"><span class="fw-bold">${getText('scans.documentDateLabel', '문서 날짜:')}</span> ${escapeHtml(res.document_date || '-')}</p>`;
-                html += `<p class="mb-0"><span class="fw-bold">${getText('scans.diagnosisLabel', '진단명:')}</span> ${diagDisplay}</p>`;
-                html += `</div>`;
-            } else {
-                html += `<div class="p-3 bg-light rounded shadow-sm">`;
-                html += `<p class="mb-0 fw-bold">${getText('scans.rawTextTitle', '추출된 텍스트 요약:')}</p>`;
-                html += `<p class="mt-2 small text-secondary m-0" style="white-space: pre-wrap;">${escapeHtml(res.raw_text || getText('scans.analysisFailed', '분석 실패'))}</p>`;
-                html += `</div>`;
-                html += `<div class="p-3 bg-light rounded shadow-sm mt-3">`;
-                html += `<p class="mb-1"><span class="fw-bold">${getText('scans.documentDateLabel', '문서 날짜:')}</span> ${escapeHtml(res.document_date || '-')}</p>`;
-                html += `<p class="mb-1"><span class="fw-bold">${getText('scans.diagnosisLabel', '진단명:')}</span> ${diagDisplay}</p>`;
-                html += `<p class="mb-0"><span class="fw-bold">${getText('scans.clinicalNoteLabel', '진료 요약:')}</span> ${escapeHtml(res.clinical_note || '-')}</p>`;
-                html += `</div>`;
-            }
-
-            txtBox.innerHTML = html;
-            populateEditForm(res);
-        }
-
-        async function pollScanResult(scanId, options = {}) {
-            const intervalMs = options.intervalMs ?? 1500;
-            const maxAttempts = options.maxAttempts ?? 20;
-
-            for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
-                const res = await window.api.getScanResult(scanId);
-                const status = res.status || '';
-
-                if (status === 'done' || status === 'failed') {
-                    return res;
-                }
-
-                await new Promise((resolve) => setTimeout(resolve, intervalMs));
-            }
-
-            return await window.api.getScanResult(scanId);
-        }
-
-        async function reloadResult() {
-            if (!currentScanId) return;
-            const res = await window.api.getScanResult(currentScanId);
-            renderAnalysisResult(res);
-        }
-
-        async function updateResult() {
-            if (!currentScanId) return;
-
-            const diagList = getDiagnosisList();
-            const payload = {
-                document_date: document.getElementById('edit-document-date').value || null,
-                diagnosis_list: diagList.length > 0 ? diagList : null,
-                clinical_note: document.getElementById('edit-clinical-note').value.trim() || null,
-                drugs: document.getElementById('drug-editor-group').classList.contains('d-none') ? null : selectedDrugs,
-            };
-
-            try {
-                const updated = await window.api.updateScanResult(currentScanId, payload);
-                renderAnalysisResult(updated, getText('scans.resultUpdated', '수정한 내용이 반영되었습니다.'));
-            } catch (err) {
-                alert(getText('scans.updateError', '수정 반영 실패: ') + err.message);
-            }
-        }
-
-        async function handleFileUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                document.getElementById('img-preview').src = e.target.result;
-                document.getElementById('preview-container').classList.remove('d-none');
-            }
-            if (file.type.startsWith('image/')) {
-                reader.readAsDataURL(file);
-            } else {
-                document.getElementById('img-preview').src = '';
-                document.getElementById('preview-container').classList.remove('d-none');
-            }
-
-            const statusBox = document.getElementById('upload-status');
-            const docType = document.getElementById('docType').value;
-            statusBox.className = 'alert alert-info d-block small p-2 mb-3';
-            statusBox.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> ${getText('scans.uploadLoading', '업로드 중...')}`;
-
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('document_type', docType);
-
-            try {
-                const res = await window.api.uploadScan(formData);
-                currentScanId = res.scan_id;
-                currentScanResult = null;
-                selectedDrugs = [];
-                renderSelectedDrugs();
-                setWarning('');
-
-                statusBox.className = 'alert alert-success d-block small p-2 mb-3';
-                statusBox.innerHTML = `<i class="bi bi-check-circle me-1"></i> ${getText('scans.uploadSuccess', '파일이 서버에 안전하게 업로드 되었습니다. 분석하거나 직접 수정할 수 있습니다.')}`;
-
-                document.getElementById('result-empty').classList.add('d-none');
-                document.getElementById('result-content').classList.remove('d-none');
-                renderAnalysisResult({
-                    document_type: docType,
-                    document_date: null,
-                    diagnosis_list: [],
-                    clinical_note: null,
-                    drugs: [],
-                    raw_text: null,
-                }, getText('scans.preEditWarning', '업로드는 완료되었습니다. OCR 분석 전에도 필요한 값을 직접 입력할 수 있습니다.'));
-            } catch (err) {
-                statusBox.className = 'alert alert-danger d-block small p-2 mb-3';
-                statusBox.innerText = err.message;
-                currentScanId = null;
-            }
-        }
-
-        async function startAnalysis() {
-            if (!currentScanId) {
-                return alert(getText('scans.uploadFirst', '먼저 파일을 정상적으로 업로드해주세요.'));
-            }
-
-            const btn = document.getElementById('analyze-btn');
-            btn.disabled = true;
-            btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>${getText('scans.analyzeActionLoading', 'AI가 꼼꼼히 읽고 있습니다...')}`;
-            const existingStatus = currentScanResult?.status || '';
-
-            if (existingStatus === 'processing') {
-                setWarning(getText('scans.analysisAlreadyRunning', '이미 분석이 진행 중입니다. 새 요청을 보내지 않고 최신 결과를 다시 확인합니다.'));
-            } else {
-                setWarning(getText('scans.analysisPending', '분석을 시작했습니다. 완료될 때까지 잠시만 기다려 주세요.'));
-            }
-
-            try {
-                if (existingStatus !== 'processing') {
-                    await window.api.analyzeScan(currentScanId);
-                }
-                const res = await pollScanResult(currentScanId);
-
-                if (res.status === 'done') {
-                    renderAnalysisResult(res);
-                } else if (res.status === 'failed') {
-                    renderAnalysisResult(
-                        res,
-                        getText('scans.analysisFailedWithRetry', '분석에 실패했습니다. 아래 내용을 직접 수정한 뒤 저장할 수 있습니다.')
-                    );
-                } else {
-                    renderAnalysisResult(
-                        res,
-                        getText('scans.analysisStillRunning', '분석이 아직 끝나지 않았습니다. 잠시 후 최신 결과를 다시 불러와 주세요.')
-                    );
-                }
-            } catch (err) {
-                const warningMessage = err.message;
-                const friendlyWarning = warningMessage.includes('OCR 호출 한도를 초과')
-                    || warningMessage.includes('OCR 서버 요청이 잠시 몰려')
-                    ? getText('scans.ocrRateLimitHint', 'OCR 서버 요청이 몰려 있어 잠시 대기 중입니다. 몇 초 후 다시 결과를 확인해 주세요.')
-                    : warningMessage;
-
-                try {
-                    const res = await window.api.getScanResult(currentScanId);
-                    renderAnalysisResult(res, friendlyWarning);
-                } catch (reloadErr) {
-                    document.getElementById('result-empty').classList.add('d-none');
-                    document.getElementById('result-content').classList.remove('d-none');
-                    document.getElementById('analysis-text-container').innerHTML = `
-                        <div class="alert alert-warning mb-0">
-                            ${escapeHtml(getText('scans.analyzeErrorPrefix', '분석 중 오류가 발생했습니다.'))}<br>
-                            ${escapeHtml(friendlyWarning)}
-                        </div>
-                    `;
-                    setWarning(friendlyWarning);
-                }
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = currentScanResult?.status === 'processing'
-                    ? getText('scans.refreshAnalyzeButton', '분석 결과 다시 확인하기')
-                    : getText('scans.reanalyzeButton', '재분석 하기');
-                btn.classList.add('btn-outline-primary');
-                btn.classList.remove('btn-primary');
-            }
-        }
-
-        async function saveResult() {
-            if (!currentScanId) return;
-            const btn = document.getElementById('save-result-btn');
-            const summaryBox = document.getElementById('save-result-summary');
-
-            try {
-                btn.disabled = true;
-                btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>${getText('scans.saveLoading', '저장 중...')}`;
-
-                const saveResult = await window.api.saveScanResult(currentScanId);
-                let recommendationSave = null;
-
-                try {
-                    await window.api.getRecommendationsForScan(currentScanId);
-                    recommendationSave = await window.api.saveRecommendationsForScan(currentScanId);
-                } catch (recErr) {
-                    console.warn(getText('scans.recommendationSaveError', '추천 활성 저장 실패: ') + recErr.message);
-                }
-
-                const documentType = saveResult.document_type || currentScanResult?.document_type || document.getElementById('docType').value;
-                const createdCount = Number(saveResult.created_count || 0);
-                const skippedCount = Number(saveResult.skipped_count || 0);
-                const skippedDuplicates = Array.isArray(saveResult.skipped_duplicates) ? saveResult.skipped_duplicates : [];
-                const savedRecommendationCount = Number(recommendationSave?.saved_count || 0);
-
-                let summaryHtml = `
-                    <div class="alert alert-success mb-0">
-                        <h6 class="fw-bold mb-2">${getText('scans.saveSummaryTitle', '저장 결과 안내')}</h6>
-                        <p class="mb-2">${documentType === 'prescription'
-                            ? getText('scans.prescriptionSavedTitle', '처방전 저장이 완료되었습니다.')
-                            : getText('scans.recordSavedTitle', '진료기록 저장이 완료되었습니다.')}
-                        </p>
-                        <ul class="small mb-3 ps-3">
-                `;
-
-                if (documentType === 'prescription') {
-                    summaryHtml += `<li>${getText('scans.createdCountLabel', '새로 생성된 복약 일정')}: ${createdCount}</li>`;
-                    summaryHtml += `<li>${getText('scans.skippedCountLabel', '중복으로 건너뛴 약품')}: ${skippedCount}</li>`;
-                    if (skippedDuplicates.length > 0) {
-                        summaryHtml += `<li>${getText('scans.skippedListLabel', '중복 약품 목록')}: ${escapeHtml(skippedDuplicates.join(', '))}</li>`;
-                    }
-                }
-
-                summaryHtml += `<li>${getText('scans.recommendationSavedLabel', '활성 추천 저장 건수')}: ${savedRecommendationCount}</li>`;
-                summaryHtml += `</ul>`;
-
-                if (savedRecommendationCount > 0) {
-                    summaryHtml += `<p class="small mb-3">${getText('scans.recommendationReady', '추천도 함께 준비되었습니다.')}</p>`;
-                } else {
-                    summaryHtml += `<p class="small mb-3">${getText('scans.recommendationEmpty', '추천은 아직 활성 저장되지 않았습니다.')}</p>`;
-                }
-
-                summaryHtml += `<p class="small mb-3">${getText('scans.chatbotHint', '저장된 추천을 확인한 뒤 AI 상담에서 복약 질문까지 바로 이어갈 수 있습니다.')}</p>`;
-
-                summaryHtml += `<div class="d-flex flex-wrap gap-2">`;
-                if (documentType === 'prescription') {
-                    summaryHtml += `<a href="medications.html" class="btn btn-success btn-sm">${getText('scans.goMedicationButton', '복약 관리로 이동')}</a>`;
-                    summaryHtml += `<a href="chatbot.html" class="btn btn-outline-primary btn-sm">${getText('scans.goChatbotButton', 'AI 상담으로 이어가기')}</a>`;
-                } else {
-                    summaryHtml += `<a href="health.html" class="btn btn-success btn-sm">${getText('scans.goHealthButton', '건강 기록 보러 가기')}</a>`;
-                    summaryHtml += `<a href="chatbot.html" class="btn btn-outline-primary btn-sm">${getText('scans.goChatbotButton', 'AI 상담으로 이어가기')}</a>`;
-                }
-                summaryHtml += `</div></div>`;
-
-                summaryBox.innerHTML = summaryHtml;
-                summaryBox.classList.remove('d-none');
-                alert(getText('scans.scanSaveSuccess', '성공적으로 저장되었습니다! 복약 기록과 AI 추천 메뉴에서 내역을 확인할 수 있습니다.'));
-
-            } catch (err) {
-                alert(getText('scans.scanSaveError', '저장 실패: ') + err.message);
-                btn.disabled = false;
-                btn.innerHTML = `<i class="bi bi-calendar-check me-2"></i>${getText('scans.saveButton', '내 복약 및 추천 목록에 적용하기')}`;
-                return;
-            }
-
-            btn.disabled = false;
-            btn.innerHTML = `<i class="bi bi-calendar-check me-2"></i>${getText('scans.saveButton', '내 복약 및 추천 목록에 적용하기')}`;
-        }
-
-        document.addEventListener('DOMContentLoaded', async () => {
-            applyTextBindings();
-            document.title = getText('scans.title', document.title);
-            renderSelectedDrugs();
-            try {
-              const user = await window.api.getUserMe();
-              document.getElementById('header-user-name').textContent = '환영합니다, ' + (user.name || '사용자') + '님';
-            } catch {}
-        });
-        document.getElementById('drug-search-input').addEventListener('input', () => {
-            clearTimeout(drugSearchTimer);
-            drugSearchTimer = setTimeout(searchDrugs, 250);
-        });
-
-        document.addEventListener('click', (event) => {
-            const suggestionList = document.getElementById('drug-suggestion-list');
-            const searchInput = document.getElementById('drug-search-input');
-            if (!suggestionList.contains(event.target) && event.target !== searchInput) {
-                suggestionList.classList.add('d-none');
-            }
-        });
-    </script>
 </body>
-
 </html>
