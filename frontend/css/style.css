@@ -787,6 +787,7 @@ body { background:#f7faf8; min-height:100vh; display:flex; flex-direction:column
   margin-top:16px;
 }
 .scan-upload-zone:hover { background:#eef5f0; }
+.scan-upload-zone.dragover { background:#e0efe6; border-color:#6da285; }
 .scan-upload-zone i { font-size:2.8rem; color:#6da285; }
 .scan-upload-zone h6 { font-weight:600; color:#6da285; margin-top:12px; }
 .scan-upload-zone p { color:#aaa; font-size:.82rem; margin:0; }
