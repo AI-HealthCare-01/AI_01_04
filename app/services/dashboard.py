@@ -131,7 +131,7 @@ class DashboardService:
         user_id = user.id
         today = datetime.now(config.TIMEZONE).date()
 
-        # 최근 처방전 1건
+        # 최근 처방전 1건 + 전체 질환명 목록
         prescriptions = await self.prescription_repo.list_by_user(user_id, limit=1)
         recent_prescription = None
         if prescriptions:
@@ -147,6 +147,19 @@ class DashboardService:
                 "end_date": rx.end_date.isoformat() if rx.end_date else None,
                 "dose_count": rx.dose_count,
             }
+
+        # 사용자의 모든 활성 처방전에서 고유 질환명 수집
+        all_prescriptions_for_diseases = await self.prescription_repo.list_by_user(user_id, limit=50)
+        disease_names: list[str] = []
+        seen_disease_ids: set[int] = set()
+        for p in all_prescriptions_for_diseases:
+            await p.fetch_related("disease")
+            if p.disease and p.disease.id not in seen_disease_ids:
+                seen_disease_ids.add(p.disease.id)
+                label = p.disease.name
+                if p.disease.kcd_code:
+                    label = f"{p.disease.kcd_code} {p.disease.name}"
+                disease_names.append(label)
 
         # 남은 약 일수: 유효한 처방전 중 end_date가 가장 가까운 것 기준
         remaining_medication_days = 0
@@ -169,13 +182,18 @@ class DashboardService:
         health_logs = await HealthChecklistLog.filter(user_id=user_id, date=today).all()
         today_health_completed = bool(health_logs) and all(lg.status == "done" for lg in health_logs)
 
-        # 현재 활성 추천 목록
+        # 현재 활성 추천 목록 (content 중복 제거)
         active_recommendations_raw = await self.recommendation_repo.list_active_for_user(user_id)
-        active_recommendations = [
-            _active_rec_to_dict(active.recommendation)
-            for active in active_recommendations_raw
-            if getattr(active.recommendation, "status", None) != "revoked"
-        ]
+        active_recommendations = []
+        seen_contents: set[str] = set()
+        for active in active_recommendations_raw:
+            if getattr(active.recommendation, "status", None) == "revoked":
+                continue
+            content_key = (active.recommendation.content or "").strip()
+            if content_key in seen_contents:
+                continue
+            seen_contents.add(content_key)
+            active_recommendations.append(_active_rec_to_dict(active.recommendation))
 
         # 오늘 복약 스케줄
         today_medications: list[dict] = []
@@ -208,6 +226,7 @@ class DashboardService:
 
         return {
             "recent_prescription": recent_prescription,
+            "disease_names": disease_names,
             "remaining_medication_days": remaining_medication_days,
             "today_medication_completed": today_medication_completed,
             "today_health_completed": today_health_completed,

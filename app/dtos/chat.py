@@ -7,16 +7,17 @@ from pydantic import BaseModel
 
 class ChatRequest(BaseModel):
     patient_id: str
+    session_id: int | None = None
     disease_code: str | None = None
     medications: list[str] | None = []
     user_question: str | None = None
     mode: str | None = "medication"
-    # 사용자 컨텍스트 자동 주입 여부 (True면 DB에서 자동 조회)
     use_context: bool = True
 
 
 class ChatResponse(BaseModel):
     chat_answer: str
+    session_id: int | None = None
     report: dict | None = None
 
 

@@ -447,36 +447,39 @@ class ScanAnalysisService:
 
             drug_obj = await self._match_drug(drug_entry, drug_name)
 
-            disease_obj = disease_objects[0]
+            drug_skipped = True
+            for disease_obj in disease_objects:
+                exists_qs = Prescription.filter(
+                    user_id=user.id,
+                    drug_id=drug_obj.id,
+                    start_date=start,
+                )
+                exists_qs = (
+                    exists_qs.filter(disease_id=disease_obj.id)
+                    if disease_obj
+                    else exists_qs.filter(disease_id__isnull=True)
+                )
 
-            exists_qs = Prescription.filter(
-                user_id=user.id,
-                drug_id=drug_obj.id,
-                start_date=start,
-            )
-            exists_qs = (
-                exists_qs.filter(disease_id=disease_obj.id)
-                if disease_obj
-                else exists_qs.filter(disease_id__isnull=True)
-            )
+                if await exists_qs.first():
+                    continue
 
-            if await exists_qs.first():
+                prescription = await Prescription.create(
+                    user=user,
+                    disease=disease_obj,
+                    drug=drug_obj,
+                    start_date=start,
+                    end_date=end,
+                    dose_count=dose_count,
+                    dose_amount=str(dose_amount),
+                    dose_unit=dose_unit,
+                    dose_timing=dose_timing,
+                )
+                created.append(prescription.id)
+                drug_skipped = False
+
+            if drug_skipped:
                 skipped += 1
                 skipped_duplicates.append(drug_name)
-                continue
-
-            prescription = await Prescription.create(
-                user=user,
-                disease=disease_obj,
-                drug=drug_obj,
-                start_date=start,
-                end_date=end,
-                dose_count=dose_count,
-                dose_amount=str(dose_amount),
-                dose_unit=dose_unit,
-                dose_timing=dose_timing,
-            )
-            created.append(prescription.id)
 
         return created, skipped, skipped_duplicates
 

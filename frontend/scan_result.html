@@ -392,10 +392,14 @@ async function saveResult() {
     const saveRes = await window.api.saveScanResult(scanId);
 
     try {
-      await window.api.getRecommendationsForScan(scanId);
-      const recSave = await window.api.saveRecommendationsForScan(scanId);
-      savedRecommendations = recSave?.items || [];
-    } catch { savedRecommendations = []; }
+      // 기존 active 목록 스냅샷
+      try { window._prevActiveGoals = await window.api.getActiveRecommendations() || []; } catch { window._prevActiveGoals = []; }
+      const prevContents = new Set(window._prevActiveGoals.map(r => (r.content || '').trim()));
+
+      // 추천 생성만 (active 등록은 registerGoals에서)
+      const recData = await window.api.getRecommendationsForScan(scanId);
+      savedRecommendations = (recData?.items || []).filter(r => !prevContents.has((r.content || '').trim()));
+    } catch { savedRecommendations = []; window._prevActiveGoals = []; }
 
     const summaryBox = document.getElementById('save-result-summary');
     const created = Number(saveRes.created_count || 0);
@@ -447,20 +451,19 @@ async function renderGoals() {
     return;
   }
 
-  try {
-    const recs = await window.api.getActiveRecommendations();
-    if (recs?.length) {
-      existingSection.classList.remove('d-none');
-      existingList.innerHTML = recs.map(r => renderGoalItem({ id: r.id, content: r.content || '-', icon: 'bi-check-circle', badge: '활성' }, true)).join('');
-    } else {
-      existingSection.classList.add('d-none');
-    }
-  } catch {
+  // saveResult()에서 저장해둔 스냅샷 사용
+  const existingGoals = window._prevActiveGoals || [];
+  const newGoals = savedRecommendations; // 이미 중복 제거됨
+
+  if (existingGoals.length) {
+    existingSection.classList.remove('d-none');
+    existingList.innerHTML = existingGoals.map(r => renderGoalItem({ id: r.id, content: r.content || '-', icon: 'bi-check-circle', badge: '활성' }, true)).join('');
+  } else {
     existingSection.classList.add('d-none');
   }
 
-  newList.innerHTML = savedRecommendations.length
-    ? savedRecommendations.map(r => renderGoalItem({ id: r.id, content: r.content || '-', icon: 'bi-stars', badge: '새 추천' }, true)).join('')
+  newList.innerHTML = newGoals.length
+    ? newGoals.map(r => renderGoalItem({ id: r.id, content: r.content || '-', icon: 'bi-stars', badge: '새 추천' }, true)).join('')
     : '<div class="scan-goal-item" style="color:#aaa;justify-content:center;">이번 스캔에서 새 추천이 없습니다.</div>';
 }
 

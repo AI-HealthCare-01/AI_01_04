@@ -321,9 +321,15 @@
     } catch {}
     renderMedicationSchedule(summary);
 
-    // 건강목표: active_recommendations 우선, 없으면 health history fallback
+    // 건강목표: active_recommendations 우선 (중복 제거), 없으면 health history fallback
     if (summary.active_recommendations?.length) {
-      summary.today_health_goals = summary.active_recommendations.map(r => ({
+      const seen = new Set();
+      summary.today_health_goals = summary.active_recommendations.filter(r => {
+        const key = (r.content || '').trim();
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      }).map(r => ({
         id: r.id,
         label: r.content || '-',
         content: r.content || '-',

@@ -117,6 +117,8 @@
 let currentUser = null;
 let currentUserContext = null;
 let currentActiveRecommendations = [];
+let currentSessionId = null;
+let isSending = false;
 
 function setStatus(message = '', type = 'info') {
   const box = document.getElementById('chatbot-status');
@@ -303,6 +305,7 @@ async function loadMedicationHistory() {
 
 function resetConversation() {
   document.getElementById('chat-log').innerHTML = '';
+  currentSessionId = null;
   appendMessage('assistant', getText('chatbot.welcomeMessage', '안녕하세요 😊\n메디메이트입니다.\n지금 드시는 약이나 건강 상태에 대해 궁금한 점 있으신가요?'));
   document.getElementById('chat-question').value = '';
   setStatus('');
@@ -343,15 +346,19 @@ async function sendChat(event) {
     return;
   }
 
+  if (isSending) return;
+  isSending = true;
   const btn = document.getElementById('send-chat-btn');
 
   try {
     btn.disabled = true;
     setStatus(getText('chatbot.sending', '질문을 전송하고 있습니다...'), 'info');
     appendMessage('user', question);
+    document.getElementById('chat-question').value = '';
 
     const response = await window.api.sendChatMessage({
       patient_id: String(currentUser.id),
+      session_id: currentSessionId,
       mode,
       user_question: question,
       disease_code: fallbackDisease,
@@ -359,8 +366,8 @@ async function sendChat(event) {
       use_context: true,
     });
 
+    if (response.session_id) currentSessionId = response.session_id;
     appendMessage('assistant', response.chat_answer || getText('chatbot.emptyAnswer', '답변을 받아오지 못했습니다.'));
-    document.getElementById('chat-question').value = '';
     setStatus(getText('chatbot.success', '답변이 도착했습니다.'), 'success');
     await loadMedicationHistory();
   } catch (err) {
@@ -368,6 +375,7 @@ async function sendChat(event) {
     setStatus(err.message, 'danger');
   } finally {
     btn.disabled = false;
+    isSending = false;
   }
 }
 

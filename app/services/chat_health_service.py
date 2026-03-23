@@ -40,7 +40,6 @@ class ChatHealthService(BaseService):
         return "\n".join(lines)
 
     async def _build_recommendation_section(self, user_id: int) -> str:
-        """활성 추천 정보를 프롬프트 섹션으로 변환한다."""
         from app.models.recommendations import Recommendation, UserActiveRecommendation
 
         rec_ids = (
@@ -61,32 +60,50 @@ class ChatHealthService(BaseService):
     async def process_health_chat(self, request: ChatRequest):
         user_id = int(request.patient_id)
 
-        # 1. 사용자 컨텍스트 자동 조회
+        # 1. 세션 확보
+        if request.session_id:
+            session = await self.chatbot_repo.get_session(user_id, request.session_id)
+            if not session:
+                session = await self.chatbot_repo.create_session(user_id, "health")
+        else:
+            session = await self.chatbot_repo.get_or_create_active_session(user_id, "health")
+
+        # 2. 사용자 메시지 저장
+        user_question = (request.user_question or "").strip()
+        if user_question:
+            await self.chatbot_repo.add_message(session.id, "user", user_question)
+
+        # 3. 세션 내 대화 맥락
+        messages = await self.chatbot_repo.get_messages(session.id)
+        conversation_str = self.build_conversation_context(messages)
+
+        # 4. 이전 세션 요약
+        prev_summary = await self.chatbot_repo.get_latest_summary(user_id, "health")
+
+        # 5. 사용자 컨텍스트 자동 조회
         context_str = ""
         if request.use_context:
             ctx = await self.context_service.get_user_context(user_id)
             context_str = self.context_service.build_context_prompt(ctx)
 
-        # 2. 과거 이력 조회
-        chat_history = await self.get_health_history(request.patient_id)
+        # 6. 과거 이력 조회 (레거시)
         medi_history = await self.get_medi_history(request.patient_id)
-        chat_hist_str = "\n".join([f"- {h['created_at'].date()}: {h['user_question']}" for h in chat_history])
         medi_hist_str = "\n".join(
             [f"- {h['created_at'].date()}: {h['disease_code']}: {h['medications']}" for h in medi_history]
         )
 
-        # 3. 복약 이력 기반 가이드라인 수집
+        # 7. 복약 이력 기반 가이드라인 수집
         guideline_str = await self._collect_guidelines_from_history(medi_history)
 
-        # 4. 활성 추천 정보 수집
+        # 8. 활성 추천 정보 수집
         recommendation_str = await self._build_recommendation_section(user_id)
 
-        # 5. 사용자 요청 본문
+        # 9. 사용자 요청 본문
         user_content = f"""
         - 사용자 질문: {request.user_question}
         """
 
-        # 6. 시스템 프롬프트 (사용자 컨텍스트 포함)
+        # 10. 시스템 프롬프트
         guideline_section = ""
         if guideline_str:
             guideline_section = f"""
@@ -105,8 +122,10 @@ class ChatHealthService(BaseService):
 
         system_prompt = f"""{COMMON_SYSTEM_PROMPT}\n
         당신은 환자의 일상 건강을 관리하는 '전문의 겸 건강 코치'입니다.
-        사용자의 질문에 성실히 답변하며 기존의 복약이력과 질문 내역을 참고해 답변을 작성하세요.
-        - 최근 질문 내역: {chat_hist_str if chat_hist_str else "없음"}
+        사용자의 질문에 직접적으로 답변하세요. 질문과 무관한 일반 리포트를 작성하지 마세요.
+        이전 대화 맥락이 있으면 흐름을 이어서 답변하세요.
+        {f"[이전 대화 요약]{chr(10)}{prev_summary}" if prev_summary else ""}
+        {f"[현재 대화 맥락]{chr(10)}{conversation_str}" if conversation_str else ""}
         - 과거 복약 이력: {medi_hist_str if medi_hist_str else "없음"}{guideline_section}{context_section}{recommendation_section}
         사용자가 식단, 운동, 생활 등의 질문을 하는 경우 아래 내용을 기준으로 답변하세요.
         1. [답변]: 사용자의 궁금증에 대한 의학적 근거 기반의 상세 답변
@@ -114,13 +133,19 @@ class ChatHealthService(BaseService):
         3. [운동/생활]: 실천 가능한 구체적인 운동 방법과 수면/스트레스 관리 팁.
         4. 환자에게 동기를 부여하는 따뜻하고 권위 있는 말투를 유지하세요."""
 
-        # 7. AI 분석
+        # 11. AI 분석
         ai_result = await self.ai.get_advice(system_prompt, user_content)
         logger.debug("AI 건강상담 결과: %s", ai_result)
 
-        # 8. 건강상담이력 저장
+        # 12. AI 응답을 세션 메시지로 저장
+        answer = ai_result.get("chat_answer", "")
+        if answer:
+            await self.chatbot_repo.add_message(session.id, "assistant", answer)
+
+        # 13. 레거시 테이블에도 저장 (하위호환)
         await HealthChat.create(
-            patient_id=request.patient_id, user_question=request.user_question, advice=ai_result.get("chat_answer", "")
+            patient_id=request.patient_id, user_question=request.user_question, advice=answer,
         )
 
+        ai_result["session_id"] = session.id
         return ai_result

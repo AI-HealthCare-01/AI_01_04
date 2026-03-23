@@ -823,11 +823,20 @@ frequency 종류: daily, weekly, 3_per_week, every_other_day, monthly, as_needed
 
     async def list_active(self, user_id: int) -> list[dict[str, Any]]:
         """
-        사용자의 active recommendation 목록을 조회한다.
+        사용자의 active recommendation 목록을 조회한다 (content 중복 제거).
         """
         try:
             active_recs = await self.recommendation_repo.list_active_for_user(user_id)
-            return [_rec_to_response_dict(ar.recommendation) for ar in active_recs]
+            seen_contents: set[str] = set()
+            result: list[dict[str, Any]] = []
+            for ar in active_recs:
+                rec = ar.recommendation
+                content_key = (rec.content or "").strip()
+                if content_key in seen_contents:
+                    continue
+                seen_contents.add(content_key)
+                result.append(_rec_to_response_dict(rec))
+            return result
         except Exception as e:
             logger.exception("list_active failed")
             raise HTTPException(status_code=500, detail="서버 내부 오류가 발생했습니다.") from e
@@ -879,6 +888,7 @@ frequency 종류: daily, weekly, 3_per_week, every_other_day, monthly, as_needed
     async def save_for_scan(self, user_id: int, scan_id: int) -> dict[str, Any]:
         """
         scan 기반 recommendation을 active recommendation으로 반영한다.
+        기존 active 추천을 보존하고 새 추천만 추가한다.
         """
         try:
             recs = await self.recommendation_repo.list_by_user_scan(user_id=user_id, scan_id=scan_id)
@@ -892,8 +902,12 @@ frequency 종류: daily, weekly, 3_per_week, every_other_day, monthly, as_needed
                 all_ids = [r.id for r in active_recs]
                 target_ids = selected or all_ids
 
-            await self.recommendation_repo.clear_active_for_user(user_id)
-            await self.recommendation_repo.assign_active_many(user_id=user_id, recommendation_ids=target_ids)
+            # 기존 active 추천 ID 수집 (중복 방지)
+            existing_active = await self.recommendation_repo.list_active_for_user(user_id)
+            existing_active_ids = {ar.recommendation_id for ar in existing_active}
+            new_ids = [rid for rid in target_ids if rid not in existing_active_ids]
+
+            await self.recommendation_repo.assign_active_many(user_id=user_id, recommendation_ids=new_ids)
 
             # 활성화된 추천은 like, revoked된 추천은 dislike 피드백 자동 기록
             revoked_ids = {r.id for r in recs if r.status == "revoked"} if recs else set()
@@ -902,7 +916,7 @@ frequency 종류: daily, weekly, 3_per_week, every_other_day, monthly, as_needed
             for rid in revoked_ids:
                 await self.recommendation_repo.add_feedback(user_id, rid, feedback_type="dislike")
 
-            return {"scan_id": scan_id, "saved": True, "saved_count": len(target_ids)}
+            return {"scan_id": scan_id, "saved": True, "saved_count": len(new_ids)}
         except HTTPException:
             raise
         except Exception as e:
