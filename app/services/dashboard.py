@@ -171,7 +171,36 @@ class DashboardService:
 
         # 현재 활성 추천 목록
         active_recommendations_raw = await self.recommendation_repo.list_active_for_user(user_id)
-        active_recommendations = [_active_rec_to_dict(active.recommendation) for active in active_recommendations_raw]
+        active_recommendations = [
+            _active_rec_to_dict(active.recommendation)
+            for active in active_recommendations_raw
+            if getattr(active.recommendation, "status", None) != "revoked"
+        ]
+
+        # 오늘 복약 스케줄
+        today_medications: list[dict] = []
+        for log in today_logs:
+            await log.fetch_related("prescription", "prescription__drug")
+            rx = log.prescription
+            drug_name = rx.drug.name if rx.drug else None
+            today_medications.append({
+                "id": log.id,
+                "label": log.slot_label or rx.dose_timing or "아침",
+                "drug_name": drug_name,
+                "dose_amount": rx.dose_amount,
+                "dose_unit": rx.dose_unit,
+                "status": log.status,
+            })
+
+        # 오늘 건강 목표 (active_recommendations 기반)
+        today_health_goals: list[dict] = []
+        for rec in active_recommendations:
+            today_health_goals.append({
+                "id": rec["id"],
+                "label": rec["content"],
+                "content": rec["content"],
+                "status": "pending",
+            })
 
         return {
             "recent_prescription": recent_prescription,
@@ -179,4 +208,6 @@ class DashboardService:
             "today_medication_completed": today_medication_completed,
             "today_health_completed": today_health_completed,
             "active_recommendations": active_recommendations,
+            "today_medications": today_medications,
+            "today_health_goals": today_health_goals,
         }

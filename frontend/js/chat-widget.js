@@ -65,7 +65,7 @@
     choices.forEach(c => {
       const b = document.createElement('button');
       b.textContent = c.label;
-      b.onclick = () => { wrap.remove(); userMsg(c.label); c.action(); };
+      b.onclick = () => { wrap.remove(); userMsg(c.label); setTimeout(() => c.action(), 0); };
       wrap.appendChild(b);
     });
     log.appendChild(wrap);
@@ -124,7 +124,8 @@
     botMsg(`현재 등록된 정보입니다:<br><b>진단명:</b> ${escapeHtml(diseases)}<br><b>약품명:</b> ${escapeHtml(meds)}<br><br>이 정보가 맞으신가요?`);
     choiceButtons([
       { label: '✅ 맞습니다', action: () => startChatting() },
-      { label: '✏️ 수정하러 가기', action: () => { window.location.href = 'scans.html'; } },
+      { label: '📄 새 문서 등록', action: () => { window.location.href = 'scans.html'; } },
+      { label: '⬅️ 이전으로', action: () => boot() },
     ]);
   }
 

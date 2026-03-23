@@ -67,6 +67,19 @@
   <button class="btn-analyze d-none" id="analyze-btn" onclick="startAnalysis()">
     <i class="bi bi-magic me-2"></i>AI 분석 시작하기
   </button>
+
+  <div class="d-none" id="analyze-progress" style="text-align:center;padding:30px 0;">
+    <div style="position:relative;display:inline-block;width:100px;height:100px;">
+      <svg width="100" height="100" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="42" fill="none" stroke="#e9ecef" stroke-width="8"/>
+        <circle id="prog-circle" cx="50" cy="50" r="42" fill="none" stroke="#6da285" stroke-width="8"
+          stroke-linecap="round" stroke-dasharray="264" stroke-dashoffset="264"
+          transform="rotate(-90 50 50)" style="transition:stroke-dashoffset 0.5s ease;"/>
+      </svg>
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:1.1rem;color:#333;" id="prog-pct">0%</div>
+    </div>
+    <div style="margin-top:12px;font-size:0.88rem;color:#666;" id="prog-msg">AI가 문서를 분석 중입니다...</div>
+  </div>
 </div>
 
 <script src="js/utils.js"></script>
@@ -160,26 +173,50 @@ async function uploadFile(file, docType) {
 async function startAnalysis() {
   if (!currentScanId) return alert('먼저 파일을 업로드해주세요.');
   const btn = document.getElementById('analyze-btn');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>AI가 분석 중입니다...';
+  const progBox = document.getElementById('analyze-progress');
+  const circle = document.getElementById('prog-circle');
+  const pctEl = document.getElementById('prog-pct');
+  const msgEl = document.getElementById('prog-msg');
+  const totalLen = 264;
+
+  function setProgress(pct, msg) {
+    circle.style.strokeDashoffset = totalLen - (totalLen * pct / 100);
+    pctEl.textContent = Math.round(pct) + '%';
+    if (msg) msgEl.textContent = msg;
+  }
+
+  btn.classList.add('d-none');
+  progBox.classList.remove('d-none');
+  setProgress(5, 'AI가 문서를 분석 중입니다...');
 
   if (DEMO_MODE) {
-    await new Promise(r => setTimeout(r, 1200));
+    for (let p = 10; p <= 90; p += 20) { await new Promise(r => setTimeout(r, 300)); setProgress(p); }
+    setProgress(100, '분석 완료!'); await new Promise(r => setTimeout(r, 400));
     window.location.href = 'scan_result.html?demo';
     return;
   }
 
+  const steps = [
+    [10, 'OCR으로 텍스트 추출 중...'],
+    [30, 'AI가 진단명을 분석 중...'],
+    [50, '약물 정보를 식별 중...'],
+    [70, '결과를 정리하는 중...'],
+  ];
+
   try {
+    setProgress(8, 'AI 분석 요청 중...');
     await window.api.analyzeScan(currentScanId);
-    // poll until done
+    let stepIdx = 0;
     for (let i = 0; i < 20; i++) {
+      if (stepIdx < steps.length) { setProgress(steps[stepIdx][0], steps[stepIdx][1]); stepIdx++; }
+      else { setProgress(70 + i * 2, '결과를 정리하는 중...'); }
       const res = await window.api.getScanResult(currentScanId);
-      if (res.status === 'done' || res.status === 'failed') break;
+      if (res.status === 'done') { setProgress(100, '분석 완료!'); await new Promise(r => setTimeout(r, 500)); break; }
+      if (res.status === 'failed') { setProgress(100, '분석 완료 (수동 입력 가능)'); await new Promise(r => setTimeout(r, 500)); break; }
       await new Promise(r => setTimeout(r, 1500));
     }
     window.location.href = 'scan_result.html?scan_id=' + currentScanId;
   } catch (err) {
-    // 분석 실패해도 결과 페이지로 이동 (수동 입력 가능)
     window.location.href = 'scan_result.html?scan_id=' + currentScanId + '&error=1';
   }
 }

@@ -77,6 +77,9 @@
       <i class="bi bi-check-circle me-2"></i>수정 내용 저장 → 복약 일정에 반영
     </button>
     <div id="save-result-summary" class="mt-3 d-none"></div>
+    <button class="btn-save-main d-none" id="goto-goals-btn" onclick="renderGoals();switchTab('goals')" style="background:#fff;color:#6da285;border:2px solid #6da285;margin-top:10px;">
+      <i class="bi bi-heart-pulse me-2"></i>건강 관리 목표 추천 보기
+    </button>
   </div>
 
   <!-- ═══ TAB: 건강 관리 목표 추천 ═══ -->
@@ -96,8 +99,8 @@
       <button class="btn-add-goal" onclick="addCustomGoal()">+ 추가</button>
     </div>
 
-    <button class="btn-save-goals" onclick="window.location.href='health.html'">
-      <i class="bi bi-check2-all me-2"></i>건강 관리 이력 보러 가기
+    <button class="btn-save-goals" onclick="registerGoals()">
+      <i class="bi bi-check2-all me-2"></i>등록하기
     </button>
   </div>
 </div>
@@ -193,8 +196,22 @@ function getDiagnosisList() {
   return Array.from(document.querySelectorAll('.diagnosis-input')).map(el => el.value.trim()).filter(Boolean);
 }
 
+/* ── Resolve diagnosis code to "code name" display ── */
+async function resolveDiagnosis(raw) {
+  if (!raw || DEMO_MODE) return raw;
+  const code = raw.replace(/\s.*/, '').toUpperCase();
+  // already has name (e.g. "E118 상세불명의...")
+  if (raw.trim().includes(' ') && raw.trim().length > code.length + 1) return raw;
+  // code-only → lookup
+  try {
+    const items = await window.api.fetchAPI(`/diseases/search?q=${encodeURIComponent(code)}&limit=1`);
+    if (items.length && items[0].code.toUpperCase() === code) return items[0].display;
+  } catch {}
+  return raw;
+}
+
 /* ── Populate Form ── */
-function populateEditForm(res) {
+async function populateEditForm(res) {
   document.getElementById('edit-document-date').value = res.document_date || '';
   const noteEl = document.getElementById('edit-clinical-note');
   if (noteEl) noteEl.value = res.clinical_note || '';
@@ -203,7 +220,10 @@ function populateEditForm(res) {
   diagEditor.innerHTML = '';
   const diagList = res.diagnosis_list || [];
   if (!diagList.length) addDiagnosisRow('');
-  else diagList.forEach(d => addDiagnosisRow(d));
+  else {
+    const resolved = await Promise.all(diagList.map(d => resolveDiagnosis(d)));
+    resolved.forEach(d => addDiagnosisRow(d));
+  }
 
   selectedDrugs = Array.isArray(res.drugs) ? res.drugs.map(d =>
     typeof d === 'string'
@@ -217,6 +237,41 @@ function populateEditForm(res) {
   document.getElementById('drug-editor-group').classList.toggle('d-none', isMedical);
 }
 
+/* ── Drug interaction check ── */
+const DRUG_CLASS_MAP = {
+  'ACE억제제': ['에날라프릴','라미프릴','캅토프릴','리시노프릴','페린도프릴'],
+  'ARB': ['발사르탄','로사르탄','칸데사르탄','텔미사르탄','이르베사르탄','올메사르탄','피마사르탄'],
+  'NSAID': ['이부프로펜','나프록센','디클로페낙','케토프로펜','셀레콕시브','멜록시캄','아스피린'],
+  '칼륨보존이뇨제': ['스피로노락톤','에플레레논','아밀로라이드','트리암테렌'],
+  '설포닐우레아': ['글리메피리드','글리벤클라미드','글리클라지드','글리피지드'],
+  '인슐린분비촉진': ['레파글리니드','나테글리니드','미티글리니드'],
+  '와파린': ['와파린'],
+  '항혈소판제': ['클로피도그렐','티카그렐러','프라수그렐'],
+};
+const DRUG_INTERACTIONS = [
+  {a:'ACE억제제',b:'ARB',msg:'ACE억제제와 ARB를 함께 복용하면 고칼륨혈증·신기능 저하 위험이 높아집니다.'},
+  {a:'ACE억제제',b:'칼륨보존이뇨제',msg:'ACE억제제와 칼륨보존이뇨제 병용 시 고칼륨혈증 위험이 있습니다.'},
+  {a:'ARB',b:'칼륨보존이뇨제',msg:'ARB와 칼륨보존이뇨제 병용 시 고칼륨혈증 위험이 있습니다.'},
+  {a:'NSAID',b:'ACE억제제',msg:'NSAID가 ACE억제제의 혈압 강하 효과를 감소시킬 수 있습니다.'},
+  {a:'NSAID',b:'ARB',msg:'NSAID가 ARB의 혈압 강하 효과를 감소시킬 수 있습니다.'},
+  {a:'설포닐우레아',b:'인슐린분비촉진',msg:'설포닐우레아와 인슐린분비촉진제 병용 시 저혈당 위험이 높아집니다.'},
+  {a:'와파린',b:'NSAID',msg:'와파린과 NSAID 병용 시 출혈 위험이 크게 증가합니다.'},
+  {a:'와파린',b:'항혈소판제',msg:'와파린과 항혈소판제 병용 시 출혈 위험이 증가합니다.'},
+];
+function getDrugClass(name) {
+  const n = name.toLowerCase();
+  for (const [cls, keywords] of Object.entries(DRUG_CLASS_MAP)) {
+    if (keywords.some(k => n.includes(k.toLowerCase()))) return cls;
+  }
+  return null;
+}
+function checkInteractions(drugName) {
+  const cls = getDrugClass(drugName);
+  if (!cls) return [];
+  const otherClasses = selectedDrugs.filter(d => d.name !== drugName).map(d => getDrugClass(d.name)).filter(Boolean);
+  return DRUG_INTERACTIONS.filter(i => (i.a === cls && otherClasses.includes(i.b)) || (i.b === cls && otherClasses.includes(i.a)));
+}
+
 /* ── Drug Cards ── */
 function renderSelectedDrugs() {
   const container = document.getElementById('selected-drugs');
@@ -225,12 +280,17 @@ function renderSelectedDrugs() {
   selectedDrugs.forEach((drug, idx) => {
     const unitOpts = UNIT_OPTIONS.map(u => `<option value="${u}" ${drug.dose_unit===u?'selected':''}>${u}</option>`).join('');
     const timingOpts = TIMING_OPTIONS.map(t => `<option value="${t}" ${drug.dose_timing===t?'selected':''}>${t}</option>`).join('');
+    const interactions = checkInteractions(drug.name);
+    const warnHtml = interactions.length
+      ? `<div class="alert alert-warning small p-2 mt-2 mb-0"><i class="bi bi-exclamation-triangle me-1"></i><strong>병용 주의</strong><ul class="mb-0 ps-3 mt-1">${interactions.map(i=>'<li>'+escapeHtml(i.msg)+'</li>').join('')}</ul></div>`
+      : '';
     const card = document.createElement('div');
     card.className = 'drug-card';
+    card.style.cursor = 'pointer';
     card.innerHTML = `
       <div class="drug-card-header">
         <h6>${escapeHtml(drug.name)}</h6>
-        <button class="btn-remove" onclick="selectedDrugs.splice(${idx},1);renderSelectedDrugs()"><i class="bi bi-x-lg"></i></button>
+        <button class="btn-remove" onclick="event.stopPropagation();selectedDrugs.splice(${idx},1);renderSelectedDrugs()"><i class="bi bi-x-lg"></i></button>
       </div>
       <div class="dose-grid">
         <div><label>약품명</label><input type="text" value="${escapeHtml(drug.name)}" readonly style="background:#f5f5f5"/></div>
@@ -239,9 +299,40 @@ function renderSelectedDrugs() {
         <div><label>1일 횟수</label><input type="number" value="${drug.dose_count??''}" onchange="selectedDrugs[${idx}].dose_count=this.value?Number(this.value):null"></div>
         <div><label>복용시점</label><select onchange="selectedDrugs[${idx}].dose_timing=this.value||null"><option value="">선택</option>${timingOpts}</select></div>
         <div><label>투약일수</label><input type="number" value="${drug.dose_days??''}" onchange="selectedDrugs[${idx}].dose_days=this.value?Number(this.value):null"></div>
-      </div>`;
+      </div>
+      ${warnHtml}
+      <div class="drug-detail-panel d-none" id="drug-detail-${idx}" style="margin-top:10px;padding:10px 14px;background:#f7faf8;border-radius:10px;font-size:.84rem;color:#555;"></div>`;
+    card.addEventListener('click', (e) => {
+      if (e.target.closest('input,select,button')) return;
+      toggleDrugDetail(idx, drug.name);
+    });
     container.appendChild(card);
   });
+}
+async function toggleDrugDetail(idx, name) {
+  const panel = document.getElementById('drug-detail-'+idx);
+  if (!panel.classList.contains('d-none')) { panel.classList.add('d-none'); return; }
+  panel.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>주의사항 조회 중...';
+  panel.classList.remove('d-none');
+  try {
+    // try exact name first, then strip dose info for fuzzy match
+    let items = await window.api.searchDrugs(name, 3);
+    if (!items.length) {
+      const base = name.replace(/[\d.]+\s*(mg|ml|g|mcg|밀리그램|그램)/gi, '').trim();
+      if (base.length >= 2) items = await window.api.searchDrugs(base, 3);
+    }
+    const info = items.length ? items[0] : null;
+    if (!info) { panel.innerHTML = '<div class="text-muted">약품 상세 정보를 찾을 수 없습니다.</div>'; return; }
+    let html = `<div><strong>${escapeHtml(info.name)}</strong></div>`;
+    html += `<div class="text-muted" style="font-size:.78rem">${escapeHtml(info.manufacturer||'제조사 정보 없음')}</div>`;
+    if (info.main_ingredient) html += `<div class="mt-1"><i class="bi bi-capsule me-1"></i><strong>주성분:</strong> ${escapeHtml(info.main_ingredient)}</div>`;
+    if (info.efficacy) html += `<div class="mt-1"><i class="bi bi-check2-circle me-1 text-success"></i><strong>효능효과:</strong> ${escapeHtml(info.efficacy.substring(0,200))}${info.efficacy.length>200?'...':''}</div>`;
+    if (info.dosage) html += `<div class="mt-1"><i class="bi bi-clock me-1"></i><strong>용법용량:</strong> ${escapeHtml(info.dosage.substring(0,200))}${info.dosage.length>200?'...':''}</div>`;
+    if (info.caution) html += `<div class="mt-1"><i class="bi bi-exclamation-triangle me-1 text-warning"></i><strong>주의사항:</strong> ${escapeHtml(info.caution.substring(0,300))}${info.caution.length>300?'...':''}</div>`;
+    if (info.storage) html += `<div class="mt-1"><i class="bi bi-box me-1"></i><strong>보관:</strong> ${escapeHtml(info.storage)}</div>`;
+    if (!info.efficacy && !info.caution && !info.dosage) html += `<div class="mt-1"><i class="bi bi-info-circle me-1"></i>복용 시 의사·약사의 지시를 따르고, 이상 반응 발생 시 즉시 상담하세요.</div>`;
+    panel.innerHTML = html;
+  } catch { panel.innerHTML = '<div class="text-muted">정보 조회에 실패했습니다.</div>'; }
 }
 
 /* ── Drug Search ── */
@@ -284,7 +375,7 @@ async function saveResult() {
     summaryBox.innerHTML = '<div class="alert alert-success mb-0"><i class="bi bi-check-circle-fill me-1"></i>저장 완료! 복약 일정 2건 생성, 중복 0건 건너뜀. <span class="badge bg-warning text-dark ms-1">데모</span></div>';
     summaryBox.classList.remove('d-none');
     savedRecommendations = DEMO_NEW_GOALS.map(g => ({ content: g.content }));
-    setTimeout(() => { renderGoals(); switchTab('goals'); }, 1000);
+    document.getElementById('goto-goals-btn').classList.remove('d-none');
     btn.disabled = false;
     btn.innerHTML = '<i class="bi bi-check-circle me-2"></i>수정 내용 저장 → 복약 일정에 반영';
     return;
@@ -312,7 +403,7 @@ async function saveResult() {
     summaryBox.innerHTML = `<div class="alert alert-success mb-0"><i class="bi bi-check-circle-fill me-1"></i>저장 완료! 복약 일정 ${created}건 생성, 중복 ${skipped}건 건너뜀.</div>`;
     summaryBox.classList.remove('d-none');
 
-    setTimeout(() => { renderGoals(); switchTab('goals'); }, 1000);
+    document.getElementById('goto-goals-btn').classList.remove('d-none');
   } catch (err) {
     alert('저장 실패: ' + err.message);
   } finally {
@@ -326,13 +417,14 @@ function renderGoalItem(g, removable) {
   const removeAction = g.id
     ? `removeRecommendation(${g.id}, this)`
     : `this.closest('.scan-goal-item').remove()`;
+  const removeBtn = `<button class="goal-remove" onclick="${removeAction}"><i class="bi bi-x-lg"></i></button>`;
   return `<div class="scan-goal-item" ${g.id ? 'data-rec-id="'+g.id+'"' : ''}>
     <div class="goal-left">
       <div class="goal-icon"><i class="bi ${g.icon || 'bi-check-circle'}"></i></div>
       <span class="goal-badge">${escapeHtml(g.badge || '활성')}</span>
       <span class="goal-text">${escapeHtml(g.content)}</span>
     </div>
-    ${removable ? `<button class="goal-remove" onclick="${removeAction}"><i class="bi bi-x-lg"></i></button>` : '<span class="goal-status">이행 중</span>'}
+    ${removeBtn}
   </div>`;
 }
 
@@ -359,7 +451,7 @@ async function renderGoals() {
     const recs = await window.api.getActiveRecommendations();
     if (recs?.length) {
       existingSection.classList.remove('d-none');
-      existingList.innerHTML = recs.map(r => renderGoalItem({ content: r.content || '-', icon: 'bi-check-circle', badge: '활성' }, false)).join('');
+      existingList.innerHTML = recs.map(r => renderGoalItem({ id: r.id, content: r.content || '-', icon: 'bi-check-circle', badge: '활성' }, true)).join('');
     } else {
       existingSection.classList.add('d-none');
     }
@@ -370,6 +462,17 @@ async function renderGoals() {
   newList.innerHTML = savedRecommendations.length
     ? savedRecommendations.map(r => renderGoalItem({ id: r.id, content: r.content || '-', icon: 'bi-stars', badge: '새 추천' }, true)).join('')
     : '<div class="scan-goal-item" style="color:#aaa;justify-content:center;">이번 스캔에서 새 추천이 없습니다.</div>';
+}
+
+async function registerGoals() {
+  if (DEMO_MODE) { window.location.href = 'dashboard.html'; return; }
+  try {
+    await window.api.saveRecommendationsForScan(scanId);
+    alert('건강 관리 목표가 등록되었습니다.');
+    window.location.href = 'dashboard.html';
+  } catch (e) {
+    alert('등록 실패: ' + e.message);
+  }
 }
 
 function addCustomGoal() {
