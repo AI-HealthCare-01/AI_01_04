@@ -92,17 +92,31 @@ class DashboardService:
         self.recommendation_repo = RecommendationRepository()
 
     async def _build_today_medications(self, today_logs: list) -> list[dict]:
-        result: list[dict] = []
+        # taken 우선 dedup: 같은 (drug, slot) 중 taken이 있으면 taken 로그를 남김
+        best: dict[tuple[str, str], Any] = {}
         for log in today_logs:
             await log.fetch_related("prescription", "prescription__drug")
             rx = log.prescription
+            drug_name = rx.drug.name if rx.drug else None
+            slot = log.slot_label or rx.dose_timing or "아침"
+            key = (drug_name or "", slot)
+            prev = best.get(key)
+            if prev is None or (prev.status != "taken" and log.status == "taken"):
+                best[key] = log
+
+        result: list[dict] = []
+        for log in best.values():
+            rx = log.prescription
+            drug_name = rx.drug.name if rx.drug else None
+            slot = log.slot_label or rx.dose_timing or "아침"
             result.append(
                 {
                     "id": log.id,
-                    "label": log.slot_label or rx.dose_timing or "아침",
-                    "drug_name": rx.drug.name if rx.drug else None,
+                    "label": slot,
+                    "drug_name": drug_name,
                     "dose_amount": rx.dose_amount,
                     "dose_unit": rx.dose_unit,
+                    "dose_timing": rx.dose_timing,
                     "status": log.status,
                 }
             )
@@ -179,12 +193,12 @@ class DashboardService:
                     label = f"{p.disease.kcd_code} {p.disease.name}"
                 disease_names.append(label)
 
-        # 남은 약 일수: 유효한 처방전 중 end_date가 가장 가까운 것 기준
+        # 남은 약 일수: 가장 긴 처방전 기준
         remaining_medication_days = 0
         all_prescriptions = await self.prescription_repo.list_by_user(user_id, limit=50)
         future_end_dates = [(p.end_date - today).days for p in all_prescriptions if p.end_date and p.end_date >= today]
         if future_end_dates:
-            remaining_medication_days = min(future_end_dates)
+            remaining_medication_days = max(future_end_dates)
 
         # 오늘 복약 완료 여부
         try:
@@ -192,9 +206,13 @@ class DashboardService:
         except Exception as e:
             logger.warning("list_by_intake_date failed (run epic4_medication migration?): %s", e)
             today_logs = []
+        today_medications = await self._build_today_medications(today_logs)
         today_medication_completed = False
-        if today_logs:
-            today_medication_completed = all(log.status == "taken" for log in today_logs)
+        today_medication_rate = 0
+        if today_medications:
+            taken_cnt = sum(1 for m in today_medications if m["status"] == "taken")
+            today_medication_rate = int(round(taken_cnt / len(today_medications) * 100))
+            today_medication_completed = taken_cnt == len(today_medications)
 
         # 오늘 건강관리 완료 여부
         health_logs = await HealthChecklistLog.filter(user_id=user_id, date=today).all()
@@ -212,9 +230,6 @@ class DashboardService:
                 continue
             seen_contents.add(content_key)
             active_recommendations.append(_active_rec_to_dict(active.recommendation))
-
-        # 오늘 복약 스케줄
-        today_medications = await self._build_today_medications(today_logs)
 
         # 오늘 건강 목표 (active_recommendations 기반)
         today_health_goals = [
@@ -234,6 +249,7 @@ class DashboardService:
             "today_medication_completed": today_medication_completed,
             "today_health_completed": today_health_completed,
             "active_recommendations": active_recommendations,
+            "today_medication_rate": today_medication_rate,
             "today_medications": today_medications,
             "today_health_goals": today_health_goals,
         }

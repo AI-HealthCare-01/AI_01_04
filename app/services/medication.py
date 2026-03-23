@@ -29,6 +29,23 @@ SortOrder = Literal["asc", "desc"]
 AllowedStatus = Literal["taken", "skipped", "delayed"]
 
 
+def _log_key(lg: MedicationIntakeLog) -> tuple[str, str]:
+    """로그의 (drug_name, slot_label) 키를 반환한다."""
+    drug = getattr(getattr(lg, "prescription", None), "drug", None)
+    return (getattr(drug, "name", "") if drug else "", getattr(lg, "slot_label", "") or "")
+
+
+def _dedup_logs(logs: list[MedicationIntakeLog]) -> list[MedicationIntakeLog]:
+    """같은 약품+슬롯 조합의 중복 로그를 제거한다. taken 상태 우선."""
+    best: dict[tuple[str, str], MedicationIntakeLog] = {}
+    for lg in logs:
+        key = _log_key(lg)
+        prev = best.get(key)
+        if prev is None or (prev.status != "taken" and lg.status == "taken"):
+            best[key] = lg
+    return list(best.values())
+
+
 def _calc_rate_from_logs(logs: list[MedicationIntakeLog]) -> int:
     """복약 로그에서 taken 비율(%)을 계산한다.
 
@@ -46,16 +63,35 @@ def _calc_rate_from_logs(logs: list[MedicationIntakeLog]) -> int:
 
 # dose_timing 문자열 → 슬롯 매핑
 _TIMING_SLOT_MAP: dict[str, list[str]] = {
+    # 시간대 직접 지정
     "아침": ["아침"],
     "점심": ["점심"],
     "저녁": ["저녁"],
-    "자기전": ["자기전"],
+    "자기 전": ["자기 전"],
+    "자기전": ["자기 전"],
+    # 시간대 + 식전/식후 (TIMING_OPTIONS 선택지)
+    "아침 식후": ["아침"],
+    "아침 식전": ["아침"],
+    "점심 식후": ["점심"],
+    "점심 식전": ["점심"],
+    "저녁 식후": ["저녁"],
+    "저녁 식전": ["저녁"],
+    # 단순 식전/식후 — dose_count 기반 폴백
+    "식전": ["아침"],
+    "식후": ["아침"],
+    "식후30분후": ["아침"],
+    "필요시": ["아침"],
+    # 복합 시간대
     "아침 점심": ["아침", "점심"],
     "아침 저녁": ["아침", "저녁"],
     "점심 저녁": ["점심", "저녁"],
     "아침 점심 저녁": ["아침", "점심", "저녁"],
-    "아침 점심 저녁 자기전": ["아침", "점심", "저녁", "자기전"],
+    "아침 점심 저녁 자기 전": ["아침", "점심", "저녁", "자기 전"],
+    "아침 점심 저녁 자기전": ["아침", "점심", "저녁", "자기 전"],
 }
+
+# dose_count 기반 폴백 대상 (len==1 이고 슬롯이 "아침"인 것들)
+_FALLBACK_TO_DOSE_COUNT = {"식전", "식후", "식후30분후", "필요시"}
 
 
 def _slots_for_prescription(p: Prescription) -> list[str]:
@@ -64,13 +100,15 @@ def _slots_for_prescription(p: Prescription) -> list[str]:
     if timing:
         timing = timing.strip()
         if timing in _TIMING_SLOT_MAP:
+            # 단순 식전/식후 등은 dose_count로 확장
+            if timing in _FALLBACK_TO_DOSE_COUNT and (p.dose_count or 1) > 1:
+                return _slots_by_dose_count(p.dose_count)
             return _TIMING_SLOT_MAP[timing]
-        # 식전/식후/공복 등 시점 정보만 있으면 dose_count 기반 폴백
     return _slots_by_dose_count(p.dose_count)
 
 
 def _slots_by_dose_count(dose_count: int | None) -> list[str]:
-    """일일 복용 횟수에 따른 복약 슬롯 목록을 반환한다 (아침/점심/저녁/자기전).
+    """일일 복용 횟수에 따른 복약 슬롯 목록을 반환한다 (아침/점심/저녁/자기 전).
 
     Args:
         dose_count (int | None): 1일 복용 횟수. None이면 1회로 처리.
@@ -81,7 +119,7 @@ def _slots_by_dose_count(dose_count: int | None) -> list[str]:
     if dose_count is None:
         return ["아침"]
     if dose_count >= 4:
-        return ["아침", "점심", "저녁", "자기전"]
+        return ["아침", "점심", "저녁", "자기 전"]
     if dose_count == 3:
         return ["아침", "점심", "저녁"]
     if dose_count == 2:
@@ -135,11 +173,27 @@ class MedicationService:
         """
         await self._seed_day_if_empty(user_id=user_id, date_str=date)
 
+    async def _extend_expired_prescriptions(self, user_id: int, today: Any) -> None:
+        """복용 완료(taken) 기록이 전혀 없는 만료 처방전의 end_date를 오늘로 연장한다."""
+        expired = await Prescription.filter(
+            user_id=user_id,
+            end_date__lt=today,
+        ).all()
+        for p in expired:
+            has_taken = await MedicationIntakeLog.filter(
+                prescription_id=p.id,
+                status="taken",
+            ).exists()
+            if not has_taken:
+                p.end_date = today
+                await p.save(update_fields=["end_date"])
+
     async def _seed_day_if_empty(self, *, user_id: int, date_str: str) -> None:
         """해당 날짜에 복약 로그가 없으면 유효한 처방전 기준으로 skipped 상태로 생성한다.
 
         이미 로그가 있으면 아무것도 하지 않아 멱등성을 보장한다.
         유효한 처방전: start_date <= 날짜 <= end_date.
+        만료된 처방전 중 taken 기록이 없으면 end_date를 오늘로 자동 연장한다.
 
         Args:
             user_id (int): 시드를 생성할 사용자 ID.
@@ -147,12 +201,7 @@ class MedicationService:
         """
         d = parse_date_yyyy_mm_dd(date_str)
 
-        existing_cnt = await MedicationIntakeLog.filter(
-            prescription__user_id=user_id,
-            intake_date=d,
-        ).count()
-        if existing_cnt > 0:
-            return
+        await self._extend_expired_prescriptions(user_id, d)
 
         pres_q = Q(user_id=user_id)
         pres_q &= Q(start_date__lte=d) | Q(start_date__isnull=True)
@@ -162,8 +211,17 @@ class MedicationService:
         if not prescriptions:
             return
 
+        existing_pres_ids = set(
+            await MedicationIntakeLog.filter(
+                prescription__user_id=user_id,
+                intake_date=d,
+            ).values_list("prescription_id", flat=True)
+        )
+
         logs_to_create: list[MedicationIntakeLog] = []
         for p in prescriptions:
+            if p.id in existing_pres_ids:
+                continue
             for sl in _slots_for_prescription(p):
                 logs_to_create.append(
                     MedicationIntakeLog(
@@ -220,13 +278,18 @@ class MedicationService:
             ds = d.isoformat()
             await self._seed_day_if_empty(user_id=user_id, date_str=ds)
 
-            day_logs = await MedicationIntakeLog.filter(
-                prescription__user_id=user_id,
-                intake_date=d,
-            ).all()
+            day_logs = (
+                await MedicationIntakeLog.filter(
+                    prescription__user_id=user_id,
+                    intake_date=d,
+                )
+                .select_related("prescription", "prescription__drug")
+                .all()
+            )
 
-            rate = _calc_rate_from_logs(day_logs)
-            bucket = "none" if not day_logs else rate_bucket(rate)
+            unique_logs = _dedup_logs(day_logs)
+            rate = _calc_rate_from_logs(unique_logs)
+            bucket = "none" if not unique_logs else rate_bucket(rate)
 
             rows.append({"date": ds, "rate": rate, "bucket": bucket, "detail_key": ds})
 
@@ -264,7 +327,8 @@ class MedicationService:
         )
 
         items: list[dict] = []
-        for lg in logs:
+        deduped_logs = _dedup_logs(logs)
+        for lg in deduped_logs:
             drug = getattr(getattr(lg, "prescription", None), "drug", None)
             presc = getattr(lg, "prescription", None)
             items.append(
@@ -280,7 +344,7 @@ class MedicationService:
                 }
             )
 
-        rate = _calc_rate_from_logs(logs)
+        rate = _calc_rate_from_logs(deduped_logs)
         bucket = "none" if not logs else rate_bucket(rate)
 
         return {"date": date, "rate": rate, "bucket": bucket, "items": items}
@@ -315,6 +379,28 @@ class MedicationService:
                 log_any.intake_datetime = None
 
             await log.save()
+
+            # 같은 (drug, slot) 중복 로그도 함께 업데이트
+            await log.fetch_related("prescription", "prescription__drug")
+            drug = getattr(log.prescription, "drug", None)
+            drug_name = getattr(drug, "name", "") if drug else ""
+            if drug_name:
+                siblings = (
+                    await MedicationIntakeLog.filter(
+                        prescription__user_id=user_id,
+                        intake_date=log.intake_date,
+                        slot_label=log.slot_label,
+                    )
+                    .select_related("prescription", "prescription__drug")
+                    .all()
+                )
+                for sib in siblings:
+                    sib_drug = getattr(getattr(sib, "prescription", None), "drug", None)
+                    if sib.id != log.id and getattr(sib_drug, "name", "") == drug_name:
+                        sib.status = new_status
+                        sib_any = cast(Any, sib)
+                        sib_any.intake_datetime = log_any.intake_datetime
+                        await sib.save()
 
             day = await self.get_day_detail(user_id=user_id, date=log.intake_date.isoformat())
             return {"log_id": log_id, "updated": True, "day": day}
