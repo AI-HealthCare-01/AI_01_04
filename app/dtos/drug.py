@@ -7,3 +7,8 @@ class DrugSearchItemResponse(BaseModel):
     id: int
     name: str
     manufacturer: str | None = None
+    main_ingredient: str | None = None
+    efficacy: str | None = None
+    dosage: str | None = None
+    caution: str | None = None
+    storage: str | None = None

@@ -114,19 +114,7 @@
   if (!localStorage.getItem('access_token')) window.location.href = 'index.html';
 
   /* ── Mock data (replace with real API later) ── */
-  const MOCK_MEDS = [
-    { time:'아침', drug:'글루메피리드 1정', note:'식후 30분', done:false },
-    { time:'점심', drug:'',                 note:'식후 30분', done:false },
-    { time:'저녁', drug:'',                 note:'식후 30분', done:false },
-    { time:'자기 전', drug:'',              note:'취침 30분 전', done:false },
-  ];
 
-  const MOCK_GOALS = [
-    { label:'혈압 규칙적으로 측정하기', done:false },
-    { label:'하루 30분 유산소 운동',    done:false },
-    { label:'건강한 식단 수첩 기록',    done:false },
-    { label:'하루 수분 2L 섭취하기',    done:false },
-  ];
 
   /* ── Render helpers ── */
 
@@ -153,43 +141,154 @@
     document.getElementById('s-rate-bar').style.width = rate + '%';
   }
 
+  const SLOT_ORDER = ['아침','점심','저녁','자기 전'];
+  let _medSlots = {}; // {slot: [{id, drug, note, done, globalIdx}]}
+  let _allMeds = [];
+
   function renderMedicationSchedule(s) {
-    const meds = MOCK_MEDS.map(m => ({...m}));
-    if (s.today_medication_completed) meds[0].done = true;
-    if (s.recent_prescription?.drug_name) meds[0].drug = s.recent_prescription.drug_name;
+    const todayMeds = s.today_medications || [];
+    if (!todayMeds.length && !s.recent_prescription) {
+      document.getElementById('med-prog-label').textContent = '진행도: 0 / 0 달성';
+      document.getElementById('med-prog-bar').style.width = '0%';
+      document.getElementById('med-list').innerHTML = '<div class="text-center text-muted py-4">등록된 약물 정보가 없습니다.</div>';
+      return;
+    }
+    _allMeds = todayMeds.map((m, i) => ({
+      id: m.id, slot: m.label || '아침', drug: m.drug_name || '',
+      note: [m.dose_amount, m.dose_unit].filter(Boolean).join(' ') || '',
+      done: m.status === 'taken', globalIdx: i,
+    }));
+    _medSlots = {};
+    SLOT_ORDER.forEach(sl => _medSlots[sl] = []);
+    _allMeds.forEach(m => {
+      if (!_medSlots[m.slot]) _medSlots[m.slot] = [];
+      _medSlots[m.slot].push(m);
+    });
+    renderMedSlots();
+  }
 
-    const done = meds.filter(m => m.done).length;
-    document.getElementById('med-prog-label').textContent = '진행도: ' + done + ' / ' + meds.length + ' 달성';
-    document.getElementById('med-prog-bar').style.width = (meds.length ? Math.round(done/meds.length*100) : 0) + '%';
+  function renderMedSlots() {
+    const allDone = _allMeds.filter(m => m.done).length;
+    document.getElementById('med-prog-label').textContent = '진행도: ' + allDone + ' / ' + _allMeds.length + ' 달성';
+    document.getElementById('med-prog-bar').style.width = (_allMeds.length ? Math.round(allDone/_allMeds.length*100) : 0) + '%';
 
-    document.getElementById('med-list').innerHTML = meds.map(m => `
-      <div class="med-item">
-        <div class="mi-icon ${m.done?'done':''}">${m.done?'<i class="bi bi-check"></i>':''}</div>
-        <div class="mi-body">
-          <span class="mi-time">${escapeHtml(m.time)}</span>${m.drug?`<span class="mi-drug">${escapeHtml(m.drug)}</span>`:''}
-          <div class="mi-note">${escapeHtml(m.note)}</div>
+    let html = '';
+    for (const slot of SLOT_ORDER) {
+      const items = _medSlots[slot];
+      if (!items || !items.length) continue;
+      const slotDone = items.filter(m => m.done).length;
+      const allSlotDone = slotDone === items.length;
+      html += `
+        <div class="med-slot" onclick="toggleSlotDetail('${slot}')" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid #f0f0f0;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="mi-icon ${allSlotDone?'done':''}">${allSlotDone?'<i class="bi bi-check"></i>':''}</div>
+            <div>
+              <span style="font-weight:600;font-size:0.95rem;">${escapeHtml(slot)}</span>
+              <span style="color:#999;font-size:0.8rem;margin-left:6px;">식후 30분</span>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:0.78rem;color:#999;">${slotDone}/${items.length}</span>
+            ${allSlotDone
+              ? `<span class="gi-badge-done" style="cursor:pointer;font-size:0.75rem;padding:2px 10px;" onclick="event.stopPropagation();toggleSlotMed('${slot}',false)">완료</span>`
+              : `<button class="gi-btn-check" style="font-size:0.75rem;padding:2px 10px;" onclick="event.stopPropagation();toggleSlotMed('${slot}',true)">미완</button>`}
+            <i class="bi bi-chevron-down" id="slot-arrow-${slot}" style="font-size:0.8rem;color:#aaa;transition:transform 0.2s;"></i>
+          </div>
         </div>
-        <div class="mi-action">${m.done
-          ? '<span class="gi-badge-done">완료</span>'
-          : '<button class="gi-btn-check">미완</button>'}</div>
-      </div>`).join('');
+        <div id="slot-detail-${slot}" style="display:none;padding:0 0 8px 0;">
+          ${items.map(m => `
+            <div class="med-item" id="med-item-${m.globalIdx}" style="display:flex;align-items:center;padding:8px 0 8px 32px;gap:10px;border-bottom:1px solid #f8f8f8;">
+              <div class="mi-icon ${m.done?'done':''}" style="width:22px;height:22px;min-width:22px;font-size:0.7rem;">${m.done?'<i class="bi bi-check"></i>':''}</div>
+              <div style="flex:1;min-width:0;">
+                <span class="med-drug-link" onclick="event.stopPropagation();showDrugDetail('${escapeHtml(m.drug).replace(/'/g,"\\'")}')"
+                  style="font-size:0.88rem;color:#2a7d5b;cursor:pointer;text-decoration:underline dotted;">${escapeHtml(m.drug || '약품')}</span>
+                ${m.note ? `<span style="color:#aaa;font-size:0.78rem;margin-left:6px;">${escapeHtml(m.note)}</span>` : ''}
+              </div>
+              <div>${m.done
+                ? `<span class="gi-badge-done" style="cursor:pointer;font-size:0.78rem;" onclick="event.stopPropagation();toggleMed(${m.id},${m.globalIdx},false)">완료</span>`
+                : `<button class="gi-btn-check" style="font-size:0.78rem;padding:2px 10px;" onclick="event.stopPropagation();toggleMed(${m.id},${m.globalIdx},true)">미완</button>`}</div>
+            </div>
+          `).join('')}
+        </div>`;
+    }
+    document.getElementById('med-list').innerHTML = html;
+  }
+
+  function toggleSlotDetail(slot) {
+    const detail = document.getElementById('slot-detail-' + slot);
+    const arrow = document.getElementById('slot-arrow-' + slot);
+    if (detail.style.display === 'none') {
+      detail.style.display = 'block';
+      arrow.style.transform = 'rotate(180deg)';
+    } else {
+      detail.style.display = 'none';
+      arrow.style.transform = '';
+    }
+  }
+
+  async function showDrugDetail(drugName) {
+    if (!drugName) return;
+    let existing = document.getElementById('dash-drug-detail');
+    if (existing) existing.remove();
+    try {
+      const results = await window.api.searchDrugs(drugName, 1);
+      const d = results?.[0];
+      if (!d) { alert('약품 정보를 찾을 수 없습니다.'); return; }
+      const panel = document.createElement('div');
+      panel.id = 'dash-drug-detail';
+      panel.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.4);z-index:9999;display:flex;align-items:center;justify-content:center;';
+      panel.onclick = (e) => { if (e.target === panel) panel.remove(); };
+      panel.innerHTML = `
+        <div style="background:#fff;border-radius:16px;max-width:500px;width:90%;max-height:80vh;overflow-y:auto;padding:24px;position:relative;">
+          <button onclick="this.closest('#dash-drug-detail').remove()" style="position:absolute;top:12px;right:12px;background:none;border:none;font-size:1.3rem;cursor:pointer;color:#999;"><i class="bi bi-x-lg"></i></button>
+          <h6 style="color:#2a7d5b;margin-bottom:4px;">${escapeHtml(d.name)}</h6>
+          <div style="color:#999;font-size:0.8rem;margin-bottom:16px;">${escapeHtml(d.manufacturer||'')}</div>
+          ${d.main_ingredient ? `<div style="margin-bottom:12px;"><strong style="font-size:0.82rem;color:#555;">주성분</strong><div style="font-size:0.85rem;margin-top:2px;">${escapeHtml(d.main_ingredient)}</div></div>` : ''}
+          ${d.efficacy ? `<div style="margin-bottom:12px;"><strong style="font-size:0.82rem;color:#555;">효능효과</strong><div style="font-size:0.85rem;margin-top:2px;">${escapeHtml(d.efficacy.substring(0,300))}</div></div>` : ''}
+          ${d.dosage ? `<div style="margin-bottom:12px;"><strong style="font-size:0.82rem;color:#555;">용법용량</strong><div style="font-size:0.85rem;margin-top:2px;">${escapeHtml(d.dosage.substring(0,300))}</div></div>` : ''}
+          ${d.caution ? `<div style="margin-bottom:12px;"><strong style="font-size:0.82rem;color:#555;">주의사항</strong><div style="font-size:0.85rem;margin-top:2px;">${escapeHtml(d.caution.substring(0,300))}</div></div>` : ''}
+          ${d.storage ? `<div><strong style="font-size:0.82rem;color:#555;">보관방법</strong><div style="font-size:0.85rem;margin-top:2px;">${escapeHtml(d.storage)}</div></div>` : ''}
+        </div>`;
+      document.body.appendChild(panel);
+    } catch { alert('약품 정보 조회 실패'); }
+  }
+
+  // 복약 토글 후 상단 복용률 카드도 갱신
+  function updateRateCard() {
+    const items = document.querySelectorAll('#med-list .med-item');
+    const done = document.querySelectorAll('#med-list .mi-icon.done').length;
+    const rate = items.length ? Math.round(done / items.length * 100) : 0;
+    document.getElementById('s-rate').textContent = rate + '%';
+    document.getElementById('s-rate-bar').style.width = rate + '%';
   }
 
   function renderHealthGoals(s) {
-    const goals = MOCK_GOALS.map(g => ({...g}));
-    if (s.today_health_completed) goals[0].done = true;
+    const todayHealth = s.today_health_goals || [];
+    if (!todayHealth.length) {
+      document.getElementById('health-prog-label').textContent = '진행도: 0 / 0 달성';
+      document.getElementById('health-prog-bar').style.width = '0%';
+      document.getElementById('health-list').innerHTML = '<div class="text-center text-muted py-4">건강관리 목표를 설정해놓지 않았습니다.</div>';
+      return;
+    }
+    const doneSet = new Set(JSON.parse(localStorage.getItem('health_done_ids') || '[]'));
+    const goals = todayHealth.map(g => ({
+      id: g.id,
+      label: g.label || g.content || '-',
+      done: g.status === 'done' || doneSet.has(g.id),
+      isHealthLog: !g.isRec,
+    }));
 
     const done = goals.filter(g => g.done).length;
     document.getElementById('health-prog-label').textContent = '진행도: ' + done + ' / ' + goals.length + ' 달성';
     document.getElementById('health-prog-bar').style.width = (goals.length ? Math.round(done/goals.length*100) : 0) + '%';
 
-    document.getElementById('health-list').innerHTML = goals.map(g => `
-      <div class="goal-item">
+    document.getElementById('health-list').innerHTML = goals.map((g, i) => `
+      <div class="goal-item" id="health-item-${i}">
         <div class="gi-icon ${g.done?'done':''}">${g.done?'<i class="bi bi-check"></i>':''}</div>
         <span class="gi-label ${g.done?'strike':''}">${escapeHtml(g.label)}</span>
         <div>${g.done
-          ? '<span class="gi-badge-done">완료</span>'
-          : '<button class="gi-btn-check">미완</button>'}</div>
+          ? `<span class="gi-badge-done" style="cursor:pointer" onclick="toggleHealth(${g.id}, ${i}, false, ${g.isHealthLog})">완료</span>`
+          : `<button class="gi-btn-check" onclick="toggleHealth(${g.id}, ${i}, true, ${g.isHealthLog})">미완</button>`}</div>
       </div>`).join('');
   }
 
@@ -201,7 +300,8 @@
 
     const fallback = {
       remaining_medication_days:0, today_medication_completed:false,
-      today_health_completed:false, recent_prescription:null, active_recommendations:[]
+      today_health_completed:false, recent_prescription:null, active_recommendations:[],
+      today_medications:[], today_health_goals:[]
     };
 
     let summary;
@@ -209,11 +309,128 @@
     catch { summary = fallback; }
 
     renderSummaryCards(summary);
+
+    // 복약: medications.html과 동일한 API로 가장 최근 날짜 데이터 가져오기
+    try {
+      const medHistory = await window.api.getMedicationHistory('?size=1');
+      if (medHistory.items?.length) {
+        const latestDate = medHistory.items[0].detail_key || medHistory.items[0].date;
+        const dayDetail = await window.api.fetchAPI(`/medications/history/${latestDate}`);
+        summary.today_medications = dayDetail.items || [];
+      }
+    } catch {}
     renderMedicationSchedule(summary);
+
+    // 건강목표: active_recommendations 우선, 없으면 health history fallback
+    if (summary.active_recommendations?.length) {
+      summary.today_health_goals = summary.active_recommendations.map(r => ({
+        id: r.id,
+        label: r.content || '-',
+        content: r.content || '-',
+        status: 'pending',
+        isRec: true,
+      }));
+    } else {
+      try {
+        const healthHistory = await window.api.getHealthHistory('?size=1');
+        if (healthHistory.items?.length) {
+          const latestDate = healthHistory.items[0].date;
+          const dayDetail = await window.api.fetchAPI(`/health/history/${latestDate}`);
+          const items = (dayDetail.items || []).map(item => ({
+            id: item.id,
+            label: item.label,
+            content: item.label,
+            status: item.status,
+            isRec: false,
+          }));
+          if (items.length) summary.today_health_goals = items;
+        }
+      } catch {}
+    }
     renderHealthGoals(summary);
+
+    const hasData = !!summary.recent_prescription;
+    if (!hasData) {
+      document.querySelectorAll('.btn-act-outline').forEach(btn => {
+        btn.classList.add('disabled');
+        btn.setAttribute('aria-disabled', 'true');
+        btn.style.pointerEvents = 'none';
+        btn.style.opacity = '0.5';
+      });
+      const warn = document.createElement('div');
+      warn.className = 'text-center mt-3';
+      warn.innerHTML = '<span style="color:#dc3545;font-size:0.9rem;">등록된 문서가 없습니다. <a href="scans.html" style="color:#dc3545;text-decoration:underline;">문서를 등록해주세요.</a></span>';
+      document.querySelector('.action-btns').after(warn);
+    }
   }
 
   document.addEventListener('DOMContentLoaded', loadDashboard);
+
+  /* ── Toggle helpers ── */
+  async function toggleSlotMed(slot, markDone) {
+    const items = _medSlots[slot] || [];
+    const targets = items.filter(m => m.done !== markDone);
+    for (const m of targets) {
+      const newStatus = markDone ? 'taken' : 'skipped';
+      try { await window.api.updateMedicationLog(m.id, newStatus); } catch {}
+      m.done = markDone;
+    }
+    const openSlots = SLOT_ORDER.filter(s => { const d = document.getElementById('slot-detail-'+s); return d && d.style.display !== 'none'; });
+    renderMedSlots();
+    openSlots.forEach(s => { const d=document.getElementById('slot-detail-'+s); const a=document.getElementById('slot-arrow-'+s); if(d){d.style.display='block';} if(a){a.style.transform='rotate(180deg)';} });
+    updateRateCard();
+  }
+
+  async function toggleMed(logId, idx, markDone) {
+    const newStatus = markDone ? 'taken' : 'skipped';
+    try { await window.api.updateMedicationLog(logId, newStatus); } catch {}
+    const m = _allMeds.find(x => x.globalIdx === idx);
+    if (m) { m.done = markDone; }
+    renderMedSlots();
+    // 열려있던 슬롯 다시 열기
+    if (m) {
+      const detail = document.getElementById('slot-detail-' + m.slot);
+      const arrow = document.getElementById('slot-arrow-' + m.slot);
+      if (detail) { detail.style.display = 'block'; }
+      if (arrow) { arrow.style.transform = 'rotate(180deg)'; }
+    }
+    updateRateCard();
+  }
+
+  // health.html과 동일한 토글 – updateHealthLog API 호출
+  async function toggleHealth(id, idx, markDone, isHealthLog) {
+    if (isHealthLog) {
+      const newStatus = markDone ? 'done' : 'skipped';
+      try { await window.api.updateHealthLog(id, newStatus); } catch {}
+    } else {
+      const doneSet = new Set(JSON.parse(localStorage.getItem('health_done_ids') || '[]'));
+      if (markDone) { doneSet.add(id); } else { doneSet.delete(id); }
+      localStorage.setItem('health_done_ids', JSON.stringify([...doneSet]));
+    }
+    const el = document.getElementById('health-item-' + idx);
+    if (el) {
+      const icon = el.querySelector('.gi-icon');
+      const label = el.querySelector('.gi-label');
+      const actionDiv = el.querySelector('div:last-child');
+      if (markDone) {
+        icon.classList.add('done'); icon.innerHTML = '<i class="bi bi-check"></i>';
+        label.classList.add('strike');
+        actionDiv.innerHTML = `<span class="gi-badge-done" style="cursor:pointer" onclick="toggleHealth(${id}, ${idx}, false, ${isHealthLog})">완료</span>`;
+      } else {
+        icon.classList.remove('done'); icon.innerHTML = '';
+        label.classList.remove('strike');
+        actionDiv.innerHTML = `<button class="gi-btn-check" onclick="toggleHealth(${id}, ${idx}, true, ${isHealthLog})">미완</button>`;
+      }
+    }
+    updateHealthProgress();
+  }
+
+  function updateHealthProgress() {
+    const items = document.querySelectorAll('#health-list .goal-item');
+    const done = document.querySelectorAll('#health-list .gi-icon.done').length;
+    document.getElementById('health-prog-label').textContent = '진행도: ' + done + ' / ' + items.length + ' 달성';
+    document.getElementById('health-prog-bar').style.width = (items.length ? Math.round(done/items.length*100) : 0) + '%';
+  }
 </script>
 
 </body>

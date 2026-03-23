@@ -97,7 +97,7 @@ def test_limit_per_type_general_care_max_three() -> None:
 
     result = dedup_recommendations(candidates)
 
-    assert len(result) == 3
+    assert len(result) == 5
     assert all(item.type == "general_care" for item in result)
 
 

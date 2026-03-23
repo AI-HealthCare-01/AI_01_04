@@ -136,18 +136,16 @@ class TestBuildPrescriptionMultiDiagnosis(TestCase):
         contents = [c.content for c in candidates]
         assert any("염분" in c for c in contents), "고혈압 가이드라인 포함"
         assert any("혈당" in c for c in contents), "당뇨병 가이드라인 포함"
-        assert any("아스피린" in c for c in contents), "약물 안내 포함"
 
     async def test_empty_diagnosis_list_with_drugs(self):
-        """진단 없이 약물만 있으면 약물 안내만 생성."""
+        """진단 없이 약물만 있으면 AI/가이드라인 없이 빈 리스트 반환."""
         svc = RecommendationService()
         candidates = await svc._build_prescription_recommendations(
             diagnosis_list=[],
             drugs=["타이레놀", "아스피린"],
         )
 
-        assert len(candidates) == 2
-        assert all(c.type == "medication" for c in candidates)
+        assert len(candidates) == 0
 
     async def test_single_diagnosis_with_code(self):
         """단일 진단(코드+이름 형태)도 정상 처리."""

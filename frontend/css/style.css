@@ -218,10 +218,13 @@ h1, h2, h3, h4, h5, h6 {
   padding:6px 14px;
   border:1px solid #ddd;
   border-radius:999px;
+  text-decoration:none;
+  cursor:pointer;
 }
 .sub-tab.active {
   background:#6da285;
   color:#fff;
+  border-color:#6da285;
 }
 
 /* ===== Index Page ===== */
@@ -812,10 +815,17 @@ body { background:#f7faf8; min-height:100vh; display:flex; flex-direction:column
 
 .form-label-sm { font-size:.82rem; font-weight:600; color:#666; margin-bottom:4px; }
 
-.diagnosis-row { display:flex; gap:8px; align-items:center; margin-bottom:8px; }
+.diagnosis-row { display:flex; gap:8px; align-items:center; margin-bottom:8px; position:relative; }
 .diagnosis-row input { flex:1; }
 .diagnosis-row .btn-remove { background:none; border:none; color:#ccc; font-size:1.1rem; cursor:pointer; }
 .diagnosis-row .btn-remove:hover { color:#e74c3c; }
+
+.diagnosis-suggestion-list {
+  position:absolute; top:calc(100% + 2px); left:0; right:40px;
+  z-index:20; max-height:200px; overflow-y:auto;
+  border:1px solid var(--border-color); border-radius:12px;
+  background:#fff; box-shadow:0 12px 24px rgba(0,0,0,.08);
+}
 
 .btn-add-diag {
   background:none; border:1px solid #ddd; border-radius:999px;

@@ -79,6 +79,7 @@ TYPE_ALIASES = {
 # source 우선순위
 # 숫자가 클수록 "같은 의미면 더 우선적으로 남길 후보"
 SOURCE_PRIORITY = {
+    "ai_generated": 5,  # AI 종합 추천
     "direct_guideline": 4,  # DiseaseGuideline 직접 매칭
     "medication_rule": 3,  # 약물명 기반 룰 생성
     "vector_fallback": 2,  # vector search fallback
@@ -92,8 +93,8 @@ SOURCE_PRIORITY = {
 
 # 타입별 최대 노출 개수
 TYPE_LIMITS = {
-    "general_care": 3,
-    "medication_caution": 2,
+    "general_care": 5,
+    "medication_caution": 3,
     "follow_up": 2,
 }
 
