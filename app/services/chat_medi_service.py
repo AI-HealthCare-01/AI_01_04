@@ -3,6 +3,8 @@ from __future__ import annotations
 import logging
 
 from app.repositories.disease_repository import DiseaseRepository
+from app.repositories.vector_document_repository import VectorDocumentRepository
+from app.services.embedding import encode
 
 from ..dtos.chat import ChatRequest
 from ..models.chat_medication import MediChat
@@ -20,56 +22,67 @@ class ChatMediService(BaseService):
         self.ai = OpenAI()
         self.disease_repo = DiseaseRepository()
         self.context_service = ChatContextService()
+        self.vector_repo = VectorDocumentRepository()
 
-    async def process_medical_chat(self, request: ChatRequest):
-        user_id = int(request.patient_id)
-
-        # 1. 세션 확보
+    async def _ensure_session(self, user_id: int, request: ChatRequest):
         if request.session_id:
             session = await self.chatbot_repo.get_session(user_id, request.session_id)
             if not session:
                 session = await self.chatbot_repo.create_session(user_id, "medication")
         else:
             session = await self.chatbot_repo.get_or_create_active_session(user_id, "medication")
+        return session
 
-        # 2. 사용자 메시지 저장
-        user_question = (request.user_question or "").strip()
-        if user_question:
-            await self.chatbot_repo.add_message(session.id, "user", user_question)
-
-        # 3. 세션 내 대화 맥락 조회
-        messages = await self.chatbot_repo.get_messages(session.id)
-        conversation_str = self.build_conversation_context(messages)
-
-        # 4. 이전 세션 요약
-        prev_summary = await self.chatbot_repo.get_latest_summary(user_id, "medication")
-
-        # 5. 사용자 컨텍스트 자동 조회
+    async def _resolve_context(
+        self, user_id: int, request: ChatRequest,
+    ) -> tuple[str, str, list[str]]:
         context_str = ""
         disease_name = request.disease_code or ""
         med_names: list[str] = request.medications or []
-
         if request.use_context:
             ctx = await self.context_service.get_user_context(user_id)
             context_str = self.context_service.build_context_prompt(ctx)
-
             if ctx["diseases"] and not request.disease_code:
                 disease_name = ", ".join(d["name"] for d in ctx["diseases"])
             if ctx["medications"] and not request.medications:
                 med_names = [m["drug_name"] for m in ctx["medications"]]
+        return context_str, disease_name, med_names
 
-        # 6. 질병코드 → anchor 코드 + 가이드라인 조회
+    async def _collect_rag(self, question: str) -> str:
+        if not question:
+            return ""
+        try:
+            q_vector = encode(question)
+            rag_docs = await self.vector_repo.search_disease_context(q_vector, top_k=3)
+            rag_items = [d.content for d in rag_docs if d.content and getattr(d, "_distance", 1.0) < 0.5]
+            return "\n".join(f"- {item}" for item in rag_items) if rag_items else ""
+        except Exception:
+            return ""
+
+    async def process_medical_chat(self, request: ChatRequest):
+        user_id = int(request.patient_id)
+        session = await self._ensure_session(user_id, request)
+
+        user_question = (request.user_question or "").strip()
+        if user_question:
+            await self.chatbot_repo.add_message(session.id, "user", user_question)
+
+        messages = await self.chatbot_repo.get_messages(session.id)
+        conversation_str = self.build_conversation_context(messages)
+        prev_summary = await self.chatbot_repo.get_latest_summary(user_id, "medication")
+
+        context_str, disease_name, med_names = await self._resolve_context(user_id, request)
+
         anchor_code, resolved_name, guideline_texts = await self.disease_repo.resolve_disease_info(
             request.disease_code or disease_name
         )
         disease_name = resolved_name or disease_name
 
-        # 7. 과거 복약 이력 (레거시)
         history = await self.get_medi_history(request.patient_id)
         history_str = "\n".join([f"- {h['created_at'].date()}: {h['medications']}" for h in history])
 
-        # 8. 가이드라인 텍스트
         guideline_str = "\n".join(f"- {g}" for g in guideline_texts) if guideline_texts else ""
+        rag_str = await self._collect_rag(user_question)
 
         # 9. 사용자 요청 본문
         user_content = f"""
@@ -86,10 +99,11 @@ class ChatMediService(BaseService):
 
         # 10. 시스템 프롬프트
         guideline_section = ""
-        if guideline_str:
+        if guideline_str or rag_str:
+            combined = "\n".join(filter(None, [guideline_str, rag_str]))
             guideline_section = f"""
         [참고 가이드라인 - 반드시 답변에 반영하세요]
-        {guideline_str}"""
+        {combined}"""
 
         system_prompt = f"""
         당신은 따뜻하고 신뢰감 있는 전문 AI 의료 파트너입니다.
@@ -120,5 +134,5 @@ class ChatMediService(BaseService):
             advice=answer,
         )
 
-        ai_result["session_id"] = session.id
+        ai_result["session_id"] = str(session.id)
         return ai_result

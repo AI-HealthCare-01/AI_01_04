@@ -22,6 +22,7 @@ RUN uv sync --group app --no-dev --frozen
 # 4. 소스 코드 복사
 COPY ./app ./app
 COPY ./frontend ./frontend
+COPY ./scripts ./scripts
 
 # 5. 실행 명령어 수정
 # 서버 실행 전 'aerich upgrade'를 실행하여 테이블 생성을 자동화합니다.

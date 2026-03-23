@@ -377,26 +377,36 @@ class ScanAnalysisService:
         return disease_obj or await Disease.create(name=name, kcd_code=kcd_code)
 
     async def _match_drug(self, drug_entry: dict[str, Any], drug_name: str) -> Drug:
-        """EDI코드 우선 → 벡터 유사도 → get_or_create 순으로 약물을 매칭한다."""
+        """EDI코드 → 정확 이름 → DB 부분매칭 → 벡터 유사도 → get_or_create 순으로 매칭."""
+        # 1) EDI 코드 매칭
         edi_code = (drug_entry.get("edi_code") or "").strip()
         if edi_code:
-            drug_obj = await Drug.filter(edi_code__contains=f",{edi_code},").first()
-            if not drug_obj:
-                drug_obj = await Drug.filter(edi_code__startswith=f"{edi_code},").first()
-            if not drug_obj:
-                drug_obj = await Drug.filter(edi_code__endswith=f",{edi_code}").first()
-            if not drug_obj:
-                drug_obj = await Drug.filter(edi_code=edi_code).first()
-            if drug_obj:
-                return drug_obj
+            for flt in (
+                {"edi_code__contains": f",{edi_code},"},
+                {"edi_code__startswith": f"{edi_code},"},
+                {"edi_code__endswith": f",{edi_code}"},
+                {"edi_code": edi_code},
+            ):
+                drug_obj = await Drug.filter(**flt).first()
+                if drug_obj:
+                    return drug_obj
 
+        # 2) 정확 이름 매칭 (icontains)
+        drug_obj = await Drug.filter(name__icontains=drug_name).first()
+        if drug_obj:
+            return drug_obj
+
+        # 3) DB 부분 매칭: 제형 접미사 제거 후 핵심 키워드로 검색
+        drug_obj = await self._fuzzy_match_drug_by_name(drug_name)
+        if drug_obj:
+            return drug_obj
+
+        # 4) 벡터 유사도 매칭
         query_vector = encode(drug_name)
         similar = await self.vector_repo.search_similar(
-            query_vector,
-            reference_type="drug",
-            top_k=1,
+            query_vector, reference_type="drug", top_k=1,
         )
-        _drug_similarity_threshold = 0.15
+        _drug_similarity_threshold = 0.35
         if similar and getattr(similar[0], "_distance", 1.0) <= _drug_similarity_threshold:
             drug_obj = await Drug.get_or_none(id=similar[0].reference_id)
             if drug_obj:
@@ -404,6 +414,65 @@ class ScanAnalysisService:
 
         drug_obj, _ = await Drug.get_or_create(name=drug_name)
         return drug_obj
+
+    @staticmethod
+    def _parse_drug_base_and_form(drug_name: str) -> tuple[str, str | None]:
+        form_re = re.compile(
+            r"[\d.]+\s*(%|mg|ml|g|mcg|밀리그램|그램)?"
+            r"|\(.*?\)"
+            r"|(점안액|점안|정|캡슐|시럽|액|주사|산|현탁액|크림|겔|패취|연질캡슐)"
+        )
+        base = form_re.sub("", drug_name).strip()
+        form_match = re.search(
+            r"(점안액|점안|캡슐|시럽|현탁액|크림|겔|패취|연질캡슐|정|액|주사|산)", drug_name
+        )
+        return base, form_match.group(1) if form_match else None
+
+    @staticmethod
+    async def _prefix_search_drug(base: str, form_kw: str | None) -> Drug | None:
+        for length in range(len(base), 2, -1):
+            prefix = base[:length]
+            rest = base[length:]
+            candidates = await Drug.filter(name__istartswith=prefix).order_by("name").limit(20)
+            if not candidates:
+                candidates = await Drug.filter(name__icontains=prefix).order_by("name").limit(20)
+            if not candidates:
+                continue
+            scored: list[tuple[int, Drug]] = []
+            for c in candidates:
+                score = (2 if form_kw and form_kw in c.name else 0) + (3 if rest and rest in c.name else 0)
+                scored.append((score, c))
+            scored.sort(key=lambda x: -x[0])
+            if scored[0][0] > 0 or length == len(base):
+                return scored[0][1]
+        return None
+
+    @staticmethod
+    async def _trgm_drug_fallback(drug_name: str) -> Drug | None:
+        from tortoise import connections
+        try:
+            conn = connections.get("default")
+            rows = await conn.execute_query_dict(
+                "SELECT id, name, similarity(split_part(name, '(', 1), $1) AS sim "
+                "FROM drugs "
+                "WHERE similarity(split_part(name, '(', 1), $1) > 0.35 "
+                "ORDER BY sim DESC LIMIT 1",
+                [drug_name],
+            )
+            if rows:
+                return await Drug.get_or_none(id=rows[0]["id"])
+        except Exception:
+            pass
+        return None
+
+    @staticmethod
+    async def _fuzzy_match_drug_by_name(drug_name: str) -> Drug | None:
+        """약품명에서 제형 접미사를 제거하고 점진적 prefix + pg_trgm 유사도로 DB 매칭."""
+        base, form_kw = ScanAnalysisService._parse_drug_base_and_form(drug_name)
+        if len(base) < 2:
+            return None
+        result = await ScanAnalysisService._prefix_search_drug(base, form_kw)
+        return result or await ScanAnalysisService._trgm_drug_fallback(drug_name)
 
     async def _create_prescriptions(
         self,
@@ -416,6 +485,7 @@ class ScanAnalysisService:
 
         복수 진단을 지원하며, 각 진단-약물 조합에 대해 처방전을 생성한다.
         동일 사용자/동일 약물/동일 날짜/동일 질환 조합이 있으면 중복으로 간주하여 스킵한다.
+        DB 매칭된 약품명으로 drug_entry를 보정하여 스캔 결과에도 반영한다.
         """
         disease_objects: list[Disease | None] = []
         for diag in diagnosis_list:
@@ -446,6 +516,10 @@ class ScanAnalysisService:
             end = start + timedelta(days=(dose_days - 1)) if dose_days and dose_days > 0 else start
 
             drug_obj = await self._match_drug(drug_entry, drug_name)
+
+            # DB 매칭 성공 시 약품명을 DB 이름으로 보정
+            if drug_obj.name and drug_obj.name != drug_name:
+                drug_entry["name"] = drug_obj.name
 
             drug_skipped = True
             for disease_obj in disease_objects:
@@ -485,8 +559,8 @@ class ScanAnalysisService:
 
     async def _save_prescription_data(
         self, user: Any, cur: dict[str, Any], doc_date: str
-    ) -> tuple[list[int], int, list[str]]:
-        """prescription 타입 스캔의 약품 데이터를 처방전으로 저장한다."""
+    ) -> tuple[list[int], int, list[str], list[dict]]:
+        """처방전 저장 후 보정된 drugs_data도 함께 반환한다."""
         await self.med_service.ensure_day_seed(user_id=user.id, date=doc_date)
         await self.health_service.ensure_day_seed(user_id=user.id, date=doc_date)
 
@@ -499,12 +573,10 @@ class ScanAnalysisService:
                 elif isinstance(d, dict):
                     drugs_data.append(d)
 
-        return await self._create_prescriptions(
-            user,
-            doc_date,
-            cur.get("diagnosis_list", []),
-            drugs_data,
+        created, skipped, dupes = await self._create_prescriptions(
+            user, doc_date, cur.get("diagnosis_list", []), drugs_data,
         )
+        return created, skipped, dupes, drugs_data
 
     async def save_result(self, user: Any, scan_id: int) -> dict[str, Any]:
         """스캔 결과를 실제 서비스 데이터로 저장한다."""
@@ -527,11 +599,11 @@ class ScanAnalysisService:
                             status_code=status.HTTP_400_BAD_REQUEST,
                             detail="처방/진단 날짜(document_date)가 필요합니다. 결과 화면에서 입력/수정 후 저장해주세요.",
                         )
-                    created_prescriptions, skipped_count, skipped_duplicates = await self._save_prescription_data(
-                        user,
-                        cur,
-                        doc_date,
+                    created_prescriptions, skipped_count, skipped_duplicates, corrected_drugs = (
+                        await self._save_prescription_data(user, cur, doc_date)
                     )
+                    if corrected_drugs is not None:
+                        await self.scan_repo.update(user.id, scan_id, drugs=corrected_drugs)
                 elif doc_date:
                     await self.health_service.ensure_day_seed(user_id=user.id, date=doc_date)
 

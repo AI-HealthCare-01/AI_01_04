@@ -55,5 +55,6 @@ class ChatbotRepository:
 
     async def end_session(self, session_id: int) -> None:
         from datetime import datetime
+
         from app.core import config
         await ChatbotSession.filter(id=session_id).update(ended_at=datetime.now(config.TIMEZONE))

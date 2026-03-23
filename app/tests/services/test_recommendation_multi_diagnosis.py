@@ -140,10 +140,11 @@ class TestBuildPrescriptionMultiDiagnosis(TestCase):
     async def test_empty_diagnosis_list_with_drugs(self):
         """진단 없이 약물만 있으면 AI/가이드라인 없이 빈 리스트 반환."""
         svc = RecommendationService()
-        candidates = await svc._build_prescription_recommendations(
-            diagnosis_list=[],
-            drugs=["타이레놀", "아스피린"],
-        )
+        with patch.object(svc, "_generate_ai_recommendations", new=AsyncMock(return_value=[])):
+            candidates = await svc._build_prescription_recommendations(
+                diagnosis_list=[],
+                drugs=["타이레놀", "아스피린"],
+            )
 
         assert len(candidates) == 0
 
@@ -164,10 +165,11 @@ class TestBuildPrescriptionMultiDiagnosis(TestCase):
         )
 
         svc = RecommendationService()
-        candidates = await svc._build_prescription_recommendations(
-            diagnosis_list=["J06 급성 상기도감염"],
-            drugs=[],
-        )
+        with patch.object(svc, "_generate_ai_recommendations", new=AsyncMock(return_value=[])):
+            candidates = await svc._build_prescription_recommendations(
+                diagnosis_list=["J06 급성 상기도감염"],
+                drugs=[],
+            )
 
         assert any("휴식" in c.content for c in candidates)
 
@@ -181,10 +183,11 @@ class TestBuildMedicalRecordMultiDiagnosis(TestCase):
         await DiseaseGuideline.create(disease=d1, category="general_care", content="유발인자를 피하세요")
 
         svc = RecommendationService()
-        candidates = await svc._build_medical_record_recommendations(
-            diagnosis_list=["편두통"],
-            clinical_note="두통 빈도 증가, 스트레스 관리 필요",
-        )
+        with patch.object(svc, "_generate_ai_recommendations", new=AsyncMock(return_value=[])):
+            candidates = await svc._build_medical_record_recommendations(
+                diagnosis_list=["편두통"],
+                clinical_note="두통 빈도 증가, 스트레스 관리 필요",
+            )
 
         contents = [c.content for c in candidates]
         assert any("유발인자" in c for c in contents)
