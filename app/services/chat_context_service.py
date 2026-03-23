@@ -76,17 +76,21 @@ class ChatContextService:
         prescriptions = await Prescription.filter(user_id=user_id).all()
 
         meds: list[dict[str, Any]] = []
+        seen_drug_ids: set[int] = set()
         for rx in prescriptions:
             if not await self._is_active(rx):
                 continue
 
-            remaining = await self._calc_remaining(rx)
-
             await rx.fetch_related("drug")
             if rx.drug:
+                if rx.drug.id in seen_drug_ids:
+                    continue
+                seen_drug_ids.add(rx.drug.id)
                 drug_name = rx.drug.name
             else:
                 drug_name = "미등록 약품"
+
+            remaining = await self._calc_remaining(rx)
 
             meds.append(
                 {

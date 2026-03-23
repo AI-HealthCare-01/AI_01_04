@@ -31,12 +31,18 @@ PRESCRIPTION_SYSTEM_PROMPT = """
 - clinical_note: null
 - drugs: 객체 배열. 각 약품에 대해 다음 필드를 추출한다. (없으면 [])
     - name: 약품명 (OCR 텍스트를 가장 유사한 한국 약물명으로 보정. 보정 불가능하면 "인식 불가")
+      약품명 OCR 오인식 주의: "점안액"이 "점인액", "정인액", "정안액" 등으로 오인식될 수 있다. "점안액"으로 보정하라. "정"과 "점"이 혼동될 수 있다: "점안액"은 안약이므로 "정"으로 바꾸지 말 것. "정"은 알약 단위이므로 "점"으로 바꾸지 말 것.
     - edi_code: 보험코드/EDI코드/약품코드 (9자리 숫자). 처방전에 "코드", "보험코드", "EDI", "약품코드" 라벨 근처 숫자가 있으면 추출. 없으면 null
     - dose_amount: 1회 투여량 문자열 (예: "1"). 없으면 null
-    - dose_unit: 단위 (정, ml, 캡슐 등). 없으면 null
-    - dose_count: 1일 투여횟수 정수 (예: 2). 없으면 null
-    - dose_timing: 복용 시점 (식전, 식후, 식후30분, 자기전, 공복 등). 없으면 null
+    - dose_unit: 단위 (정, ml, 캡슐 등). 점안액/안약의 경우 반드시 "방울". 없으면 null
+    - dose_count: 1일 투여횟수 정수 (예: 2). "하루 4번" → 4, "1일 3회" → 3. 없으면 null
+    - dose_timing: 복용 시점. 처방전의 "용법", "복용법", "투약방법" 란을 반드시 확인하여 각 약품별 복용 시점을 추출하라.
+      허용 값: "식전", "식후", "점심 식전", "점심 식후", "저녁 식전", "저녁 식후", "자기전", "필요시"
+      예시: "저녁 식후 복용" → "저녁 식후", "취침 전" → "자기전", "식후 30분" → "식후", "하루 4번 양안에" → "식후"(dose_count=4), "필요시 복용" → "필요시"
+      중요: "하루 N번", "1일 N회" 같이 횟수만 있고 시점이 없으면 dose_timing은 "식후"로 설정하라. "필요시"는 "필요시 복용", "PRN", "통증 시" 등 명시적으로 필요시라고 적힌 경우에만 사용하라.
+      용법이 명시되지 않으면 null
     - dose_days: 투약일수 정수 (예: 30). 없으면 null
+  용법 추출 중요: 한국 처방전에는 "용법" 또는 "복용법" 란에 "저녁 식후 1회", "자기전 점안", "하루 4번 양안에" 등의 지시가 있다. 이 정보를 각 약품의 dose_timing과 dose_count에 반드시 반영하라. 약품별로 용법이 다를 수 있으므로 각각 개별적으로 추출하라.
   예시: {"name": "노바스크정5mg", "edi_code": "670600380", "dose_amount": "1", "dose_unit": "정", "dose_count": 1, "dose_timing": "식후", "dose_days": 30}
 - raw_text: 입력 원문 그대로
 - ocr_raw: 입력 원본 JSON 그대로
@@ -165,6 +171,7 @@ async def ai_postprocess(
             if d["name"] == "인식 불가":
                 unrecognized.append(d["name"])
             else:
+                d["name"] = _fix_drug_name(d["name"])
                 if d.get("dose_unit"):
                     d["dose_unit"] = _fix_dose_unit(d["dose_unit"])
                 normalized_drugs.append(d)
@@ -270,12 +277,23 @@ _DOSE_UNIT_FIX: dict[str, str] = {
     "MI": "ml",
     "ML": "ml",
     "Ml": "ml",
+    "적": "방울",
+    "drops": "방울",
+    "drop": "방울",
 }
 
 
 def _fix_dose_unit(unit: str) -> str:
     """OCR 오인식된 dose_unit을 보정한다."""
     return _DOSE_UNIT_FIX.get(unit.strip(), unit.strip())
+
+
+_DRUG_NAME_FIX_RE = re.compile(r"[점정][안인]액")
+
+
+def _fix_drug_name(name: str) -> str:
+    """OCR 오인식된 약품명을 보정한다. (점인액/정인액/정안액 → 점안액)"""
+    return _DRUG_NAME_FIX_RE.sub("점안액", name)
 
 
 _KCD_PATTERN = re.compile(

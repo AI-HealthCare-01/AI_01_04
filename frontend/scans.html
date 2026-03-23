@@ -124,22 +124,48 @@ function retryUpload() {
   uploadFile(lastFile, lastDocType || document.getElementById('docType').value);
 }
 
+// 이미지 리사이징 (세로 2000px 이하, JPEG 85%)
+function resizeImage(file, maxHeight = 2000, quality = 0.85) {
+  return new Promise((resolve) => {
+    if (file.type === 'application/pdf') { resolve(file); return; }
+    const img = new Image();
+    img.onload = () => {
+      if (img.height <= maxHeight) { resolve(file); return; }
+      const ratio = maxHeight / img.height;
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(img.width * ratio);
+      canvas.height = maxHeight;
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      canvas.toBlob((blob) => {
+        const resized = new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' });
+        resolve(resized);
+      }, 'image/jpeg', quality);
+    };
+    img.onerror = () => resolve(file);
+    img.src = URL.createObjectURL(file);
+  });
+}
+
 async function handleFileUpload(event) {
   const file = event.target.files[0];
   if (!file) return;
   showFileInfo(file);
+  setStatus('<span class="spinner-border spinner-border-sm me-2"></span>이미지 최적화 중...', 'info');
+  const optimized = await resizeImage(file);
   setStatus('<span class="spinner-border spinner-border-sm me-2"></span>업로드 중...', 'info');
-  await uploadFile(file, document.getElementById('docType').value);
+  await uploadFile(optimized, document.getElementById('docType').value);
 }
 
-function handleDropUpload(event) {
+async function handleDropUpload(event) {
   const file = event.dataTransfer.files[0];
   if (!file) return;
   if (!['image/png','image/jpeg','image/jpg','application/pdf'].includes(file.type)) { setStatus('JPG, PNG, PDF 파일만 업로드 가능합니다.', 'danger'); return; }
   if (file.size > 10*1024*1024) { setStatus('10MB 이하 파일만 업로드 가능합니다.', 'danger'); return; }
   showFileInfo(file);
+  setStatus('<span class="spinner-border spinner-border-sm me-2"></span>이미지 최적화 중...', 'info');
+  const optimized = await resizeImage(file);
   setStatus('<span class="spinner-border spinner-border-sm me-2"></span>업로드 중...', 'info');
-  uploadFile(file, document.getElementById('docType').value);
+  uploadFile(optimized, document.getElementById('docType').value);
 }
 
 async function uploadFile(file, docType) {

@@ -93,6 +93,9 @@ async def chat_endpoint(
     user: Annotated[User, Depends(get_request_user)],
 ):
     logger.debug("chat_endpoint: %s", request)
+    # patient_id를 인증된 사용자로 강제
+    request.patient_id = str(user.id)
+
     if request.mode == "medication":
         medi_service = ChatMediService()
         return await medi_service.process_medical_chat(request)

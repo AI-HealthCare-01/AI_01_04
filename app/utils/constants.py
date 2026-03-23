@@ -6,5 +6,8 @@ COMMON_SYSTEM_PROMPT = """
 """
 
 COMMON_USER_PROMPT = """
-위 정보를 바탕으로 전문적인 리포트를 작성해줘.
+위 정보를 바탕으로 사용자의 질문에 직접 답변해줘.
+질문이 없으면 환자 정보 기반 복약 안내 리포트를 작성해줘.
 """
+
+RECENT_CONVERSATION_LIMIT = 5

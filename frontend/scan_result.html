@@ -123,7 +123,7 @@ let savedRecommendations = [];
 let drugSearchTimer = null;
 
 const UNIT_OPTIONS = ['정','캡슐','ml','unit','포','방울'];
-const TIMING_OPTIONS = ['식전','식후','식후 30분','공복','자기전','아침','점심','저녁','아침 점심','아침 저녁','점심 저녁','아침 점심 저녁','아침 점심 저녁 자기전'];
+const TIMING_OPTIONS = ['식후','식전','점심 식전','점심 식후','저녁 식전','저녁 식후','자기전','필요시'];
 
 const DEMO_SCAN_RESULT = {
   document_type: 'prescription', document_date: '2026-03-20',
@@ -227,8 +227,8 @@ async function populateEditForm(res) {
 
   selectedDrugs = Array.isArray(res.drugs) ? res.drugs.map(d =>
     typeof d === 'string'
-      ? { name: d, dose_count: null, dose_timing: null, dose_days: null, dose_amount: null, dose_unit: null }
-      : { name: d.name||'', dose_count: d.dose_count??null, dose_timing: d.dose_timing??null, dose_days: d.dose_days??null, dose_amount: d.dose_amount??null, dose_unit: d.dose_unit??null }
+      ? { name: d, dose_count: null, dose_timing: '식후', dose_days: null, dose_amount: null, dose_unit: null }
+      : { name: d.name||'', dose_count: d.dose_count??null, dose_timing: d.dose_timing||'식후', dose_days: d.dose_days??null, dose_amount: d.dose_amount??null, dose_unit: d.dose_unit??null }
   ) : [];
   renderSelectedDrugs();
 
@@ -315,11 +315,20 @@ async function toggleDrugDetail(idx, name) {
   panel.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>주의사항 조회 중...';
   panel.classList.remove('d-none');
   try {
-    // try exact name first, then strip dose info for fuzzy match
     let items = await window.api.searchDrugs(name, 3);
     if (!items.length) {
       const base = name.replace(/[\d.]+\s*(mg|ml|g|mcg|밀리그램|그램)/gi, '').trim();
       if (base.length >= 2) items = await window.api.searchDrugs(base, 3);
+    }
+    // OCR 오인식 보정: 점인액/정인액/정안액 → 점안액
+    if (!items.length) {
+      const fixed = name.replace(/[점정][안인]액/g, '점안액').replace(/[점정][안인](?=\s|$)/g, '점안');
+      if (fixed !== name) items = await window.api.searchDrugs(fixed, 3);
+    }
+    // 제형 접미사 제거 후 핵심 키워드로 재검색
+    if (!items.length) {
+      const core = name.replace(/[\d.]+\s*(%|mg|ml|g|mcg)?|\(.*?\)|(점안액|점안|정|캡슐|시럽|액|주사|산|현탁액|크림|겔|패취|연질캡슐)/g, '').trim();
+      if (core.length >= 2) items = await window.api.searchDrugs(core, 5);
     }
     const info = items.length ? items[0] : null;
     if (!info) { panel.innerHTML = '<div class="text-muted">약품 상세 정보를 찾을 수 없습니다.</div>'; return; }
@@ -351,7 +360,7 @@ async function searchDrugs() {
       btn.innerHTML = `<div class="fw-bold">${escapeHtml(item.name)}</div><div class="small text-soft">${escapeHtml(item.manufacturer||'제조사 정보 없음')}</div>`;
       btn.onclick = () => {
         if (!selectedDrugs.some(d => d.name === item.name)) {
-          selectedDrugs.push({ name: item.name, dose_count: null, dose_timing: null, dose_days: null, dose_amount: null, dose_unit: null });
+          selectedDrugs.push({ name: item.name, dose_count: null, dose_timing: '식후', dose_days: null, dose_amount: null, dose_unit: null });
           renderSelectedDrugs();
         }
         document.getElementById('drug-search-input').value = '';
@@ -392,10 +401,14 @@ async function saveResult() {
     const saveRes = await window.api.saveScanResult(scanId);
 
     try {
-      await window.api.getRecommendationsForScan(scanId);
-      const recSave = await window.api.saveRecommendationsForScan(scanId);
-      savedRecommendations = recSave?.items || [];
-    } catch { savedRecommendations = []; }
+      // 기존 active 목록 스냅샷
+      try { window._prevActiveGoals = await window.api.getActiveRecommendations() || []; } catch { window._prevActiveGoals = []; }
+      const prevContents = new Set(window._prevActiveGoals.map(r => (r.content || '').trim()));
+
+      // 추천 생성만 (active 등록은 registerGoals에서)
+      const recData = await window.api.getRecommendationsForScan(scanId);
+      savedRecommendations = (recData?.items || []).filter(r => !prevContents.has((r.content || '').trim()));
+    } catch { savedRecommendations = []; window._prevActiveGoals = []; }
 
     const summaryBox = document.getElementById('save-result-summary');
     const created = Number(saveRes.created_count || 0);
@@ -447,20 +460,20 @@ async function renderGoals() {
     return;
   }
 
-  try {
-    const recs = await window.api.getActiveRecommendations();
-    if (recs?.length) {
-      existingSection.classList.remove('d-none');
-      existingList.innerHTML = recs.map(r => renderGoalItem({ id: r.id, content: r.content || '-', icon: 'bi-check-circle', badge: '활성' }, true)).join('');
-    } else {
-      existingSection.classList.add('d-none');
-    }
-  } catch {
+  // saveResult()에서 저장해둔 스냅샷 사용
+  const existingGoals = window._prevActiveGoals || [];
+  const existingContents = new Set(existingGoals.map(r => (r.content || '').trim()));
+  const newGoals = savedRecommendations.filter(r => !existingContents.has((r.content || '').trim()));
+
+  if (existingGoals.length) {
+    existingSection.classList.remove('d-none');
+    existingList.innerHTML = existingGoals.map(r => renderGoalItem({ id: r.id, content: r.content || '-', icon: 'bi-check-circle', badge: '활성' }, true)).join('');
+  } else {
     existingSection.classList.add('d-none');
   }
 
-  newList.innerHTML = savedRecommendations.length
-    ? savedRecommendations.map(r => renderGoalItem({ id: r.id, content: r.content || '-', icon: 'bi-stars', badge: '새 추천' }, true)).join('')
+  newList.innerHTML = newGoals.length
+    ? newGoals.map(r => renderGoalItem({ id: r.id, content: r.content || '-', icon: 'bi-stars', badge: '새 추천' }, true)).join('')
     : '<div class="scan-goal-item" style="color:#aaa;justify-content:center;">이번 스캔에서 새 추천이 없습니다.</div>';
 }
 
