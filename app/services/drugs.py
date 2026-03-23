@@ -35,7 +35,8 @@ class DrugService:
                 "main_ingredient": row.main_ingredient,
                 "efficacy": row.efficacy,
                 "dosage": row.dosage,
-                "caution": " ".join(filter(None, [row.caution_1, row.caution_2, row.caution_3, row.caution_4]))[:500] or None,
+                "caution": " ".join(filter(None, [row.caution_1, row.caution_2, row.caution_3, row.caution_4]))[:500]
+                or None,
                 "storage": row.storage,
             }
             for row in rows
@@ -45,15 +46,17 @@ class DrugService:
     def _correct_ocr_typo(keyword: str) -> str:
         """OCR 오인식 보정: '점'→'정' 등 약품명에서 흔한 오타를 교정한다."""
         import re
-        return re.sub(r'점(\d|$)', r'정\1', keyword)
+
+        return re.sub(r"점(\d|$)", r"정\1", keyword)
 
     @staticmethod
     def _normalize_unit(keyword: str) -> str:
         """mg→밀리그램 등 단위 표기를 정규화한다."""
         import re
+
         result = keyword
-        result = re.sub(r'(\d+)\s*mg\b', r'\1밀리그램', result, flags=re.IGNORECASE)
-        result = re.sub(r'(\d+)\s*ml\b', r'\1밀리리터', result, flags=re.IGNORECASE)
-        result = re.sub(r'(\d+)\s*mcg\b', r'\1마이크로그램', result, flags=re.IGNORECASE)
-        result = re.sub(r'(\d+)\s*g\b', r'\1그램', result, flags=re.IGNORECASE)
+        result = re.sub(r"(\d+)\s*mg\b", r"\1밀리그램", result, flags=re.IGNORECASE)
+        result = re.sub(r"(\d+)\s*ml\b", r"\1밀리리터", result, flags=re.IGNORECASE)
+        result = re.sub(r"(\d+)\s*mcg\b", r"\1마이크로그램", result, flags=re.IGNORECASE)
+        result = re.sub(r"(\d+)\s*g\b", r"\1그램", result, flags=re.IGNORECASE)
         return result

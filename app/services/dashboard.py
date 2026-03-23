@@ -183,24 +183,28 @@ class DashboardService:
             await log.fetch_related("prescription", "prescription__drug")
             rx = log.prescription
             drug_name = rx.drug.name if rx.drug else None
-            today_medications.append({
-                "id": log.id,
-                "label": log.slot_label or rx.dose_timing or "아침",
-                "drug_name": drug_name,
-                "dose_amount": rx.dose_amount,
-                "dose_unit": rx.dose_unit,
-                "status": log.status,
-            })
+            today_medications.append(
+                {
+                    "id": log.id,
+                    "label": log.slot_label or rx.dose_timing or "아침",
+                    "drug_name": drug_name,
+                    "dose_amount": rx.dose_amount,
+                    "dose_unit": rx.dose_unit,
+                    "status": log.status,
+                }
+            )
 
         # 오늘 건강 목표 (active_recommendations 기반)
         today_health_goals: list[dict] = []
         for rec in active_recommendations:
-            today_health_goals.append({
-                "id": rec["id"],
-                "label": rec["content"],
-                "content": rec["content"],
-                "status": "pending",
-            })
+            today_health_goals.append(
+                {
+                    "id": rec["id"],
+                    "label": rec["content"],
+                    "content": rec["content"],
+                    "status": "pending",
+                }
+            )
 
         return {
             "recent_prescription": recent_prescription,

@@ -470,18 +470,23 @@ class RecommendationService:
             if not rows:
                 # OCR 오타 보정: 점→정
                 import re as _re
-                corrected = _re.sub(r'점(\d|$)', r'정\1', name)
+
+                corrected = _re.sub(r"점(\d|$)", r"정\1", name)
                 if corrected != name:
                     rows = await self.drug_repo.search_by_name(corrected, limit=1)
             if rows:
                 d = rows[0]
-                details.append({
-                    "name": d.name,
-                    "efficacy": d.efficacy,
-                    "dosage": d.dosage,
-                    "caution": " ".join(filter(None, [d.caution_1, d.caution_2]))[:300] if (d.caution_1 or d.caution_2) else None,
-                    "main_ingredient": d.main_ingredient,
-                })
+                details.append(
+                    {
+                        "name": d.name,
+                        "efficacy": d.efficacy,
+                        "dosage": d.dosage,
+                        "caution": " ".join(filter(None, [d.caution_1, d.caution_2]))[:300]
+                        if (d.caution_1 or d.caution_2)
+                        else None,
+                        "main_ingredient": d.main_ingredient,
+                    }
+                )
             else:
                 details.append({"name": name})
         return details
@@ -531,7 +536,7 @@ frequency 종류: daily, weekly, 3_per_week, every_other_day, monthly, as_needed
 
         user_prompt = f"""환자 정보:
 - 진단명: {diag_str}
-- 처방약: {drug_str if drug_str.strip() else '(없음)'}
+- 처방약: {drug_str if drug_str.strip() else "(없음)"}
 
 관련 가이드라인:
 {gl_str}
@@ -545,6 +550,7 @@ frequency 종류: daily, weekly, 3_per_week, every_other_day, monthly, as_needed
                 temperature=0.3,
             )
             import json
+
             # JSON 블록 추출
             text = response.strip()
             if text.startswith("```"):
@@ -617,7 +623,9 @@ frequency 종류: daily, weekly, 3_per_week, every_other_day, monthly, as_needed
         first_diag = self._normalize_diagnosis_text(diagnosis_list[0] if diagnosis_list else None)
         if first_diag:
             vector_candidates = await self._search_vector_guidelines(
-                diagnosis=first_diag, drugs=drugs, top_k=3,
+                diagnosis=first_diag,
+                drugs=drugs,
+                top_k=3,
             )
             if vector_candidates:
                 return vector_candidates
@@ -675,7 +683,10 @@ frequency 종류: daily, weekly, 3_per_week, every_other_day, monthly, as_needed
         )
         if first_diag or normalized_clinical_note:
             vector_candidates = await self._search_vector_guidelines(
-                diagnosis=first_diag, drugs=[], clinical_note=normalized_clinical_note, top_k=3,
+                diagnosis=first_diag,
+                drugs=[],
+                clinical_note=normalized_clinical_note,
+                top_k=3,
             )
             if vector_candidates:
                 return vector_candidates
