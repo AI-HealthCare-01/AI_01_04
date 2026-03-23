@@ -96,14 +96,16 @@ class DashboardService:
         for log in today_logs:
             await log.fetch_related("prescription", "prescription__drug")
             rx = log.prescription
-            result.append({
-                "id": log.id,
-                "label": log.slot_label or rx.dose_timing or "아침",
-                "drug_name": rx.drug.name if rx.drug else None,
-                "dose_amount": rx.dose_amount,
-                "dose_unit": rx.dose_unit,
-                "status": log.status,
-            })
+            result.append(
+                {
+                    "id": log.id,
+                    "label": log.slot_label or rx.dose_timing or "아침",
+                    "drug_name": rx.drug.name if rx.drug else None,
+                    "dose_amount": rx.dose_amount,
+                    "dose_unit": rx.dose_unit,
+                    "status": log.status,
+                }
+            )
         return result
 
     async def get_summary(self, user: User) -> dict:
@@ -215,10 +217,15 @@ class DashboardService:
         today_medications = await self._build_today_medications(today_logs)
 
         # 오늘 건강 목표 (active_recommendations 기반)
-        today_health_goals = [{
-            "id": rec["id"], "label": rec["content"],
-            "content": rec["content"], "status": "pending",
-        } for rec in active_recommendations]
+        today_health_goals = [
+            {
+                "id": rec["id"],
+                "label": rec["content"],
+                "content": rec["content"],
+                "status": "pending",
+            }
+            for rec in active_recommendations
+        ]
 
         return {
             "recent_prescription": recent_prescription,

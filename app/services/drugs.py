@@ -86,7 +86,8 @@ class DrugService:
             r"[\d.]+\s*(%|mg|ml|g|mcg|밀리그램|그램)?"
             r"|\(.*?\)"
             r"|(점안액|점안|정|캡슐|시럽|액|주사|산|현탁액|크림|겔|패취|연질캡슐)",
-            "", keyword,
+            "",
+            keyword,
         ).strip()
         return core if len(core) >= 2 else ""
 

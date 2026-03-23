@@ -404,7 +404,9 @@ class ScanAnalysisService:
         # 4) 벡터 유사도 매칭
         query_vector = encode(drug_name)
         similar = await self.vector_repo.search_similar(
-            query_vector, reference_type="drug", top_k=1,
+            query_vector,
+            reference_type="drug",
+            top_k=1,
         )
         _drug_similarity_threshold = 0.35
         if similar and getattr(similar[0], "_distance", 1.0) <= _drug_similarity_threshold:
@@ -423,9 +425,7 @@ class ScanAnalysisService:
             r"|(점안액|점안|정|캡슐|시럽|액|주사|산|현탁액|크림|겔|패취|연질캡슐)"
         )
         base = form_re.sub("", drug_name).strip()
-        form_match = re.search(
-            r"(점안액|점안|캡슐|시럽|현탁액|크림|겔|패취|연질캡슐|정|액|주사|산)", drug_name
-        )
+        form_match = re.search(r"(점안액|점안|캡슐|시럽|현탁액|크림|겔|패취|연질캡슐|정|액|주사|산)", drug_name)
         return base, form_match.group(1) if form_match else None
 
     @staticmethod
@@ -450,6 +450,7 @@ class ScanAnalysisService:
     @staticmethod
     async def _trgm_drug_fallback(drug_name: str) -> Drug | None:
         from tortoise import connections
+
         try:
             conn = connections.get("default")
             rows = await conn.execute_query_dict(
@@ -574,7 +575,10 @@ class ScanAnalysisService:
                     drugs_data.append(d)
 
         created, skipped, dupes = await self._create_prescriptions(
-            user, doc_date, cur.get("diagnosis_list", []), drugs_data,
+            user,
+            doc_date,
+            cur.get("diagnosis_list", []),
+            drugs_data,
         )
         return created, skipped, dupes, drugs_data
 
@@ -599,9 +603,12 @@ class ScanAnalysisService:
                             status_code=status.HTTP_400_BAD_REQUEST,
                             detail="처방/진단 날짜(document_date)가 필요합니다. 결과 화면에서 입력/수정 후 저장해주세요.",
                         )
-                    created_prescriptions, skipped_count, skipped_duplicates, corrected_drugs = (
-                        await self._save_prescription_data(user, cur, doc_date)
-                    )
+                    (
+                        created_prescriptions,
+                        skipped_count,
+                        skipped_duplicates,
+                        corrected_drugs,
+                    ) = await self._save_prescription_data(user, cur, doc_date)
                     if corrected_drugs is not None:
                         await self.scan_repo.update(user.id, scan_id, drugs=corrected_drugs)
                 elif doc_date:

@@ -34,7 +34,9 @@ class ChatMediService(BaseService):
         return session
 
     async def _resolve_context(
-        self, user_id: int, request: ChatRequest,
+        self,
+        user_id: int,
+        request: ChatRequest,
     ) -> tuple[str, str, list[str]]:
         context_str = ""
         disease_name = request.disease_code or ""

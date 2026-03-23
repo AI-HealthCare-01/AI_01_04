@@ -897,7 +897,11 @@ frequency 종류: daily, weekly, 3_per_week, every_other_day, monthly, as_needed
         return ids, contents
 
     def _filter_new_ids(
-        self, target_ids: list[int], recs: list, existing_ids: set[int], existing_contents: set[str],
+        self,
+        target_ids: list[int],
+        recs: list,
+        existing_ids: set[int],
+        existing_contents: set[str],
     ) -> list[int]:
         revoked_ids = {r.id for r in recs if r.status == "revoked"} if recs else set()
         rec_map = {r.id: r for r in recs} if recs else {}

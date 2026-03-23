@@ -10,7 +10,6 @@ from app.models.chatbot import ChatbotMessage, ChatbotSession, ChatbotSessionSum
 
 
 class ChatbotRepository:
-
     async def create_session(self, user_id: int, mode: str = "medication") -> ChatbotSession:
         return await ChatbotSession.create(user_id=user_id, mode=mode)
 
@@ -19,9 +18,15 @@ class ChatbotRepository:
 
     async def get_or_create_active_session(self, user_id: int, mode: str) -> ChatbotSession:
         """종료되지 않은 최신 세션을 반환하거나 새로 생성한다."""
-        session = await ChatbotSession.filter(
-            user_id=user_id, mode=mode, ended_at__isnull=True,
-        ).order_by("-started_at").first()
+        session = (
+            await ChatbotSession.filter(
+                user_id=user_id,
+                mode=mode,
+                ended_at__isnull=True,
+            )
+            .order_by("-started_at")
+            .first()
+        )
         if session:
             return session
         return await self.create_session(user_id, mode)
@@ -31,11 +36,7 @@ class ChatbotRepository:
 
     async def get_messages(self, session_id: int, limit: int = 20) -> list[ChatbotMessage]:
         """세션 내 최근 메시지를 시간순으로 반환한다."""
-        msgs = (
-            await ChatbotMessage.filter(session_id=session_id)
-            .order_by("-created_at")
-            .limit(limit)
-        )
+        msgs = await ChatbotMessage.filter(session_id=session_id).order_by("-created_at").limit(limit)
         return list(reversed(msgs))
 
     async def save_summary(self, session_id: int, summary: str) -> ChatbotSessionSummary:
@@ -57,4 +58,5 @@ class ChatbotRepository:
         from datetime import datetime
 
         from app.core import config
+
         await ChatbotSession.filter(id=session_id).update(ended_at=datetime.now(config.TIMEZONE))

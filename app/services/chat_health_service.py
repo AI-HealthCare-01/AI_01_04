@@ -81,14 +81,22 @@ class ChatHealthService(BaseService):
             return ""
 
     def _build_health_system_prompt(
-        self, prev_summary: str | None, conversation_str: str, medi_hist_str: str,
-        guideline_str: str, rag_str: str, context_str: str, recommendation_str: str,
+        self,
+        prev_summary: str | None,
+        conversation_str: str,
+        medi_hist_str: str,
+        guideline_str: str,
+        rag_str: str,
+        context_str: str,
+        recommendation_str: str,
     ) -> str:
         guideline_section = ""
         if guideline_str or rag_str:
             combined = "\n".join(filter(None, [guideline_str, rag_str]))
             guideline_section = f"\n        [환자의 기존 질환 관련 가이드라인 - 답변 시 참고하세요]\n        {combined}"
-        context_section = f"\n        [환자 등록 정보 - 답변 시 반드시 반영하세요]\n        {context_str}" if context_str else ""
+        context_section = (
+            f"\n        [환자 등록 정보 - 답변 시 반드시 반영하세요]\n        {context_str}" if context_str else ""
+        )
         recommendation_section = f"\n        {recommendation_str}" if recommendation_str else ""
         return f"""{COMMON_SYSTEM_PROMPT}\n
         당신은 환자의 일상 건강을 관리하는 '전문의 겸 건강 코치'입니다.
@@ -129,8 +137,13 @@ class ChatHealthService(BaseService):
         recommendation_str = await self._build_recommendation_section(user_id)
 
         system_prompt = self._build_health_system_prompt(
-            prev_summary, conversation_str, medi_hist_str,
-            guideline_str, rag_str, context_str, recommendation_str,
+            prev_summary,
+            conversation_str,
+            medi_hist_str,
+            guideline_str,
+            rag_str,
+            context_str,
+            recommendation_str,
         )
         user_content = f"\n        - 사용자 질문: {request.user_question}\n        "
 
@@ -142,7 +155,9 @@ class ChatHealthService(BaseService):
             await self.chatbot_repo.add_message(session.id, "assistant", answer)
 
         await HealthChat.create(
-            patient_id=request.patient_id, user_question=request.user_question, advice=answer,
+            patient_id=request.patient_id,
+            user_question=request.user_question,
+            advice=answer,
         )
 
         ai_result["session_id"] = str(session.id)
