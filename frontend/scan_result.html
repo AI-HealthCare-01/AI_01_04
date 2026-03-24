@@ -123,7 +123,7 @@ let savedRecommendations = [];
 let drugSearchTimer = null;
 
 const UNIT_OPTIONS = ['정','캡슐','ml','unit','포','방울'];
-const TIMING_OPTIONS = ['식후','식전','점심 식전','점심 식후','저녁 식전','저녁 식후','자기전','필요시'];
+const TIMING_OPTIONS = ['아침 식후','아침 식전','점심 식후','점심 식전','저녁 식후','저녁 식전','자기 전','필요시'];
 
 const DEMO_SCAN_RESULT = {
   document_type: 'prescription', document_date: '2026-03-20',
@@ -227,8 +227,8 @@ async function populateEditForm(res) {
 
   selectedDrugs = Array.isArray(res.drugs) ? res.drugs.map(d =>
     typeof d === 'string'
-      ? { name: d, dose_count: null, dose_timing: '식후', dose_days: null, dose_amount: null, dose_unit: null }
-      : { name: d.name||'', dose_count: d.dose_count??null, dose_timing: d.dose_timing||'식후', dose_days: d.dose_days??null, dose_amount: d.dose_amount??null, dose_unit: d.dose_unit??null }
+      ? { name: d, dose_count: null, dose_timing: '아침 식후', dose_days: null, dose_amount: null, dose_unit: null }
+      : { name: d.name||'', dose_count: d.dose_count??null, dose_timing: d.dose_timing||'아침 식후', dose_days: d.dose_days??null, dose_amount: d.dose_amount??null, dose_unit: d.dose_unit??null }
   ) : [];
   renderSelectedDrugs();
 
@@ -360,7 +360,7 @@ async function searchDrugs() {
       btn.innerHTML = `<div class="fw-bold">${escapeHtml(item.name)}</div><div class="small text-soft">${escapeHtml(item.manufacturer||'제조사 정보 없음')}</div>`;
       btn.onclick = () => {
         if (!selectedDrugs.some(d => d.name === item.name)) {
-          selectedDrugs.push({ name: item.name, dose_count: null, dose_timing: '식후', dose_days: null, dose_amount: null, dose_unit: null });
+          selectedDrugs.push({ name: item.name, dose_count: null, dose_timing: '아침 식후', dose_days: null, dose_amount: null, dose_unit: null });
           renderSelectedDrugs();
         }
         document.getElementById('drug-search-input').value = '';
