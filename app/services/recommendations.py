@@ -20,6 +20,7 @@ from app.services.recommendation_refiner import (
     RecommendationCandidate,
     finalize_recommendations,
 )
+from app.utils.cache import TTL_DRUG_SEARCH, TTL_RECOMMENDATION, cache_get, cache_set
 
 logger = logging.getLogger(__name__)
 
@@ -466,9 +467,14 @@ class RecommendationService:
             name = name.strip()
             if not name:
                 continue
+
+            cached = await cache_get("drug_detail", name)
+            if cached is not None:
+                details.append(cached)
+                continue
+
             rows = await self.drug_repo.search_by_name(name, limit=1)
             if not rows:
-                # OCR 오타 보정: 점→정
                 import re as _re
 
                 corrected = _re.sub(r"점(\d|$)", r"정\1", name)
@@ -476,19 +482,19 @@ class RecommendationService:
                     rows = await self.drug_repo.search_by_name(corrected, limit=1)
             if rows:
                 d = rows[0]
-                details.append(
-                    {
-                        "name": d.name,
-                        "efficacy": d.efficacy,
-                        "dosage": d.dosage,
-                        "caution": " ".join(filter(None, [d.caution_1, d.caution_2]))[:300]
-                        if (d.caution_1 or d.caution_2)
-                        else None,
-                        "main_ingredient": d.main_ingredient,
-                    }
-                )
+                detail = {
+                    "name": d.name,
+                    "efficacy": d.efficacy,
+                    "dosage": d.dosage,
+                    "caution": " ".join(filter(None, [d.caution_1, d.caution_2]))[:300]
+                    if (d.caution_1 or d.caution_2)
+                    else None,
+                    "main_ingredient": d.main_ingredient,
+                }
             else:
-                details.append({"name": name})
+                detail = {"name": name}
+            await cache_set("drug_detail", name, value=detail, ttl=TTL_DRUG_SEARCH)
+            details.append(detail)
         return details
 
     async def _generate_ai_recommendations(
@@ -502,14 +508,12 @@ class RecommendationService:
         diag_str = ", ".join(d.strip() for d in diagnosis_list if d.strip())
         gl_str = "\n".join(f"- {t}" for t in guideline_texts[:15]) if guideline_texts else "(가이드라인 없음)"
         drug_str = ""
-        for dd in drug_details:
+        for dd in drug_details[:5]:
             parts = [f"약물명: {dd['name']}"]
             if dd.get("efficacy"):
-                parts.append(f"효능: {dd['efficacy'][:150]}")
-            if dd.get("dosage"):
-                parts.append(f"용법: {dd['dosage'][:150]}")
+                parts.append(f"효능: {dd['efficacy'][:100]}")
             if dd.get("caution"):
-                parts.append(f"주의사항: {dd['caution'][:150]}")
+                parts.append(f"주의: {dd['caution'][:100]}")
             drug_str += "\n".join(parts) + "\n---\n"
 
         system_prompt = """당신은 환자의 건강관리 목표를 추천하는 AI 건강 어시스턴트입니다.
@@ -548,6 +552,7 @@ frequency 종류: daily, weekly, 3_per_week, every_other_day, monthly, as_needed
                 system_prompt=system_prompt,
                 user_prompt=user_prompt,
                 temperature=0.3,
+                max_tokens=1024,
             )
             import json
 
@@ -761,14 +766,23 @@ frequency 종류: daily, weekly, 3_per_week, every_other_day, monthly, as_needed
         """
         특정 scan의 recommendation을 조회하거나, 없으면 새로 생성한다.
         """
+        # 1) Redis 캐시 확인
+        cached = await cache_get("rec", user_id, scan_id)
+        if cached is not None:
+            return cached
+
         scan = await self.scan_repo.get_by_id_for_user(user_id, scan_id)
         if not scan:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="scan not found")
 
+        # 2) DB 확인
         existing = await self.recommendation_repo.list_by_user_scan(user_id=user_id, scan_id=scan_id)
         if existing:
-            return {"scan_id": scan_id, "items": [_rec_to_response_dict(r) for r in existing]}
+            result = {"scan_id": scan_id, "items": [_rec_to_response_dict(r) for r in existing]}
+            await cache_set("rec", user_id, scan_id, value=result, ttl=TTL_RECOMMENDATION)
+            return result
 
+        # 3) 새로 생성
         document_type = self._normalize_document_type(scan.get("document_type"))
         diagnosis_list, clinical_note, drugs = self._extract_scan_fields(scan)
 
@@ -808,7 +822,9 @@ frequency 종류: daily, weekly, 3_per_week, every_other_day, monthly, as_needed
             status_value="candidate",
         )
 
-        return {"scan_id": scan_id, "items": [_rec_to_response_dict(r) for r in created]}
+        result = {"scan_id": scan_id, "items": [_rec_to_response_dict(r) for r in created]}
+        await cache_set("rec", user_id, scan_id, value=result, ttl=TTL_RECOMMENDATION)
+        return result
 
     async def list_by_user(self, user_id: int, limit: int = 50, offset: int = 0) -> list[dict[str, Any]]:
         """

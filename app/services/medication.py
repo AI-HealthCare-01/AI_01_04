@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any, Literal, cast
 
 from fastapi import HTTPException
@@ -17,6 +17,7 @@ from app.dtos.medication import MedicationLogUpdateRequest
 from app.models.prescriptions import MedicationIntakeLog, Prescription
 from app.repositories.medication_intake_repository import MedicationIntakeRepository
 from app.repositories.prescription_repository import PrescriptionRepository
+from app.utils.cache import cache_delete
 from app.utils.datetime import DateTimeError, date_range_inclusive, normalize_from_to, parse_date_yyyy_mm_dd
 from app.utils.pagination import build_page_meta
 from app.utils.progress import rate_bucket
@@ -94,6 +95,13 @@ _TIMING_SLOT_MAP: dict[str, list[str]] = {
 _FALLBACK_TO_DOSE_COUNT = {"식전", "식후", "식후30분후", "필요시"}
 
 
+# 단일 시간대 지정 키 (슬롯 1개만 매핑되는 것들)
+_SINGLE_SLOT_TIMINGS = {
+    "아침", "점심", "저녁",
+    "아침 식후", "아침 식전", "점심 식후", "점심 식전", "저녁 식후", "저녁 식전",
+}
+
+
 def _slots_for_prescription(p: Prescription) -> list[str]:
     """처방전의 dose_timing 또는 dose_count 기반으로 복약 슬롯을 반환한다."""
     timing = getattr(p, "dose_timing", None)
@@ -103,7 +111,11 @@ def _slots_for_prescription(p: Prescription) -> list[str]:
             # 단순 식전/식후 등은 dose_count로 확장
             if timing in _FALLBACK_TO_DOSE_COUNT and (p.dose_count or 1) > 1:
                 return _slots_by_dose_count(p.dose_count)
-            return _TIMING_SLOT_MAP[timing]
+            mapped = _TIMING_SLOT_MAP[timing]
+            # 단일 시간대 지정인데 dose_count가 더 크면 dose_count 기반으로 확장
+            if timing in _SINGLE_SLOT_TIMINGS and (p.dose_count or 1) > len(mapped):
+                return _slots_by_dose_count(p.dose_count)
+            return mapped
     return _slots_by_dose_count(p.dose_count)
 
 
@@ -165,13 +177,16 @@ class MedicationService:
         self.medication_repo = MedicationIntakeRepository()
 
     async def ensure_day_seed(self, *, user_id: int, date: str) -> None:
-        """외부 서비스에서 호출하는 시드 진입점.
-
-        Args:
-            user_id (int): 시드를 생성할 사용자 ID.
-            date (str): 시드를 생성할 날짜 (YYYY-MM-DD).
-        """
+        """외부 서비스에서 호출하는 시드 진입점."""
         await self._seed_day_if_empty(user_id=user_id, date_str=date)
+
+    @staticmethod
+    async def _earliest_scan_date(user_id: int) -> date | None:
+        """사용자의 가장 오래된 처방 start_date를 반환한다."""
+        row = await Prescription.filter(
+            user_id=user_id, start_date__isnull=False
+        ).order_by("start_date").first()
+        return row.start_date if row else None
 
     async def _extend_expired_prescriptions(self, user_id: int, today: Any) -> None:
         """복용 완료(taken) 기록이 전혀 없는 만료 처방전의 end_date를 오늘로 연장한다."""
@@ -264,6 +279,11 @@ class MedicationService:
             start, end = normalize_from_to(date_from, date_to)
         except DateTimeError as e:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e
+
+        # 사용자의 첫 스캔 날짜 이전은 표시하지 않음
+        earliest = await self._earliest_scan_date(user_id)
+        if earliest and start < earliest:
+            start = earliest
 
         days = date_range_inclusive(start, end)
         if sort == "desc":
@@ -403,6 +423,7 @@ class MedicationService:
                         await sib.save()
 
             day = await self.get_day_detail(user_id=user_id, date=log.intake_date.isoformat())
+            await cache_delete("dashboard", user_id, str(log.intake_date))
             return {"log_id": log_id, "updated": True, "day": day}
 
         except HTTPException:

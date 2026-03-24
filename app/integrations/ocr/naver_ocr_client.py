@@ -64,7 +64,7 @@ class NaverOCRClient:
         headers = {"X-OCR-SECRET": self.secret}
 
         try:
-            async with httpx.AsyncClient(timeout=30.0) as client:
+            async with httpx.AsyncClient(timeout=15.0) as client:
                 with path.open("rb") as f:
                     files: Any = {
                         "file": (path.name, f, "application/octet-stream"),

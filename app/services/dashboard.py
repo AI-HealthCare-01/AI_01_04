@@ -13,6 +13,7 @@ from app.models.users import User
 from app.repositories.medication_intake_repository import MedicationIntakeRepository
 from app.repositories.prescription_repository import PrescriptionRepository
 from app.repositories.recommendation_repository import RecommendationRepository
+from app.utils.cache import TTL_DASHBOARD, cache_delete, cache_get, cache_set
 
 logger = logging.getLogger(__name__)
 
@@ -142,7 +143,14 @@ class DashboardService:
                 대시보드 요약 응답 데이터
         """
         try:
-            return await self._get_summary_impl(user)
+            today = datetime.now(config.TIMEZONE).date()
+            cached = await cache_get("dashboard", user.id, str(today))
+            if cached is not None:
+                return cached
+
+            result = await self._get_summary_impl(user)
+            await cache_set("dashboard", user.id, str(today), value=result, ttl=TTL_DASHBOARD)
+            return result
         except Exception as e:
             logger.exception("Dashboard get_summary failed")
             raise HTTPException(status_code=500, detail="대시보드 데이터를 불러오는 중 오류가 발생했습니다.") from e

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from typing import Any
 
 from openai import AsyncOpenAI
 
@@ -20,7 +21,11 @@ def get_openai_client() -> AsyncOpenAI:
     """
     global _client
     if _client is None:
-        _client = AsyncOpenAI(api_key=config.OPENAI_API_KEY)
+        _client = AsyncOpenAI(
+            api_key=config.OPENAI_API_KEY,
+            timeout=15.0,
+            max_retries=1,
+        )
     return _client
 
 
@@ -44,6 +49,7 @@ async def chat_completion(
     system_prompt: str,
     user_prompt: str,
     temperature: float = 0.7,
+    max_tokens: int | None = None,
 ) -> str:
     """
     ChatCompletion API 호출.
@@ -52,17 +58,21 @@ async def chat_completion(
         system_prompt (str): 시스템 프롬프트.
         user_prompt (str): 사용자 프롬프트.
         temperature (float): 생성 다양성 제어값.
+        max_tokens (int | None): 최대 출력 토큰 수. None이면 모델 기본값 사용.
 
     Returns:
         str: 모델 응답 텍스트.
     """
     client = get_openai_client()
-    response = await client.chat.completions.create(
-        model=config.OPENAI_MODEL,
-        messages=[
+    kwargs: dict[str, Any] = {
+        "model": config.OPENAI_MODEL,
+        "messages": [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt},
         ],
-        temperature=temperature,
-    )
+        "temperature": temperature,
+    }
+    if max_tokens is not None:
+        kwargs["max_tokens"] = max_tokens
+    response = await client.chat.completions.create(**kwargs)
     return response.choices[0].message.content or ""

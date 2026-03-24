@@ -196,6 +196,23 @@ class ScanAnalysisService:
                 detail="AI 후처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
             ) from e
 
+    async def _correct_drug_names(self, drugs: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        """AI 결과의 약품명을 DB 매칭으로 보정한다 (done 상태 저장 전).
+
+        EDI코드 우선 → 이름 매칭 순으로 시도한다.
+        """
+        for drug_entry in drugs:
+            name = (drug_entry.get("name") or "").strip()
+            if not name:
+                continue
+            try:
+                drug_obj = await self._match_drug(drug_entry, name)
+                if drug_obj.name:
+                    drug_entry["name"] = drug_obj.name
+            except Exception:
+                pass
+        return drugs
+
     async def prepare_analysis(self, user: Any, scan_id: int) -> dict[str, Any]:
         """백그라운드 분석 시작 전 상태를 processing으로 변경하고 즉시 반환한다."""
         cur = await self.scan_repo.get_by_id_for_user(user.id, scan_id)
@@ -231,6 +248,8 @@ class ScanAnalysisService:
                 document_type=document_type,
             )
 
+            corrected_drugs = await self._correct_drug_names(ai_result.get("drugs", []))
+
             await self.scan_repo.update(
                 user.id,
                 scan_id,
@@ -240,7 +259,7 @@ class ScanAnalysisService:
                 document_date=ai_result.get("document_date"),
                 diagnosis_list=ai_result.get("diagnosis_list", []),
                 clinical_note=ai_result.get("clinical_note"),
-                drugs=ai_result.get("drugs", []),
+                drugs=corrected_drugs,
                 unrecognized_drugs=ai_result.get("unrecognized_drugs", []),
                 raw_text=ai_result.get("raw_text"),
                 ocr_raw=ai_result.get("ocr_raw"),
@@ -278,6 +297,8 @@ class ScanAnalysisService:
                 document_type=document_type,
             )
 
+            corrected_drugs = await self._correct_drug_names(ai_result.get("drugs", []))
+
             await self.scan_repo.update(
                 user.id,
                 scan_id,
@@ -287,7 +308,7 @@ class ScanAnalysisService:
                 document_date=ai_result.get("document_date"),
                 diagnosis_list=ai_result.get("diagnosis_list", []),
                 clinical_note=ai_result.get("clinical_note"),
-                drugs=ai_result.get("drugs", []),
+                drugs=corrected_drugs,
                 unrecognized_drugs=ai_result.get("unrecognized_drugs", []),
                 raw_text=ai_result.get("raw_text"),
                 ocr_raw=ai_result.get("ocr_raw"),
@@ -377,7 +398,7 @@ class ScanAnalysisService:
         return disease_obj or await Disease.create(name=name, kcd_code=kcd_code)
 
     async def _match_drug(self, drug_entry: dict[str, Any], drug_name: str) -> Drug:
-        """EDI코드 → 정확 이름 → DB 부분매칭 → 벡터 유사도 → get_or_create 순으로 매칭."""
+        """EDI코드 → 정확 이름 → 함량 포함 매칭 → DB 부분매칭 → 벡터 유사도 → get_or_create 순으로 매칭."""
         # 1) EDI 코드 매칭
         edi_code = (drug_entry.get("edi_code") or "").strip()
         if edi_code:
@@ -391,10 +412,21 @@ class ScanAnalysisService:
                 if drug_obj:
                     return drug_obj
 
-        # 2) 정확 이름 매칭 (icontains)
-        drug_obj = await Drug.filter(name__icontains=drug_name).first()
-        if drug_obj:
-            return drug_obj
+        # 2) 정확 이름 매칭 — 여러 후보가 있으면 함량까지 가장 유사한 것 선택
+        candidates = await Drug.filter(name__icontains=drug_name).order_by("name").limit(20)
+        if candidates:
+            if len(candidates) == 1:
+                return candidates[0]
+            return self._pick_best_candidate(drug_name, candidates)
+
+        # 2-1) 함량·제형 제거 후 기본명으로 재검색 (AI가 '노바스크정5mg' 반환 시 DB '노바스크정5밀리그람' 매칭)
+        base, _ = self._parse_drug_base_and_form(drug_name)
+        if base and base != drug_name:
+            candidates = await Drug.filter(name__icontains=base).order_by("name").limit(20)
+            if candidates:
+                if len(candidates) == 1:
+                    return candidates[0]
+                return self._pick_best_candidate(drug_name, candidates)
 
         # 3) DB 부분 매칭: 제형 접미사 제거 후 핵심 키워드로 검색
         drug_obj = await self._fuzzy_match_drug_by_name(drug_name)
@@ -418,6 +450,28 @@ class ScanAnalysisService:
         return drug_obj
 
     @staticmethod
+    def _extract_dosage_number(name: str) -> str | None:
+        """약품명에서 함량 숫자를 추출한다. 예: '노바스크정5mg' → '5', '2.5/1000' → '2.5/1000'"""
+        m = re.search(r"([\d.]+(?:/[\d.]+)?)", name)
+        return m.group(1) if m else None
+
+    @staticmethod
+    def _pick_best_candidate(drug_name: str, candidates: list[Drug]) -> Drug:
+        """여러 DB 후보 중 약품명의 함량과 가장 일치하는 것을 선택한다."""
+        query_dosage = ScanAnalysisService._extract_dosage_number(drug_name)
+        if not query_dosage:
+            return candidates[0]
+        for c in candidates:
+            c_dosage = ScanAnalysisService._extract_dosage_number(c.name)
+            if c_dosage and c_dosage == query_dosage:
+                return c
+        # 정확 일치 없으면 부분 포함 시도
+        for c in candidates:
+            if query_dosage in c.name:
+                return c
+        return candidates[0]
+
+    @staticmethod
     def _parse_drug_base_and_form(drug_name: str) -> tuple[str, str | None]:
         form_re = re.compile(
             r"[\d.]+\s*(%|mg|ml|g|mcg|밀리그램|그램)?"
@@ -429,7 +483,8 @@ class ScanAnalysisService:
         return base, form_match.group(1) if form_match else None
 
     @staticmethod
-    async def _prefix_search_drug(base: str, form_kw: str | None) -> Drug | None:
+    async def _prefix_search_drug(base: str, form_kw: str | None, original_name: str = "") -> Drug | None:
+        query_dosage = ScanAnalysisService._extract_dosage_number(original_name) if original_name else None
         for length in range(len(base), 2, -1):
             prefix = base[:length]
             rest = base[length:]
@@ -441,6 +496,10 @@ class ScanAnalysisService:
             scored: list[tuple[int, Drug]] = []
             for c in candidates:
                 score = (2 if form_kw and form_kw in c.name else 0) + (3 if rest and rest in c.name else 0)
+                if query_dosage:
+                    c_dosage = ScanAnalysisService._extract_dosage_number(c.name)
+                    if c_dosage and c_dosage == query_dosage:
+                        score += 10
                 scored.append((score, c))
             scored.sort(key=lambda x: -x[0])
             if scored[0][0] > 0 or length == len(base):
@@ -472,7 +531,7 @@ class ScanAnalysisService:
         base, form_kw = ScanAnalysisService._parse_drug_base_and_form(drug_name)
         if len(base) < 2:
             return None
-        result = await ScanAnalysisService._prefix_search_drug(base, form_kw)
+        result = await ScanAnalysisService._prefix_search_drug(base, form_kw, drug_name)
         return result or await ScanAnalysisService._trgm_drug_fallback(drug_name)
 
     async def _create_prescriptions(
