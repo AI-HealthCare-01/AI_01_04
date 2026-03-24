@@ -13,7 +13,7 @@ from app.models.users import User
 from app.repositories.medication_intake_repository import MedicationIntakeRepository
 from app.repositories.prescription_repository import PrescriptionRepository
 from app.repositories.recommendation_repository import RecommendationRepository
-from app.utils.cache import TTL_DASHBOARD, cache_delete, cache_get, cache_set
+from app.utils.cache import TTL_DASHBOARD, cache_get, cache_set
 
 logger = logging.getLogger(__name__)
 

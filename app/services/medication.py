@@ -97,8 +97,15 @@ _FALLBACK_TO_DOSE_COUNT = {"식전", "식후", "식후30분후", "필요시"}
 
 # 단일 시간대 지정 키 (슬롯 1개만 매핑되는 것들)
 _SINGLE_SLOT_TIMINGS = {
-    "아침", "점심", "저녁",
-    "아침 식후", "아침 식전", "점심 식후", "점심 식전", "저녁 식후", "저녁 식전",
+    "아침",
+    "점심",
+    "저녁",
+    "아침 식후",
+    "아침 식전",
+    "점심 식후",
+    "점심 식전",
+    "저녁 식후",
+    "저녁 식전",
 }
 
 
@@ -183,9 +190,7 @@ class MedicationService:
     @staticmethod
     async def _earliest_scan_date(user_id: int) -> date | None:
         """사용자의 가장 오래된 처방 start_date를 반환한다."""
-        row = await Prescription.filter(
-            user_id=user_id, start_date__isnull=False
-        ).order_by("start_date").first()
+        row = await Prescription.filter(user_id=user_id, start_date__isnull=False).order_by("start_date").first()
         return row.start_date if row else None
 
     async def _extend_expired_prescriptions(self, user_id: int, today: Any) -> None:

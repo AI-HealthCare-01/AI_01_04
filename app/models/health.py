@@ -56,7 +56,7 @@ class HealthChecklistLog(models.Model):
         related_name="health_checklist_logs",
     )
 
-    template: ForeignKeyRelation[HealthChecklistTemplate] = fields.ForeignKeyField(
+    template: ForeignKeyRelation[HealthChecklistTemplate] | None = fields.ForeignKeyField(
         "models.HealthChecklistTemplate",
         on_delete=fields.CASCADE,
         related_name="logs",

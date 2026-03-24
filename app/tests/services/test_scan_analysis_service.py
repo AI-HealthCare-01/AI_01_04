@@ -19,7 +19,7 @@ FAKE_OCR_RAW = {"images": [{"fields": [{"inferText": "아스피린 30일분"}]}]
 FAKE_AI_RESULT = {
     "document_date": "2024-01-01",
     "diagnosis": "고혈압",
-    "drugs": ["아스피린"],
+    "drugs": [{"name": "아스피린"}],
     "raw_text": "아스피린 30일분",
     "ocr_raw": FAKE_OCR_RAW,
 }

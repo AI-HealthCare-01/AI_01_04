@@ -123,11 +123,7 @@ class ChatContextService:
 
     async def _get_scan_cards(self, user_id: int) -> list[dict[str, Any]]:
         """저장 완료된 스캔별 진단명+약품명 카드 목록을 반환한다."""
-        scans = (
-            await Scan.filter(user_id=user_id, status="saved")
-            .order_by("-created_at")
-            .limit(20)
-        )
+        scans = await Scan.filter(user_id=user_id, status="saved").order_by("-created_at").limit(20)
         cards: list[dict[str, Any]] = []
         for s in scans:
             diagnoses: list[str] = []
@@ -144,12 +140,14 @@ class ChatContextService:
             if not diagnoses and not drug_names:
                 continue
 
-            cards.append({
-                "scan_id": s.id,
-                "document_date": s.document_date,
-                "diagnoses": diagnoses,
-                "drug_names": drug_names,
-            })
+            cards.append(
+                {
+                    "scan_id": s.id,
+                    "document_date": s.document_date,
+                    "diagnoses": diagnoses,
+                    "drug_names": drug_names,
+                }
+            )
         return cards
 
     async def deactivate_prescription(self, user_id: int, prescription_id: int) -> bool:

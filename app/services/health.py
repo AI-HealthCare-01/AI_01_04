@@ -47,9 +47,8 @@ class HealthService:
     async def _earliest_scan_date(user_id: int) -> date | None:
         """사용자의 가장 오래된 처방 start_date를 반환한다."""
         from app.models.prescriptions import Prescription
-        row = await Prescription.filter(
-            user_id=user_id, start_date__isnull=False
-        ).order_by("start_date").first()
+
+        row = await Prescription.filter(user_id=user_id, start_date__isnull=False).order_by("start_date").first()
         return row.start_date if row else None
 
     async def _get_user_active_labels(self, user_id: int) -> list[str]:

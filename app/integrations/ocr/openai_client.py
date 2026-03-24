@@ -198,7 +198,7 @@ def _dedupe_drugs(items: list) -> list[dict]:
 
 
 # 유효한 KCD 코드 첫 글자 (ICD-10 챕터)
-_VALID_KCD_PREFIXES = set("ABCDEFGHJKLMNOPQRSTUV")
+_VALID_KCD_PREFIXES = set("ABCDEFGHIJKLMNOPQRSTUV")
 
 
 def _is_valid_kcd(code: str) -> bool:
@@ -294,9 +294,7 @@ _KCD_PATTERN = re.compile(
 _KCD_LABEL_PATTERN = re.compile(
     r"(?:질병분류|상병코드|질병코드|질병\s*분류|상병\s*기호|분류기호)\s*([1lIA-Z][0-9]{2,4}[0-9A-Z]?)"
 )
-_KCD_SPACED_PATTERN = re.compile(
-    r"(?<![A-Za-z0-9])([A-Za-z])\s+([0-9])\s+([0-9])\s+([0-9])(?:\s+([0-9]))?(?![A-Za-z])"
-)
+_KCD_SPACED_PATTERN = re.compile(r"(?<![A-Za-z0-9])([A-Za-z])\s+([0-9])\s+([0-9])\s+([0-9])(?:\s+([0-9]))?(?![A-Za-z])")
 
 
 def _normalize_kcd(code: str) -> str:

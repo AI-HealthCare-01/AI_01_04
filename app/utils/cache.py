@@ -34,7 +34,7 @@ async def get_redis() -> aioredis.Redis | None:
         return _redis
     try:
         _redis = aioredis.from_url(config.REDIS_URL, decode_responses=True)
-        await _redis.ping()
+        await _redis.ping()  # type: ignore[misc]
         logger.info("Redis connected: %s", config.REDIS_URL)
         return _redis
     except Exception:

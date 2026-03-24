@@ -397,49 +397,47 @@ class ScanAnalysisService:
             disease_obj = await Disease.get_or_none(name=name)
         return disease_obj or await Disease.create(name=name, kcd_code=kcd_code)
 
-    async def _match_drug(self, drug_entry: dict[str, Any], drug_name: str) -> Drug:
-        """EDI코드 → 정확 이름 → 함량 포함 매칭 → DB 부분매칭 → 벡터 유사도 → get_or_create 순으로 매칭."""
-        # 1) EDI 코드 매칭
-        edi_code = (drug_entry.get("edi_code") or "").strip()
-        if edi_code:
-            for flt in (
-                {"edi_code__contains": f",{edi_code},"},
-                {"edi_code__startswith": f"{edi_code},"},
-                {"edi_code__endswith": f",{edi_code}"},
-                {"edi_code": edi_code},
-            ):
-                drug_obj = await Drug.filter(**flt).first()
-                if drug_obj:
-                    return drug_obj
+    async def _match_by_edi(self, edi_code: str) -> Drug | None:
+        """EDI 코드로 약품을 매칭한다."""
+        for flt in (
+            {"edi_code__contains": f",{edi_code},"},
+            {"edi_code__startswith": f"{edi_code},"},
+            {"edi_code__endswith": f",{edi_code}"},
+            {"edi_code": edi_code},
+        ):
+            drug_obj = await Drug.filter(**flt).first()
+            if drug_obj:
+                return drug_obj
+        return None
 
-        # 2) 정확 이름 매칭 — 여러 후보가 있으면 함량까지 가장 유사한 것 선택
+    async def _match_by_name(self, drug_name: str) -> Drug | None:
+        """이름 기반으로 약품을 매칭한다 (정확 → 기본명 → 퍼지)."""
         candidates = await Drug.filter(name__icontains=drug_name).order_by("name").limit(20)
         if candidates:
-            if len(candidates) == 1:
-                return candidates[0]
-            return self._pick_best_candidate(drug_name, candidates)
+            return candidates[0] if len(candidates) == 1 else self._pick_best_candidate(drug_name, candidates)
 
-        # 2-1) 함량·제형 제거 후 기본명으로 재검색 (AI가 '노바스크정5mg' 반환 시 DB '노바스크정5밀리그람' 매칭)
         base, _ = self._parse_drug_base_and_form(drug_name)
         if base and base != drug_name:
             candidates = await Drug.filter(name__icontains=base).order_by("name").limit(20)
             if candidates:
-                if len(candidates) == 1:
-                    return candidates[0]
-                return self._pick_best_candidate(drug_name, candidates)
+                return candidates[0] if len(candidates) == 1 else self._pick_best_candidate(drug_name, candidates)
 
-        # 3) DB 부분 매칭: 제형 접미사 제거 후 핵심 키워드로 검색
-        drug_obj = await self._fuzzy_match_drug_by_name(drug_name)
+        return await self._fuzzy_match_drug_by_name(drug_name)
+
+    async def _match_drug(self, drug_entry: dict[str, Any], drug_name: str) -> Drug:
+        """EDI코드 → 이름 매칭 → 벡터 유사도 → get_or_create 순으로 매칭."""
+        edi_code = (drug_entry.get("edi_code") or "").strip()
+        if edi_code:
+            drug_obj = await self._match_by_edi(edi_code)
+            if drug_obj:
+                return drug_obj
+
+        drug_obj = await self._match_by_name(drug_name)
         if drug_obj:
             return drug_obj
 
-        # 4) 벡터 유사도 매칭
         query_vector = encode(drug_name)
-        similar = await self.vector_repo.search_similar(
-            query_vector,
-            reference_type="drug",
-            top_k=1,
-        )
+        similar = await self.vector_repo.search_similar(query_vector, reference_type="drug", top_k=1)
         _drug_similarity_threshold = 0.35
         if similar and getattr(similar[0], "_distance", 1.0) <= _drug_similarity_threshold:
             drug_obj = await Drug.get_or_none(id=similar[0].reference_id)
