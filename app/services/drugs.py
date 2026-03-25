@@ -50,11 +50,15 @@ class DrugService:
 
     async def search(self, keyword: str, *, limit: int = 20) -> list[dict]:
         """약품명 키워드로 검색하여 응답 딕셔너리 목록을 반환한다."""
+        cached = await cache_get("drug", keyword, limit)
+        if cached is not None:
+            return cached
+
         try:
             rows = await self._search_with_fallbacks(keyword, limit)
         except Exception:
             raise HTTPException(status_code=500, detail="약물 검색 중 오류가 발생했습니다.") from None
-        return [
+        result = [
             {
                 "id": row.id,
                 "name": row.name,
