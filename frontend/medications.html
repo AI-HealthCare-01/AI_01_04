@@ -46,12 +46,13 @@
 </div>
 
 <script src="js/utils.js"></script>
+<script src="js/texts.js"></script>
 <script src="js/api.js"></script>
 <script src="js/chat-widget.js"></script>
 <script>
 if (!localStorage.getItem('access_token')) window.location.href = 'index.html';
 
-const TIMINGS = ['아침','점심','저녁','자기전'];
+const TIMINGS = ['아침','점심','저녁','자기 전'];
 let DATA = []; // [{date, items:[{id,label,status,drug_name,dose_amount,dose_unit,dose_timing}]}]
 const activeTab = {};
 
@@ -78,7 +79,7 @@ function getPct(day) {
   const all = allItems(day);
   return all.length ? Math.round(all.filter(i=>i.done).length / all.length * 100) : 0;
 }
-function pctClass(p) { return p===100?'full':p>0?'partial':'zero'; }
+function pctClass(p) { return p>=80?'full':p>=50?'partial':'zero'; }
 
 function render() {
   const wrap = document.getElementById('med-accordion');
@@ -189,5 +190,6 @@ async function loadMedications() {
 document.addEventListener('DOMContentLoaded', loadMedications);
 </script>
 
+<script src="js/accessibility.js"></script>
 </body>
 </html>

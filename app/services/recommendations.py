@@ -9,7 +9,9 @@ from starlette import status
 
 from app.core import config
 from app.dtos.recommendations import RecommendationType, RecommendationUpdateRequest
+from app.integrations.openai.client import chat_completion
 from app.repositories.disease_repository import DiseaseRepository
+from app.repositories.drug_repository import DrugRepository
 from app.repositories.recommendation_repository import RecommendationRepository
 from app.repositories.scan_repository import ScanRepository
 from app.repositories.vector_document_repository import VectorDocumentRepository
@@ -98,6 +100,7 @@ class RecommendationService:
         self.scan_repo = ScanRepository()
         self.vector_doc_repo = VectorDocumentRepository()
         self.disease_repo = DiseaseRepository()
+        self.drug_repo = DrugRepository()
 
     def _normalize_document_type(self, raw: Any) -> str:
         """
@@ -456,6 +459,124 @@ class RecommendationService:
 
         return candidates
 
+    async def _fetch_drug_details(self, drug_names: list[str]) -> list[dict[str, Any]]:
+        """약물명 목록으로 DB에서 상세정보를 조회한다."""
+        details: list[dict[str, Any]] = []
+        for name in drug_names[:10]:
+            name = name.strip()
+            if not name:
+                continue
+            rows = await self.drug_repo.search_by_name(name, limit=1)
+            if not rows:
+                # OCR 오타 보정: 점→정
+                import re as _re
+
+                corrected = _re.sub(r"점(\d|$)", r"정\1", name)
+                if corrected != name:
+                    rows = await self.drug_repo.search_by_name(corrected, limit=1)
+            if rows:
+                d = rows[0]
+                details.append(
+                    {
+                        "name": d.name,
+                        "efficacy": d.efficacy,
+                        "dosage": d.dosage,
+                        "caution": " ".join(filter(None, [d.caution_1, d.caution_2]))[:300]
+                        if (d.caution_1 or d.caution_2)
+                        else None,
+                        "main_ingredient": d.main_ingredient,
+                    }
+                )
+            else:
+                details.append({"name": name})
+        return details
+
+    async def _generate_ai_recommendations(
+        self,
+        *,
+        diagnosis_list: list[str],
+        guideline_texts: list[str],
+        drug_details: list[dict[str, Any]],
+    ) -> list[RecommendationCandidate]:
+        """OpenAI를 활용해 진단+가이드라인+약물정보 기반 구체적 추천을 생성한다."""
+        diag_str = ", ".join(d.strip() for d in diagnosis_list if d.strip())
+        gl_str = "\n".join(f"- {t}" for t in guideline_texts[:15]) if guideline_texts else "(가이드라인 없음)"
+        drug_str = ""
+        for dd in drug_details:
+            parts = [f"약물명: {dd['name']}"]
+            if dd.get("efficacy"):
+                parts.append(f"효능: {dd['efficacy'][:150]}")
+            if dd.get("dosage"):
+                parts.append(f"용법: {dd['dosage'][:150]}")
+            if dd.get("caution"):
+                parts.append(f"주의사항: {dd['caution'][:150]}")
+            drug_str += "\n".join(parts) + "\n---\n"
+
+        system_prompt = """당신은 환자의 건강관리 목표를 추천하는 AI 건강 어시스턴트입니다.
+
+규칙:
+- 환자의 진단명, 가이드라인, 처방약 정보를 종합하여 실천 가능한 건강관리 목표를 추천하세요.
+- 각 추천은 구체적이고 실천 가능한 행동 지침이어야 합니다. (예: "하루 물 1.5L 마시기", "식후 30분 걷기")
+- 약물 정보가 있으면 해당 약의 부작용 주의사항이나 생활습관 주의점을 반영하세요.
+- 절대 금지: 약물 복용법/용법용량 안내 (예: "1일 2회 복용하세요", "식사와 함께 복용하세요", "아침저녁 복용" 등). 복용법은 이미 처방전에서 설정되어 있으므로 추천에 포함하지 마세요.
+- 의학적 진단이나 처방 변경 지시는 절대 하지 마세요.
+- 결과는 반드시 JSON 배열로만 반환하세요. 설명 없이 JSON만 출력하세요.
+
+출력 형식:
+[
+  {"type": "lifestyle", "content": "...", "frequency": "daily"},
+  {"type": "warning", "content": "...", "frequency": "as_needed"},
+  {"type": "followup", "content": "...", "frequency": "monthly"}
+]
+
+type 종류: lifestyle(식이/운동/생활습관), warning(부작용/주의사항), followup(정기검진/추적관찰)
+frequency 종류: daily, weekly, 3_per_week, every_other_day, monthly, as_needed
+
+5~8개의 추천을 생성하세요. lifestyle 추천을 주로 포함하고, 약물 복용법 안내는 제외하세요."""
+
+        user_prompt = f"""환자 정보:
+- 진단명: {diag_str}
+- 처방약: {drug_str if drug_str.strip() else "(없음)"}
+
+관련 가이드라인:
+{gl_str}
+
+위 정보를 종합하여 이 환자에게 맞는 건강관리 목표를 추천해주세요."""
+
+        try:
+            response = await chat_completion(
+                system_prompt=system_prompt,
+                user_prompt=user_prompt,
+                temperature=0.3,
+            )
+            import json
+
+            # JSON 블록 추출
+            text = response.strip()
+            if text.startswith("```"):
+                text = text.split("\n", 1)[-1].rsplit("```", 1)[0].strip()
+            items = json.loads(text)
+            if not isinstance(items, list):
+                return []
+
+            candidates: list[RecommendationCandidate] = []
+            for item in items:
+                if not isinstance(item, dict) or not item.get("content"):
+                    continue
+                candidates.append(
+                    self._create_recommendation_candidate(
+                        recommendation_type=item.get("type", "lifestyle"),
+                        source="ai_generated",
+                        content=item["content"].strip(),
+                        score=0.9,
+                        metadata={"frequency": item.get("frequency", "daily")},
+                    )
+                )
+            return candidates
+        except Exception:
+            logger.exception("AI recommendation generation failed")
+            return []
+
     async def _build_prescription_recommendations(
         self,
         *,
@@ -465,73 +586,64 @@ class RecommendationService:
         """
         처방전 scan 결과를 바탕으로 recommendation 후보를 생성한다.
 
-        복수 진단을 지원하며, 각 진단에 대해 가이드라인을 수집한다.
-
-        우선순위:
-        1. 각 진단별 guideline 직접 매칭 후보 (코드 매핑 포함)
-        2. guideline이 없을 때 vector fallback 후보
-        3. 약물명 기반 복약 안내 후보
+        1. 각 진단별 guideline 수집
+        2. 약물 상세정보 DB 조회
+        3. 가이드라인+약물정보를 OpenAI에 전달하여 구체적 추천 생성
+        4. AI 실패 시 가이드라인 기반 fallback
         """
-        candidates: list[RecommendationCandidate] = []
-        has_any_guideline = False
-
         # 1) 각 진단별 guideline 수집
+        guideline_texts: list[str] = []
+        guideline_candidates: list[RecommendationCandidate] = []
         for diag_entry in diagnosis_list:
             if not isinstance(diag_entry, str) or not diag_entry.strip():
                 continue
+            gl_cands = await self._build_guideline_recommendations(diagnosis=diag_entry.strip())
+            if gl_cands:
+                guideline_candidates.extend(gl_cands)
+                guideline_texts.extend(c.content for c in gl_cands)
 
-            guideline_candidates = await self._build_guideline_recommendations(
-                diagnosis=diag_entry.strip(),
-            )
-            if guideline_candidates:
-                has_any_guideline = True
-                candidates.extend(guideline_candidates)
+        # 2) 약물 상세정보 조회
+        drug_details = await self._fetch_drug_details(drugs)
 
-        # 2) guideline이 하나도 없으면 vector fallback
+        # 3) AI 기반 추천 생성
+        ai_candidates = await self._generate_ai_recommendations(
+            diagnosis_list=diagnosis_list,
+            guideline_texts=guideline_texts,
+            drug_details=drug_details,
+        )
+
+        if ai_candidates:
+            return ai_candidates
+
+        # 4) AI 실패 시 가이드라인 기반 fallback
+        if guideline_candidates:
+            return guideline_candidates
+
+        # 5) 가이드라인도 없으면 vector fallback
         first_diag = self._normalize_diagnosis_text(diagnosis_list[0] if diagnosis_list else None)
-        if first_diag and not has_any_guideline:
+        if first_diag:
             vector_candidates = await self._search_vector_guidelines(
                 diagnosis=first_diag,
                 drugs=drugs,
-                clinical_note=None,
                 top_k=3,
             )
-            candidates.extend(vector_candidates)
+            if vector_candidates:
+                return vector_candidates
 
-        # 3) 진단은 있지만 guideline / vector 모두 못 만든 경우
-        if not candidates and diagnosis_list:
+        # 6) 최종 fallback
+        if diagnosis_list:
             diag_summary = ", ".join(d.strip() for d in diagnosis_list[:3] if isinstance(d, str) and d.strip())
             if diag_summary:
-                candidates.append(
+                return [
                     self._create_recommendation_candidate(
                         recommendation_type="followup",
                         source="scan.diagnosis",
                         content=f"진단 정보 '{diag_summary}' 기준으로 생활관리 및 추적 관찰 항목을 확인해보세요.",
                         score=0.6,
-                        metadata={"matched_from": diag_summary},
                     )
-                )
+                ]
 
-        # 4) 약물명 기반 복약 주의 후보 추가
-        for drug in drugs[:10]:
-            if not isinstance(drug, str):
-                continue
-
-            drug_name = drug.strip()
-            if not drug_name:
-                continue
-
-            candidates.append(
-                self._create_recommendation_candidate(
-                    recommendation_type="medication",
-                    source="medication_rule",
-                    content=f"약물 '{drug_name}' 복용 관련 주의사항과 복용법을 확인해보세요.",
-                    score=0.7,
-                    drug_name=drug_name,
-                )
-            )
-
-        return candidates
+        return []
 
     async def _build_medical_record_recommendations(
         self,
@@ -541,73 +653,57 @@ class RecommendationService:
     ) -> list[RecommendationCandidate]:
         """
         진료기록지 scan 결과를 기반으로 recommendation 후보를 생성한다.
-
-        복수 진단을 지원하며, 각 진단에 대해 가이드라인을 수집한다.
         """
-        candidates: list[RecommendationCandidate] = []
-        has_any_guideline = False
+        guideline_texts: list[str] = []
+        guideline_candidates: list[RecommendationCandidate] = []
 
-        normalized_clinical_note = (
-            clinical_note.strip() if isinstance(clinical_note, str) and clinical_note.strip() else None
-        )
-
-        # 1) 각 진단별 guideline 수집
         for diag_entry in diagnosis_list:
             if not isinstance(diag_entry, str) or not diag_entry.strip():
                 continue
+            gl_cands = await self._build_guideline_recommendations(diagnosis=diag_entry.strip())
+            if gl_cands:
+                guideline_candidates.extend(gl_cands)
+                guideline_texts.extend(c.content for c in gl_cands)
 
-            guideline_candidates = await self._build_guideline_recommendations(
-                diagnosis=diag_entry.strip(),
-            )
-            if guideline_candidates:
-                has_any_guideline = True
-                candidates.extend(guideline_candidates)
+        ai_candidates = await self._generate_ai_recommendations(
+            diagnosis_list=diagnosis_list,
+            guideline_texts=guideline_texts,
+            drug_details=[],
+        )
 
-        # 2) guideline이 없으면 vector fallback
+        if ai_candidates:
+            return ai_candidates
+
+        if guideline_candidates:
+            return guideline_candidates
+
         first_diag = self._normalize_diagnosis_text(diagnosis_list[0] if diagnosis_list else None)
-        if not has_any_guideline and (first_diag or normalized_clinical_note):
+        normalized_clinical_note = (
+            clinical_note.strip() if isinstance(clinical_note, str) and clinical_note.strip() else None
+        )
+        if first_diag or normalized_clinical_note:
             vector_candidates = await self._search_vector_guidelines(
                 diagnosis=first_diag,
                 drugs=[],
                 clinical_note=normalized_clinical_note,
                 top_k=3,
             )
-            candidates.extend(vector_candidates)
+            if vector_candidates:
+                return vector_candidates
 
-        # 3) 그래도 없으면 diagnosis 기반 임시 followup 후보
-        if not candidates and diagnosis_list:
+        if diagnosis_list:
             diag_summary = ", ".join(d.strip() for d in diagnosis_list[:3] if isinstance(d, str) and d.strip())
             if diag_summary:
-                candidates.append(
+                return [
                     self._create_recommendation_candidate(
                         recommendation_type="followup",
                         source="scan.medical_record.diagnosis",
                         content=f"진단 정보 '{diag_summary}' 기준으로 증상 변화와 경과를 관찰하고 필요한 추적 진료 일정을 확인해보세요.",
                         score=0.9,
-                        metadata={"matched_from": diag_summary},
                     )
-                )
+                ]
 
-        # 4) clinical_note가 있으면 생활관리/주의 문구 추가
-        if normalized_clinical_note:
-            candidates.append(
-                self._create_recommendation_candidate(
-                    recommendation_type="lifestyle",
-                    source="scan.medical_record.clinical_note",
-                    content="진료기록지에 기재된 진료 내용과 생활지도에 맞춰 일상 관리 항목을 꾸준히 실천해보세요.",
-                    score=0.75,
-                )
-            )
-            candidates.append(
-                self._create_recommendation_candidate(
-                    recommendation_type="warning",
-                    source="scan.medical_record.clinical_note",
-                    content="진료기록지의 증상 및 소견 내용을 바탕으로 악화 징후가 있는지 주의 깊게 관찰해보세요.",
-                    score=0.7,
-                )
-            )
-
-        return candidates
+        return []
 
     async def _build_fallback_recommendation(
         self,
@@ -727,11 +823,20 @@ class RecommendationService:
 
     async def list_active(self, user_id: int) -> list[dict[str, Any]]:
         """
-        사용자의 active recommendation 목록을 조회한다.
+        사용자의 active recommendation 목록을 조회한다 (content 중복 제거).
         """
         try:
             active_recs = await self.recommendation_repo.list_active_for_user(user_id)
-            return [_rec_to_response_dict(ar.recommendation) for ar in active_recs]
+            seen_contents: set[str] = set()
+            result: list[dict[str, Any]] = []
+            for ar in active_recs:
+                rec = ar.recommendation
+                content_key = (rec.content or "").strip()
+                if content_key in seen_contents:
+                    continue
+                seen_contents.add(content_key)
+                result.append(_rec_to_response_dict(rec))
+            return result
         except Exception as e:
             logger.exception("list_active failed")
             raise HTTPException(status_code=500, detail="서버 내부 오류가 발생했습니다.") from e
@@ -780,6 +885,38 @@ class RecommendationService:
             logger.exception("delete failed")
             raise HTTPException(status_code=500, detail="서버 내부 오류가 발생했습니다.") from e
 
+    async def _collect_existing_active(self, user_id: int) -> tuple[set[int], set[str]]:
+        existing_active = await self.recommendation_repo.list_active_for_user(user_id)
+        ids: set[int] = set()
+        contents: set[str] = set()
+        for ar in existing_active:
+            ids.add(ar.recommendation.id)
+            rec = ar.recommendation
+            if rec and rec.content:
+                contents.add(rec.content.strip())
+        return ids, contents
+
+    def _filter_new_ids(
+        self,
+        target_ids: list[int],
+        recs: list,
+        existing_ids: set[int],
+        existing_contents: set[str],
+    ) -> list[int]:
+        revoked_ids = {r.id for r in recs if r.status == "revoked"} if recs else set()
+        rec_map = {r.id: r for r in recs} if recs else {}
+        new_ids: list[int] = []
+        for rid in target_ids:
+            if rid in revoked_ids or rid in existing_ids:
+                continue
+            r = rec_map.get(rid)
+            if r and r.content and r.content.strip() in existing_contents:
+                continue
+            new_ids.append(rid)
+            if r and r.content:
+                existing_contents.add(r.content.strip())
+        return new_ids
+
     async def save_for_scan(self, user_id: int, scan_id: int) -> dict[str, Any]:
         """
         scan 기반 recommendation을 active recommendation으로 반영한다.
@@ -790,22 +927,26 @@ class RecommendationService:
             if not recs:
                 generated = await self.get_for_scan(user_id=user_id, scan_id=scan_id)
                 target_ids = [it["id"] for it in (generated.get("items") or [])]
+                recs = await self.recommendation_repo.list_by_user_scan(user_id=user_id, scan_id=scan_id)
             else:
-                selected = [r.id for r in recs if r.is_selected is True]
-                all_ids = [r.id for r in recs]
+                active_recs = [r for r in recs if r.status != "revoked"]
+                selected = [r.id for r in active_recs if r.is_selected is True]
+                all_ids = [r.id for r in active_recs]
                 target_ids = selected or all_ids
 
-            await self.recommendation_repo.clear_active_for_user(user_id)
-            await self.recommendation_repo.assign_active_many(user_id=user_id, recommendation_ids=target_ids)
+            existing_active_ids, existing_contents = await self._collect_existing_active(user_id)
+            new_ids = self._filter_new_ids(target_ids, recs, existing_active_ids, existing_contents)
 
-            # 활성화된 추천은 like, revoked된 추천은 dislike 피드백 자동 기록
+            await self.recommendation_repo.assign_active_many(user_id=user_id, recommendation_ids=new_ids)
+
             revoked_ids = {r.id for r in recs if r.status == "revoked"} if recs else set()
             for rid in target_ids:
-                await self.recommendation_repo.add_feedback(user_id, rid, feedback_type="like")
+                if rid not in revoked_ids:
+                    await self.recommendation_repo.add_feedback(user_id, rid, feedback_type="like")
             for rid in revoked_ids:
                 await self.recommendation_repo.add_feedback(user_id, rid, feedback_type="dislike")
 
-            return {"scan_id": scan_id, "saved": True, "saved_count": len(target_ids)}
+            return {"scan_id": scan_id, "saved": True, "saved_count": len(new_ids)}
         except HTTPException:
             raise
         except Exception as e:

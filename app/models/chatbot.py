@@ -13,6 +13,8 @@ from typing import TYPE_CHECKING
 from tortoise import fields, models
 from tortoise.fields.relational import ForeignKeyRelation
 
+from app.models.fields import EncryptedTextField
+
 if TYPE_CHECKING:
     from app.models.users import User
 
@@ -22,6 +24,7 @@ class ChatbotSession(models.Model):
     챗봇 대화 세션 (ERD: chatbot_sessions).
 
     한 세션에 여러 메시지(1:N)가 속함.
+    mode로 복약/건강 상담을 구분한다.
     """
 
     id = fields.IntField(pk=True)
@@ -30,11 +33,13 @@ class ChatbotSession(models.Model):
         on_delete=fields.CASCADE,
         related_name="chatbot_sessions",
     )
-    started_at = fields.DatetimeField(null=True)
+    mode = fields.CharField(max_length=20, default="medication")  # medication | health
+    started_at = fields.DatetimeField(auto_now_add=True)
     ended_at = fields.DatetimeField(null=True)
 
     class Meta:
         table = "chatbot_sessions"
+        indexes = (("user_id", "mode"),)
 
 
 class ChatbotMessage(models.Model):
@@ -54,7 +59,7 @@ class ChatbotMessage(models.Model):
     )
 
     sender = fields.CharField(max_length=20)  # user, assistant
-    message = fields.TextField()
+    message = EncryptedTextField()
     created_at = fields.DatetimeField(auto_now_add=True)
 
     class Meta:
@@ -75,7 +80,7 @@ class ChatbotSessionSummary(models.Model):
         related_name="summaries",
     )
 
-    summary = fields.TextField()
+    summary = EncryptedTextField()
     created_at = fields.DatetimeField(auto_now_add=True)
 
     class Meta:

@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from app.models.users import User
@@ -11,6 +11,7 @@ security = HTTPBearer()
 
 
 async def get_request_user(
+    request: Request,
     credential: Annotated[HTTPAuthorizationCredentials, Depends(security)],
 ) -> User:
     """
@@ -37,4 +38,5 @@ async def get_request_user(
     if hasattr(user, "is_active") and not user.is_active:
         raise HTTPException(detail="Inactive user.", status_code=status.HTTP_401_UNAUTHORIZED)
 
+    request.state.user_id = user.id
     return user

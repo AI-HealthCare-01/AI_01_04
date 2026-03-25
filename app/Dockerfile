@@ -22,8 +22,9 @@ RUN uv sync --group app --no-dev --frozen
 # 4. 소스 코드 복사
 COPY ./app ./app
 COPY ./frontend ./frontend
+COPY ./scripts ./scripts
 
 # 5. 실행 명령어 수정
 # 서버 실행 전 'aerich upgrade'를 실행하여 테이블 생성을 자동화합니다.
 # uvicorn 실행 시 --proxy-headers 등을 추가하면 나중에 Nginx 연결 시 유리합니다.
-CMD ["sh", "-c", "uv run aerich upgrade && uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 3"]
+CMD ["sh", "-c", "uv run aerich upgrade && uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4"]

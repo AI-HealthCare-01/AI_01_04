@@ -7,6 +7,7 @@
   let mode = null;            // 'medication' | 'health'
   let userContext = null;
   let userId = null;
+  let sessionId = null;       // 세션 ID (서버에서 반환)
 
   /* ── Inject HTML ── */
   const root = document.createElement('div');
@@ -65,7 +66,7 @@
     choices.forEach(c => {
       const b = document.createElement('button');
       b.textContent = c.label;
-      b.onclick = () => { wrap.remove(); userMsg(c.label); c.action(); };
+      b.onclick = () => { wrap.remove(); userMsg(c.label); setTimeout(() => c.action(), 0); };
       wrap.appendChild(b);
     });
     log.appendChild(wrap);
@@ -82,6 +83,7 @@
     state = 'MODE_SELECT';
     mode = null;
     userContext = null;
+    sessionId = null;
     botMsg('안녕하세요 😊 메디메이트입니다.<br>어떤 상담을 도와드릴까요?');
     choiceButtons([
       { label: '1. 복약 상담', action: () => selectMode('medication') },
@@ -124,7 +126,8 @@
     botMsg(`현재 등록된 정보입니다:<br><b>진단명:</b> ${escapeHtml(diseases)}<br><b>약품명:</b> ${escapeHtml(meds)}<br><br>이 정보가 맞으신가요?`);
     choiceButtons([
       { label: '✅ 맞습니다', action: () => startChatting() },
-      { label: '✏️ 수정하러 가기', action: () => { window.location.href = 'scans.html'; } },
+      { label: '📄 새 문서 등록', action: () => { window.location.href = 'scans.html'; } },
+      { label: '⬅️ 이전으로', action: () => boot() },
     ]);
   }
 
@@ -160,12 +163,14 @@
     try {
       const res = await window.api.sendChatMessage({
         patient_id: String(userId),
+        session_id: sessionId,
         mode: mode,
         user_question: q,
         disease_code: diseaseCode,
         medications: medications,
         use_context: true,
       });
+      if (res.session_id) sessionId = res.session_id;
       botMsg(renderMd(res.chat_answer || '답변을 받지 못했습니다.'));
     } catch (e) {
       botMsg('⚠️ 오류가 발생했습니다: ' + escapeHtml(e.message));

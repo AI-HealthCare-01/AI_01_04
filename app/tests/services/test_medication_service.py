@@ -48,7 +48,7 @@ class TestSlotsAndRate(TestCase):
 
     async def test_slots_4(self):
         """복용 횟수 4 시 아침/점심/저녁/자기전 슬롯 반환 확인."""
-        assert _slots_by_dose_count(4) == ["아침", "점심", "저녁", "자기전"]
+        assert _slots_by_dose_count(4) == ["아침", "점심", "저녁", "자기 전"]
 
     async def test_calc_rate_empty(self):
         """빈 로그 리스트 시 달성률 0 반환 확인."""

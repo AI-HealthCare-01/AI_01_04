@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title data-text="scans.title">처방전 및 진단서 등록 - MEDIMATE</title>
+  <title data-text="scans.title">새 문서 등록 - MEDIMATE</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"/>
@@ -25,8 +25,8 @@
 <div class="dashboard-card">
   <div class="mb-1">
     <div class="hero-label"><i class="bi bi-activity me-1"></i>MEDIMATE</div>
-    <div class="hero-title" data-text="scans.heroTitle">새 문서 등록</div>
-    <p class="hero-desc" id="hero-desc" data-text="scans.heroDesc">처방전이나 진단서를 업로드하면 AI가 분석하여 복약 일정과 건강 관리 목표를 자동으로 생성합니다.</p>
+    <div class="hero-title">새 문서 등록</div>
+    <p class="hero-desc" id="hero-desc">처방전이나 진단서를 업로드하면 AI가 분석하여 복약 일정과 건강 관리 목표를 자동으로 생성합니다.</p>
   </div>
 
   <div class="dashboard-tabs">
@@ -38,115 +38,48 @@
     <a href="chatbot.html"><i class="bi bi-chat-dots me-1"></i>AI 챗봇</a>
   </div>
 
-  <!-- Step Indicator -->
-  <div class="d-flex justify-content-center mb-4">
-    <div class="d-flex gap-2">
-      <div id="step-1" class="step active">1. 업로드</div>
-      <div id="step-2" class="step">2. 분석/수정</div>
-      <div id="step-3" class="step">3. 건강목표</div>
-    </div>
-  </div>
-
   <div id="upload-status" class="alert d-none small p-2 mb-3"></div>
 
-  <!-- ═══ STEP 1: Upload ═══ -->
-  <div id="step1">
-    <select id="docType" class="doc-type-select">
-      <option value="prescription" data-text="scans.prescriptionOption">처방전 (약국 봉투)</option>
-      <option value="medical_record" data-text="scans.recordOption">진단서/소견서</option>
-    </select>
+  <select id="docType" class="doc-type-select">
+    <option value="prescription">처방전 (약국 봉투)</option>
+    <option value="medical_record">진단서/소견서</option>
+  </select>
 
-    <div class="scan-upload-zone" id="upload-zone" onclick="document.getElementById('file-upload').click()"
-         ondragover="event.preventDefault();this.classList.add('dragover')"
-         ondragleave="this.classList.remove('dragover')"
-         ondrop="event.preventDefault();this.classList.remove('dragover');handleDropUpload(event)">
-      <i class="bi bi-cloud-arrow-up"></i>
-      <h6 data-text="scans.uploadTitle">이미지 선택하기</h6>
-      <p data-text="scans.uploadSubtitle">또는 여기에 파일을 끌어다 놓으세요.</p>
-      <input type="file" id="file-upload" class="d-none" accept="image/png,image/jpeg,image/jpg,application/pdf" onchange="handleFileUpload(event)">
-    </div>
-
-    <div id="file-info-box" class="scan-file-info d-none">
-      <div class="file-name"><i class="bi bi-file-earmark-image"></i> <span id="file-name-text"></span> <span id="file-size-text" class="text-muted" style="font-size:.8rem;margin-left:8px"></span></div>
-      <button class="remove-btn" onclick="removeFile()"><i class="bi bi-x-lg"></i></button>
-    </div>
-
-    <button class="btn-analyze d-none" id="retry-upload-btn" onclick="retryUpload()">
-      <i class="bi bi-arrow-clockwise me-2"></i>다시 업로드하기
-    </button>
-
-    <button class="btn-analyze d-none" id="analyze-btn" onclick="startAnalysis()">
-      <i class="bi bi-magic me-2"></i><span data-text="scans.analyzeButton">AI 분석 시작하기</span>
-    </button>
+  <div class="scan-upload-zone" id="upload-zone" onclick="document.getElementById('file-upload').click()"
+       ondragover="event.preventDefault();this.classList.add('dragover')"
+       ondragleave="this.classList.remove('dragover')"
+       ondrop="event.preventDefault();this.classList.remove('dragover');handleDropUpload(event)">
+    <i class="bi bi-cloud-arrow-up"></i>
+    <h6>진료기록 또는 처방전 파일 업로드</h6>
+    <p>클릭하여 파일을 선택하거나, 여기에 파일을 끌어다 놓으세요.</p>
+    <p style="font-size:.75rem;color:#888;margin-top:4px">허용 형식: <strong>JPG, PNG, PDF</strong> &nbsp;|&nbsp; 최대 <strong>10MB</strong></p>
+    <input type="file" id="file-upload" class="d-none" accept="image/png,image/jpeg,image/jpg,application/pdf" onchange="handleFileUpload(event)">
   </div>
 
-  <!-- ═══ STEP 2: Analysis / Edit ═══ -->
-  <div id="step2" class="d-none">
-    <div class="sub-tabs mb-3">
-      <a class="sub-tab active" id="subtab-result" onclick="switchSubTab('result')"><i class="bi bi-file-earmark-medical"></i> 처방전 분석결과</a>
-      <a class="sub-tab" id="subtab-goals" onclick="switchSubTab('goals')"><i class="bi bi-heart-pulse"></i> 건강 목표 추천</a>
-    </div>
-
-    <!-- Sub: Result Edit -->
-    <div id="sub-result">
-      <div id="analysis-warning" class="alert alert-warning small d-none"></div>
-
-      <div class="mb-3">
-        <div class="form-label-sm" data-text="scans.documentDate">문서 날짜</div>
-        <input type="date" id="edit-document-date" class="form-control" style="max-width:400px;"/>
-      </div>
-
-      <div class="mb-3">
-        <div class="form-label-sm" data-text="scans.diagnosis">진단명</div>
-        <div id="diagnosis-list-editor"></div>
-        <button type="button" class="btn-add-diag" onclick="addDiagnosisRow()"><i class="bi bi-plus-circle"></i> 진단명 추가</button>
-      </div>
-
-      <div class="mb-3 d-none" id="clinical-note-group">
-        <div class="form-label-sm" data-text="scans.clinicalNote">진료 요약</div>
-        <textarea id="edit-clinical-note" class="form-control" rows="4" placeholder="진료기록지 내용을 정리해 입력하세요."></textarea>
-      </div>
-
-      <div class="mb-3" id="drug-editor-group">
-        <div class="form-label-sm" data-text="scans.drugLabel">약품 목록</div>
-        <div class="position-relative mb-2">
-          <input type="text" id="drug-search-input" class="form-control" placeholder="약 이름을 검색하세요">
-          <div id="drug-suggestion-list" class="drug-suggestion-list d-none"></div>
-        </div>
-        <div id="selected-drugs"></div>
-      </div>
-
-      <button class="btn-save-main" id="save-result-btn" onclick="saveResult()">
-        <i class="bi bi-check-circle me-2"></i><span data-text="scans.saveButton">수정 내용 저장 → 복약 일정에 반영</span>
-      </button>
-
-      <div id="save-result-summary" class="mt-3 d-none"></div>
-    </div>
-
-    <!-- Sub: Goals Preview (shown after save) -->
-    <div id="sub-goals" class="d-none"></div>
+  <div id="file-info-box" class="scan-file-info d-none">
+    <div class="file-name"><i class="bi bi-file-earmark-image"></i> <span id="file-name-text"></span> <span id="file-size-text" class="text-muted" style="font-size:.8rem;margin-left:8px"></span></div>
+    <button class="remove-btn" onclick="removeFile()"><i class="bi bi-x-lg"></i></button>
   </div>
 
-  <!-- ═══ STEP 3: Health Goals ═══ -->
-  <div id="step3" class="d-none">
-    <div class="section-title"><i class="bi bi-check-circle-fill"></i> 현재 이행 중인 건강 목표</div>
-    <div class="goal-list-card" id="existing-goals-list">
-      <div class="scan-goal-item" style="color:#aaa;justify-content:center;">불러오는 중...</div>
-    </div>
+  <button class="btn-analyze d-none" id="retry-upload-btn" onclick="retryUpload()">
+    <i class="bi bi-arrow-clockwise me-2"></i>다시 업로드하기
+  </button>
 
-    <div class="section-title"><i class="bi bi-stars"></i> 새로운 추천 항목</div>
-    <div class="goal-list-card" id="new-goals-list">
-      <div class="scan-goal-item" style="color:#aaa;justify-content:center;">저장 후 표시됩니다.</div>
-    </div>
+  <button class="btn-analyze d-none" id="analyze-btn" onclick="startAnalysis()">
+    <i class="bi bi-magic me-2"></i>AI 분석 시작하기
+  </button>
 
-    <div class="add-goal-row">
-      <input type="text" id="custom-goal-input" placeholder="새 건강 관리 목표를 입력하세요"/>
-      <button class="btn-add-goal" onclick="addCustomGoal()">+ 추가</button>
+  <div class="d-none" id="analyze-progress" style="text-align:center;padding:30px 0;">
+    <div style="position:relative;display:inline-block;width:100px;height:100px;">
+      <svg width="100" height="100" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="42" fill="none" stroke="#e9ecef" stroke-width="8"/>
+        <circle id="prog-circle" cx="50" cy="50" r="42" fill="none" stroke="#6da285" stroke-width="8"
+          stroke-linecap="round" stroke-dasharray="264" stroke-dashoffset="264"
+          transform="rotate(-90 50 50)" style="transition:stroke-dashoffset 0.5s ease;"/>
+      </svg>
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:1.1rem;color:#333;" id="prog-pct">0%</div>
     </div>
-
-    <button class="btn-save-goals" onclick="window.location.href='health.html'">
-      <i class="bi bi-check2-all me-2"></i>건강 관리 이력 보러 가기
-    </button>
+    <div style="margin-top:12px;font-size:0.88rem;color:#666;" id="prog-msg">AI가 문서를 분석 중입니다...</div>
   </div>
 </div>
 
@@ -155,50 +88,27 @@
 <script src="js/api.js"></script>
 <script src="js/chat-widget.js"></script>
 <script>
-if (!localStorage.getItem('access_token')) window.location.href = 'index.html';
+const DEMO_MODE = !localStorage.getItem('access_token') || new URLSearchParams(location.search).has('demo');
+if (!DEMO_MODE && !localStorage.getItem('access_token')) window.location.href = 'index.html';
 
 let currentScanId = null;
-let currentScanResult = null;
-let selectedDrugs = [];
-let drugSearchTimer = null;
-let savedRecommendations = [];
+let lastFile = null;
+let lastDocType = null;
 
-const UNIT_OPTIONS = ['정','캡슐','ml','unit','포','방울'];
-const TIMING_OPTIONS = ['식전','식후','식후 30분','공복','자기전','아침','점심','저녁','아침 점심','아침 저녁','점심 저녁','아침 점심 저녁','아침 점심 저녁 자기전'];
-
-/* ── Step Navigation ── */
-function goToStep(n) {
-  [1,2,3].forEach(i => {
-    document.getElementById('step'+i).classList.toggle('d-none', i !== n);
-    document.getElementById('step-'+i).classList.toggle('active', i === n);
-  });
-  const desc = document.getElementById('hero-desc');
-  if (n === 1) desc.textContent = '처방전이나 진단서를 업로드하면 AI가 분석하여 복약 일정과 건강 관리 목표를 자동으로 생성합니다.';
-  else if (n === 2) desc.textContent = 'AI 분석이 완료되었습니다. 결과를 확인하고 필요한 부분을 수정한 뒤 저장하세요.';
-  else desc.textContent = '저장이 완료되었습니다. 건강 관리 목표를 확인하고 관리하세요.';
-}
-
-function switchSubTab(tab) {
-  document.getElementById('subtab-result').classList.toggle('active', tab === 'result');
-  document.getElementById('subtab-goals').classList.toggle('active', tab === 'goals');
-  document.getElementById('sub-result').classList.toggle('d-none', tab !== 'result');
-  document.getElementById('sub-goals').classList.toggle('d-none', tab !== 'goals');
-}
-
-/* ── Status ── */
 function setStatus(msg, type='info') {
   const el = document.getElementById('upload-status');
   if (!msg) { el.className = 'alert d-none small p-2 mb-3'; return; }
   el.className = `alert alert-${type} d-block small p-2 mb-3`;
   el.innerHTML = msg;
 }
-function setWarning(msg) {
-  const el = document.getElementById('analysis-warning');
-  if (!msg) { el.classList.add('d-none'); el.innerText = ''; return; }
-  el.innerText = msg; el.classList.remove('d-none');
+
+function showFileInfo(file) {
+  document.getElementById('file-name-text').textContent = file.name;
+  const sizeKB = file.size / 1024;
+  document.getElementById('file-size-text').textContent = sizeKB >= 1024 ? (sizeKB/1024).toFixed(1)+'MB' : sizeKB.toFixed(1)+'KB';
+  document.getElementById('file-info-box').classList.remove('d-none');
 }
 
-/* ── Step 1: Upload ── */
 function removeFile() {
   document.getElementById('file-upload').value = '';
   document.getElementById('file-info-box').classList.add('d-none');
@@ -211,44 +121,63 @@ function removeFile() {
 
 function retryUpload() {
   if (!lastFile) return;
-  const docType = lastDocType || document.getElementById('docType').value;
   setStatus('<span class="spinner-border spinner-border-sm me-2"></span>업로드 중...', 'info');
-  uploadFile(lastFile, docType);
+  uploadFile(lastFile, lastDocType || document.getElementById('docType').value);
+}
+
+// 이미지 리사이징 (세로 2000px 이하, JPEG 85%)
+function resizeImage(file, maxHeight = 2000, quality = 0.85) {
+  return new Promise((resolve) => {
+    if (file.type === 'application/pdf') { resolve(file); return; }
+    const img = new Image();
+    img.onload = () => {
+      if (img.height <= maxHeight) { resolve(file); return; }
+      const ratio = maxHeight / img.height;
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(img.width * ratio);
+      canvas.height = maxHeight;
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      canvas.toBlob((blob) => {
+        const resized = new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' });
+        resolve(resized);
+      }, 'image/jpeg', quality);
+    };
+    img.onerror = () => resolve(file);
+    img.src = URL.createObjectURL(file);
+  });
 }
 
 async function handleFileUpload(event) {
   const file = event.target.files[0];
   if (!file) return;
-
+  if (!['image/png','image/jpeg','image/jpg','application/pdf'].includes(file.type)) {
+    setStatus('JPG, PNG, PDF 파일만 업로드 가능합니다.', 'danger');
+    event.target.value = '';
+    return;
+  }
+  if (file.size > 10*1024*1024) {
+    setStatus('파일 크기가 10MB를 초과합니다. 10MB 이하 파일을 선택해 주세요.', 'danger');
+    event.target.value = '';
+    return;
+  }
   showFileInfo(file);
-
-  const docType = document.getElementById('docType').value;
+  setStatus('<span class="spinner-border spinner-border-sm me-2"></span>이미지 최적화 중...', 'info');
+  const optimized = await resizeImage(file);
   setStatus('<span class="spinner-border spinner-border-sm me-2"></span>업로드 중...', 'info');
-
-  await uploadFile(file, docType);
+  await uploadFile(optimized, document.getElementById('docType').value);
 }
 
-function handleDropUpload(event) {
+async function handleDropUpload(event) {
   const file = event.dataTransfer.files[0];
   if (!file) return;
-  const allowed = ['image/png','image/jpeg','image/jpg','application/pdf'];
-  if (!allowed.includes(file.type)) { setStatus('JPG, PNG, PDF 파일만 업로드 가능합니다.', 'danger'); return; }
-  if (file.size > 10 * 1024 * 1024) { setStatus('10MB 이하 파일만 업로드 가능합니다.', 'danger'); return; }
+  if (!['image/png','image/jpeg','image/jpg','application/pdf'].includes(file.type)) { setStatus('JPG, PNG, PDF 파일만 업로드 가능합니다.', 'danger'); return; }
+  if (file.size > 10*1024*1024) { setStatus('10MB 이하 파일만 업로드 가능합니다.', 'danger'); return; }
   showFileInfo(file);
-  const docType = document.getElementById('docType').value;
+  setStatus('<span class="spinner-border spinner-border-sm me-2"></span>이미지 최적화 중...', 'info');
+  const optimized = await resizeImage(file);
   setStatus('<span class="spinner-border spinner-border-sm me-2"></span>업로드 중...', 'info');
-  uploadFile(file, docType);
+  uploadFile(optimized, document.getElementById('docType').value);
 }
-
-function showFileInfo(file) {
-  document.getElementById('file-name-text').textContent = file.name;
-  const sizeKB = (file.size / 1024);
-  document.getElementById('file-size-text').textContent = sizeKB >= 1024 ? (sizeKB / 1024).toFixed(1) + 'MB' : sizeKB.toFixed(1) + 'KB';
-  document.getElementById('file-info-box').classList.remove('d-none');
-}
-
-let lastFile = null;
-let lastDocType = null;
 
 async function uploadFile(file, docType) {
   lastFile = file;
@@ -256,18 +185,21 @@ async function uploadFile(file, docType) {
   document.getElementById('analyze-btn').classList.add('d-none');
   document.getElementById('retry-upload-btn').classList.add('d-none');
 
+  if (DEMO_MODE) {
+    currentScanId = 'demo';
+    setStatus('<i class="bi bi-check-circle me-1"></i>업로드 완료! 분석을 시작하세요. <span class="badge bg-warning text-dark ms-1">데모</span>', 'success');
+    document.getElementById('analyze-btn').classList.remove('d-none');
+    return;
+  }
+
   const formData = new FormData();
   formData.append('file', file);
   formData.append('document_type', docType);
-
   try {
     const res = await window.api.uploadScan(formData);
     currentScanId = res.scan_id;
-    currentScanResult = null;
-    selectedDrugs = [];
     setStatus('<i class="bi bi-check-circle me-1"></i>업로드 완료! 분석을 시작하세요.', 'success');
     document.getElementById('analyze-btn').classList.remove('d-none');
-    document.getElementById('retry-upload-btn').classList.add('d-none');
   } catch (err) {
     setStatus(err.message + ' 다시 시도해 주세요.', 'danger');
     currentScanId = null;
@@ -275,263 +207,69 @@ async function uploadFile(file, docType) {
   }
 }
 
-/* ── Step 1→2: Analyze ── */
 async function startAnalysis() {
   if (!currentScanId) return alert('먼저 파일을 업로드해주세요.');
   const btn = document.getElementById('analyze-btn');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>AI가 분석 중입니다...';
+  const progBox = document.getElementById('analyze-progress');
+  const circle = document.getElementById('prog-circle');
+  const pctEl = document.getElementById('prog-pct');
+  const msgEl = document.getElementById('prog-msg');
+  const totalLen = 264;
 
-  try {
-    await window.api.analyzeScan(currentScanId);
-    const res = await pollScanResult(currentScanId);
-    populateEditForm(res);
-    goToStep(2);
-    if (res.status === 'failed') setWarning('분석에 실패했습니다. 아래에서 직접 수정할 수 있습니다.');
-  } catch (err) {
-    setStatus(err.message, 'danger');
-    // Still move to step 2 with empty form for manual entry
-    populateEditForm({ document_type: document.getElementById('docType').value, document_date: null, diagnosis_list: [], drugs: [], clinical_note: null });
-    goToStep(2);
-    setWarning('분석 중 오류가 발생했습니다. 직접 입력해 주세요.');
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = '<i class="bi bi-magic me-2"></i>AI 분석 시작하기';
+  function setProgress(pct, msg) {
+    circle.style.strokeDashoffset = totalLen - (totalLen * pct / 100);
+    pctEl.textContent = Math.round(pct) + '%';
+    if (msg) msgEl.textContent = msg;
   }
-}
 
-async function pollScanResult(scanId) {
-  for (let i = 0; i < 20; i++) {
-    const res = await window.api.getScanResult(scanId);
-    if (res.status === 'done' || res.status === 'failed') return res;
-    await new Promise(r => setTimeout(r, 1500));
-  }
-  return await window.api.getScanResult(scanId);
-}
+  btn.classList.add('d-none');
+  progBox.classList.remove('d-none');
+  setProgress(5, 'AI가 문서를 분석 중입니다...');
 
-/* ── Step 2: Edit Form ── */
-function addDiagnosisRow(value = '') {
-  const editor = document.getElementById('diagnosis-list-editor');
-  const row = document.createElement('div');
-  row.className = 'diagnosis-row';
-  row.innerHTML = `<input type="text" class="form-control form-control-sm diagnosis-input" value="${escapeHtml(value)}" placeholder="진단명 입력">
-    <button type="button" class="btn-remove" onclick="this.parentElement.remove()"><i class="bi bi-x-lg"></i></button>`;
-  editor.appendChild(row);
-}
-
-function getDiagnosisList() {
-  return Array.from(document.querySelectorAll('.diagnosis-input')).map(el => el.value.trim()).filter(Boolean);
-}
-
-function populateEditForm(res) {
-  currentScanResult = res;
-  document.getElementById('edit-document-date').value = res.document_date || '';
-  const noteEl = document.getElementById('edit-clinical-note');
-  if (noteEl) noteEl.value = res.clinical_note || '';
-
-  const diagEditor = document.getElementById('diagnosis-list-editor');
-  diagEditor.innerHTML = '';
-  const diagList = res.diagnosis_list || (res.diagnosis ? [res.diagnosis] : []);
-  if (!diagList.length) addDiagnosisRow('');
-  else diagList.forEach(d => addDiagnosisRow(d));
-
-  selectedDrugs = Array.isArray(res.drugs) ? res.drugs.map(d =>
-    typeof d === 'string'
-      ? { name: d, dose_count: null, dose_timing: null, dose_days: null, dose_amount: null, dose_unit: null }
-      : { name: d.name || '', dose_count: d.dose_count ?? null, dose_timing: d.dose_timing ?? null, dose_days: d.dose_days ?? null, dose_amount: d.dose_amount ?? null, dose_unit: d.dose_unit ?? null }
-  ) : [];
-  renderSelectedDrugs();
-
-  const isMedical = res.document_type === 'medical_record';
-  document.getElementById('clinical-note-group').classList.toggle('d-none', !isMedical);
-  document.getElementById('drug-editor-group').classList.toggle('d-none', isMedical);
-}
-
-function renderSelectedDrugs() {
-  const container = document.getElementById('selected-drugs');
-  container.innerHTML = '';
-  if (!selectedDrugs.length) {
-    container.innerHTML = '<span class="text-soft small">선택된 약품이 없습니다.</span>';
+  if (DEMO_MODE) {
+    for (let p = 10; p <= 90; p += 20) { await new Promise(r => setTimeout(r, 300)); setProgress(p); }
+    setProgress(100, '분석 완료!'); await new Promise(r => setTimeout(r, 400));
+    window.location.href = 'scan_result.html?demo';
     return;
   }
-  selectedDrugs.forEach((drug, idx) => {
-    const unitOpts = UNIT_OPTIONS.map(u => `<option value="${u}" ${drug.dose_unit===u?'selected':''}>${u}</option>`).join('');
-    const timingOpts = TIMING_OPTIONS.map(t => `<option value="${t}" ${drug.dose_timing===t?'selected':''}>${t}</option>`).join('');
-    const card = document.createElement('div');
-    card.className = 'drug-card';
-    card.innerHTML = `
-      <div class="drug-card-header">
-        <h6>${escapeHtml(drug.name)}</h6>
-        <button class="btn-remove" onclick="selectedDrugs.splice(${idx},1);renderSelectedDrugs()"><i class="bi bi-x-lg"></i></button>
-      </div>
-      <div class="dose-grid">
-        <div><label>약품명</label><input type="text" value="${escapeHtml(drug.name)}" readonly style="background:#f5f5f5"/></div>
-        <div><label>1회 투여량</label><input type="text" value="${escapeHtml(drug.dose_amount||'')}" onchange="selectedDrugs[${idx}].dose_amount=this.value||null"></div>
-        <div><label>단위</label><select onchange="selectedDrugs[${idx}].dose_unit=this.value||null"><option value="">선택</option>${unitOpts}</select></div>
-        <div><label>1일 횟수</label><input type="number" value="${drug.dose_count??''}" onchange="selectedDrugs[${idx}].dose_count=this.value?Number(this.value):null"></div>
-        <div><label>복용시점</label><select onchange="selectedDrugs[${idx}].dose_timing=this.value||null"><option value="">선택</option>${timingOpts}</select></div>
-        <div><label>투약일수</label><input type="number" value="${drug.dose_days??''}" onchange="selectedDrugs[${idx}].dose_days=this.value?Number(this.value):null"></div>
-      </div>`;
-    container.appendChild(card);
-  });
-}
 
-/* ── Drug Search ── */
-async function searchDrugs() {
-  const kw = document.getElementById('drug-search-input').value.trim();
-  const list = document.getElementById('drug-suggestion-list');
-  if (kw.length < 2) { list.classList.add('d-none'); list.innerHTML = ''; return; }
-  try {
-    const items = await window.api.searchDrugs(kw, 10);
-    list.innerHTML = '';
-    if (!items.length) { list.classList.add('d-none'); return; }
-    items.forEach(item => {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'drug-suggestion-item';
-      btn.innerHTML = `<div class="fw-bold">${escapeHtml(item.name)}</div><div class="small text-soft">${escapeHtml(item.manufacturer||'제조사 정보 없음')}</div>`;
-      btn.onclick = () => {
-        if (!selectedDrugs.some(d => d.name === item.name)) {
-          selectedDrugs.push({ name: item.name, dose_count: null, dose_timing: null, dose_days: null, dose_amount: null, dose_unit: null });
-          renderSelectedDrugs();
-        }
-        document.getElementById('drug-search-input').value = '';
-        list.classList.add('d-none');
-      };
-      list.appendChild(btn);
-    });
-    list.classList.remove('d-none');
-  } catch { list.classList.add('d-none'); }
-}
-
-/* ── Step 2→3: Save ── */
-async function saveResult() {
-  if (!currentScanId) return;
-  const btn = document.getElementById('save-result-btn');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>저장 중...';
+  const steps = [
+    [10, 'OCR으로 텍스트 추출 중...'],
+    [30, 'AI가 진단명을 분석 중...'],
+    [50, '약물 정보를 식별 중...'],
+    [70, '결과를 정리하는 중...'],
+  ];
 
   try {
-    // First update with edited values
-    const diagList = getDiagnosisList();
-    await window.api.updateScanResult(currentScanId, {
-      document_date: document.getElementById('edit-document-date').value || null,
-      diagnosis_list: diagList.length ? diagList : null,
-      clinical_note: document.getElementById('edit-clinical-note')?.value.trim() || null,
-      drugs: document.getElementById('drug-editor-group').classList.contains('d-none') ? null : selectedDrugs,
-    });
-
-    // Save to medication schedule
-    const saveRes = await window.api.saveScanResult(currentScanId);
-
-    // Save recommendations
-    try {
-      await window.api.getRecommendationsForScan(currentScanId);
-      const recSave = await window.api.saveRecommendationsForScan(currentScanId);
-      savedRecommendations = recSave?.items || [];
-    } catch { savedRecommendations = []; }
-
-    // Show summary
-    const summaryBox = document.getElementById('save-result-summary');
-    const created = Number(saveRes.created_count || 0);
-    const skipped = Number(saveRes.skipped_count || 0);
-    summaryBox.innerHTML = `<div class="alert alert-success mb-0"><i class="bi bi-check-circle-fill me-1"></i>저장 완료! 복약 일정 ${created}건 생성, 중복 ${skipped}건 건너뜀.</div>`;
-    summaryBox.classList.remove('d-none');
-
-    // Move to step 3
-    setTimeout(() => {
-      renderGoalsStep();
-      goToStep(3);
-    }, 1200);
-
-  } catch (err) {
-    alert('저장 실패: ' + err.message);
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = '<i class="bi bi-check-circle me-2"></i>수정 내용 저장 → 복약 일정에 반영';
-  }
-}
-
-/* ── Step 3: Goals ── */
-async function renderGoalsStep() {
-  // Existing goals
-  const existingList = document.getElementById('existing-goals-list');
-  try {
-    const recs = await window.api.getActiveRecommendations();
-    if (recs?.length) {
-      existingList.innerHTML = recs.map(r => `
-        <div class="scan-goal-item">
-          <div class="goal-left">
-            <div class="goal-icon"><i class="bi bi-check-circle"></i></div>
-            <span class="goal-badge">활성</span>
-            <span class="goal-text">${escapeHtml(r.content || '-')}</span>
-          </div>
-          <span class="goal-status">이행 중</span>
-        </div>`).join('');
-    } else {
-      existingList.innerHTML = '<div class="scan-goal-item" style="color:#aaa;justify-content:center;">등록된 건강 목표가 없습니다.</div>';
+    setProgress(8, 'AI 분석 요청 중...');
+    await window.api.analyzeScan(currentScanId);
+    let stepIdx = 0;
+    for (let i = 0; i < 20; i++) {
+      if (stepIdx < steps.length) { setProgress(steps[stepIdx][0], steps[stepIdx][1]); stepIdx++; }
+      else { setProgress(70 + i * 2, '결과를 정리하는 중...'); }
+      const res = await window.api.getScanResult(currentScanId);
+      if (res.status === 'done') { setProgress(100, '분석 완료!'); await new Promise(r => setTimeout(r, 500)); break; }
+      if (res.status === 'failed') { setProgress(100, '분석 완료 (수동 입력 가능)'); await new Promise(r => setTimeout(r, 500)); break; }
+      await new Promise(r => setTimeout(r, 1500));
     }
-  } catch {
-    existingList.innerHTML = '<div class="scan-goal-item" style="color:#aaa;justify-content:center;">목표를 불러오지 못했습니다.</div>';
-  }
-
-  // New recommendations from this scan
-  const newList = document.getElementById('new-goals-list');
-  if (savedRecommendations.length) {
-    newList.innerHTML = savedRecommendations.map(r => `
-      <div class="scan-goal-item">
-        <div class="goal-left">
-          <div class="goal-icon"><i class="bi bi-stars"></i></div>
-          <span class="goal-badge">새 추천</span>
-          <span class="goal-text">${escapeHtml(r.content || '-')}</span>
-        </div>
-      </div>`).join('');
-  } else {
-    newList.innerHTML = '<div class="scan-goal-item" style="color:#aaa;justify-content:center;">이번 스캔에서 새 추천이 없습니다.</div>';
+    window.location.href = 'scan_result.html?scan_id=' + currentScanId;
+  } catch (err) {
+    window.location.href = 'scan_result.html?scan_id=' + currentScanId + '&error=1';
   }
 }
 
-function addCustomGoal() {
-  const input = document.getElementById('custom-goal-input');
-  const text = input.value.trim();
-  if (!text) return;
-  const list = document.getElementById('new-goals-list');
-  const placeholder = list.querySelector('[style*="color:#aaa"]');
-  if (placeholder) placeholder.remove();
-  list.insertAdjacentHTML('beforeend', `
-    <div class="scan-goal-item">
-      <div class="goal-left">
-        <div class="goal-icon"><i class="bi bi-plus-circle"></i></div>
-        <span class="goal-badge">직접 추가</span>
-        <span class="goal-text">${escapeHtml(text)}</span>
-      </div>
-      <button class="goal-remove" onclick="this.closest('.scan-goal-item').remove()"><i class="bi bi-x-lg"></i></button>
-    </div>`);
-  input.value = '';
-}
-
-/* ── Init ── */
 document.addEventListener('DOMContentLoaded', async () => {
   applyTextBindings();
-  document.title = getText('scans.title', document.title);
-  goToStep(1);
+  if (DEMO_MODE) {
+    document.getElementById('header-user-name').textContent = '환영합니다, 김환자님';
+    return;
+  }
   try {
     const user = await window.api.getUserMe();
-    document.getElementById('header-user-name').textContent = '환영합니다, ' + (user.name || '사용자') + '님';
+    document.getElementById('header-user-name').textContent = '환영합니다, ' + (user.name||'사용자') + '님';
   } catch {}
 });
-
-document.getElementById('drug-search-input').addEventListener('input', () => {
-  clearTimeout(drugSearchTimer);
-  drugSearchTimer = setTimeout(searchDrugs, 250);
-});
-
-document.addEventListener('click', (e) => {
-  const sl = document.getElementById('drug-suggestion-list');
-  const si = document.getElementById('drug-search-input');
-  if (!sl.contains(e.target) && e.target !== si) sl.classList.add('d-none');
-});
 </script>
-
+<script src="js/accessibility.js"></script>
 </body>
 </html>
