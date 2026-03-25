@@ -13,6 +13,8 @@ from typing import TYPE_CHECKING
 from tortoise import fields, models
 from tortoise.fields.relational import ForeignKeyRelation
 
+from app.models.fields import EncryptedTextField
+
 if TYPE_CHECKING:
     from app.models.users import User
 
@@ -57,7 +59,7 @@ class ChatbotMessage(models.Model):
     )
 
     sender = fields.CharField(max_length=20)  # user, assistant
-    message = fields.TextField()
+    message = EncryptedTextField()
     created_at = fields.DatetimeField(auto_now_add=True)
 
     class Meta:
@@ -78,7 +80,7 @@ class ChatbotSessionSummary(models.Model):
         related_name="summaries",
     )
 
-    summary = fields.TextField()
+    summary = EncryptedTextField()
     created_at = fields.DatetimeField(auto_now_add=True)
 
     class Meta:
