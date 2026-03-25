@@ -56,12 +56,14 @@ class HealthChecklistLog(models.Model):
         related_name="health_checklist_logs",
     )
 
-    template: ForeignKeyRelation[HealthChecklistTemplate] = fields.ForeignKeyField(
+    template: ForeignKeyRelation[HealthChecklistTemplate] | None = fields.ForeignKeyField(
         "models.HealthChecklistTemplate",
         on_delete=fields.CASCADE,
         related_name="logs",
+        null=True,
     )
 
+    label_override = fields.CharField(max_length=200, null=True)
     date = fields.DateField(index=True)
     status = fields.CharField(max_length=20)  # done | skipped
     checked_at = fields.DatetimeField(null=True)

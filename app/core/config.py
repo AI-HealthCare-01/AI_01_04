@@ -52,5 +52,7 @@ class Config(BaseSettings):
     OPENAI_API_KEY: str = Field(default="", validation_alias=AliasChoices("OPENAI_API_KEY", "api_key"))
     OPENAI_MODEL: str = "gpt-4o-mini"
 
+    REDIS_URL: str = "redis://localhost:6379/0"
+
     # ENABLE_LLM_REFINEMENT=False로 검증 그다음 LLM refinement 켜서 비교
     ENABLE_LLM_REFINEMENT: bool = False

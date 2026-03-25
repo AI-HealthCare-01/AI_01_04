@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any, cast
 
 from fastapi import HTTPException
@@ -13,7 +13,9 @@ from starlette import status
 
 from app.dtos.health import HealthLogUpdateRequest
 from app.models.health import HealthChecklistLog
+from app.models.recommendations import UserActiveRecommendation
 from app.repositories.health_repository import HealthRepository
+from app.utils.cache import cache_delete
 from app.utils.datetime import DateTimeError, date_range_inclusive, normalize_from_to, parse_date_yyyy_mm_dd
 from app.utils.progress import rate_bucket
 
@@ -38,16 +40,32 @@ class HealthService:
         self.health_repo = HealthRepository()
 
     async def ensure_day_seed(self, *, user_id: int, date: str) -> None:
-        """외부 서비스에서 호출하는 시드 진입점.
-
-        Args:
-            user_id (int): 시드를 생성할 사용자 ID.
-            date (str): 시드를 생성할 날짜 (YYYY-MM-DD).
-        """
+        """외부 서비스에서 호출하는 시드 진입점."""
         await self._seed_day_if_empty(user_id=user_id, date_str=date)
 
+    @staticmethod
+    async def _earliest_scan_date(user_id: int) -> date | None:
+        """사용자의 가장 오래된 처방 start_date를 반환한다."""
+        from app.models.prescriptions import Prescription
+
+        row = await Prescription.filter(user_id=user_id, start_date__isnull=False).order_by("start_date").first()
+        return row.start_date if row else None
+
+    async def _get_user_active_labels(self, user_id: int) -> list[str]:
+        """사용자의 활성 추천 목표 content 목록을 반환한다."""
+        actives = await UserActiveRecommendation.filter(user_id=user_id).prefetch_related("recommendation")
+        labels: list[str] = []
+        seen: set[str] = set()
+        for ar in actives:
+            rec = ar.recommendation
+            content = (rec.content or "").strip() if rec else ""
+            if content and content not in seen:
+                seen.add(content)
+                labels.append(content)
+        return labels
+
     async def _seed_day_if_empty(self, *, user_id: int, date_str: str) -> None:
-        """해당 날짜에 로그가 없으면 활성 템플릿 기준으로 skipped 상태로 생성한다.
+        """해당 날짜에 로그가 없으면 사용자 활성 추천 목표 → 디폴트 템플릿 순으로 시드한다.
 
         이미 로그가 있으면 아무것도 하지 않아 멱등성을 보장한다.
 
@@ -61,23 +79,31 @@ class HealthService:
         if existing_cnt > 0:
             return
 
-        templates = await self.health_repo.list_active_templates()
-        if not templates:
-            return
+        # 1) 사용자 활성 추천 목표 기반 시드
+        active_labels = await self._get_user_active_labels(user_id)
+        if active_labels:
+            templates = await self.health_repo.list_active_templates()
+            tpl_map = {t.label: t for t in templates} if templates else {}
 
-        logs_to_create: list[HealthChecklistLog] = []
-        for t in templates:
-            logs_to_create.append(
-                HealthChecklistLog(
-                    user_id=user_id,
-                    template_id=t.id,
-                    date=d,
-                    status="skipped",
-                    checked_at=None,
+            logs_to_create: list[HealthChecklistLog] = []
+            for label in active_labels:
+                tpl = tpl_map.get(label)
+                logs_to_create.append(
+                    HealthChecklistLog(
+                        user_id=user_id,
+                        template_id=tpl.id if tpl else None,
+                        date=d,
+                        status="skipped",
+                        checked_at=None,
+                        label_override=label if not tpl else None,
+                    )
                 )
-            )
+            if logs_to_create:
+                await HealthChecklistLog.bulk_create(logs_to_create)
+                return
 
-        await HealthChecklistLog.bulk_create(logs_to_create)
+        # 2) 활성 추천 목표가 없으면 시드하지 않음
+        return
 
     async def list_history(self, user_id: int, date_from: str | None, date_to: str | None) -> dict:
         """기간별 건강관리 이력을 조회한다 (날짜 내림차순).
@@ -97,6 +123,11 @@ class HealthService:
             start, end = normalize_from_to(date_from, date_to)
         except DateTimeError as e:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e
+
+        # 사용자의 첫 스캔 날짜 이전은 표시하지 않음
+        earliest = await self._earliest_scan_date(user_id)
+        if earliest and start < earliest:
+            start = earliest
 
         days = list(reversed(list(date_range_inclusive(start, end))))
 
@@ -141,10 +172,11 @@ class HealthService:
 
         items: list[dict] = []
         for lg in logs:
+            label = lg.label_override or (lg.template.label if lg.template else "")
             items.append(
                 {
                     "id": lg.id,
-                    "label": lg.template.label if lg.template else "",
+                    "label": label,
                     "status": lg.status,
                 }
             )
@@ -188,4 +220,5 @@ class HealthService:
         await log.save()
 
         day = await self.get_day_detail(user_id=user_id, date=log.date.isoformat())
+        await cache_delete("dashboard", user_id, str(log.date))
         return {"log_id": log_id, "updated": True, "day": day}
