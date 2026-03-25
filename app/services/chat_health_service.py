@@ -192,7 +192,13 @@ class ChatHealthService(BaseService):
         recommendation_str = await self._build_recommendation_section(user_id)
 
         system_prompt = self._build_health_system_prompt(
-            prev_summary, conversation_str, medi_hist_str, guideline_str, rag_str, context_str, recommendation_str,
+            prev_summary,
+            conversation_str,
+            medi_hist_str,
+            guideline_str,
+            rag_str,
+            context_str,
+            recommendation_str,
         )
         user_content = f"\n        - 사용자 질문: {request.user_question}\n        "
         return system_prompt, user_content, session.id

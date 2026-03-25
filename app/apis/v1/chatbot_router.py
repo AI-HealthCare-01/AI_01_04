@@ -117,11 +117,13 @@ async def chat_stream_endpoint(
     ai = ChatOpenaiService()
 
     if request.mode == "medication":
-        service = ChatMediService()
-        system_prompt, user_content, session_id = await service.prepare_medical_stream(request)
+        medi_service = ChatMediService()
+        system_prompt, user_content, session_id = await medi_service.prepare_medical_stream(request)
     else:
-        service = ChatHealthService()
-        system_prompt, user_content, session_id = await service.prepare_health_stream(request)
+        health_service = ChatHealthService()
+        system_prompt, user_content, session_id = await health_service.prepare_health_stream(request)
+
+    service = medi_service if request.mode == "medication" else health_service  # type: ignore[possibly-undefined]
 
     async def event_generator():
         full_answer = []

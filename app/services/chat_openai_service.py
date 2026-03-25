@@ -35,7 +35,7 @@ class ChatOpenaiService:
             async for chunk in self.llm.astream(
                 [SystemMessage(content=system_content), HumanMessage(content=user_content)],
             ):
-                text = chunk.content if hasattr(chunk, "content") else str(chunk)
+                text = str(chunk.content) if hasattr(chunk, "content") else str(chunk)
                 if text:
                     yield text
         except Exception:

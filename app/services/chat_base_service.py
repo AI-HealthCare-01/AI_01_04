@@ -65,10 +65,10 @@ class ChatBaseService:
         if len(messages) < SUMMARY_TRIGGER_THRESHOLD:
             return
 
-        conversation = "\n".join(
-            f"{'사용자' if m.sender == 'user' else 'AI'}: {m.message[:300]}" for m in messages
+        conversation = "\n".join(f"{'사용자' if m.sender == 'user' else 'AI'}: {m.message[:300]}" for m in messages)
+        system = (
+            "아래 대화를 핵심 내용 위주로 3~5문장으로 요약하세요. 환자의 주요 증상, 질문, AI 답변 핵심만 포함하세요."
         )
-        system = "아래 대화를 핵심 내용 위주로 3~5문장으로 요약하세요. 환자의 주요 증상, 질문, AI 답변 핵심만 포함하세요."
         result = await self._summary_ai.get_advice(system, conversation)
         summary = result.get("chat_answer", "")
 
