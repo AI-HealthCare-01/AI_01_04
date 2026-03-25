@@ -5,6 +5,8 @@
 
 from __future__ import annotations
 
+from fastapi import HTTPException
+
 from app.repositories.drug_repository import DrugRepository
 from app.utils.cache import TTL_DRUG_SEARCH, cache_get, cache_set
 
@@ -52,7 +54,10 @@ class DrugService:
         if cached is not None:
             return cached
 
-        rows = await self._search_with_fallbacks(keyword, limit)
+        try:
+            rows = await self._search_with_fallbacks(keyword, limit)
+        except Exception:
+            raise HTTPException(status_code=500, detail="약물 검색 중 오류가 발생했습니다.") from None
         result = [
             {
                 "id": row.id,
