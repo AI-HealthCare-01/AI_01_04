@@ -116,12 +116,16 @@ async def chat_stream_endpoint(
     request.patient_id = str(user.id)
     ai = ChatOpenaiService()
 
-    if request.mode == "medication":
-        medi_service = ChatMediService()
-        system_prompt, user_content, session_id = await medi_service.prepare_medical_stream(request)
-    else:
-        health_service = ChatHealthService()
-        system_prompt, user_content, session_id = await health_service.prepare_health_stream(request)
+    try:
+        if request.mode == "medication":
+            medi_service = ChatMediService()
+            system_prompt, user_content, session_id = await medi_service.prepare_medical_stream(request)
+        else:
+            health_service = ChatHealthService()
+            system_prompt, user_content, session_id = await health_service.prepare_health_stream(request)
+    except Exception:
+        logger.exception("chat_stream prepare failed")
+        raise HTTPException(status_code=500, detail="상담 준비 중 오류가 발생했습니다.") from None
 
     service = medi_service if request.mode == "medication" else health_service  # type: ignore[possibly-undefined]
 

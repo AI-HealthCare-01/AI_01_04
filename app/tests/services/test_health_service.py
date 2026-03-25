@@ -45,15 +45,13 @@ class TestHealthService(TestCase):
         assert result["items"] == []
         assert result["bucket"] == "none"
 
-    async def test_get_day_detail_with_template(self):
-        """템플릿 있을 때 일자 상세 조회 시 skipped 상태로 시딩 확인."""
+    async def test_get_day_detail_with_template_no_active_rec(self):
+        """템플릿만 있고 활성 추천 목표가 없으면 시드하지 않음."""
         user = await _make_user("health_templ@example.com")
         await _make_template("스트레칭")
         service = HealthService()
         result = await service.get_day_detail(user.id, "2024-01-01")
-        assert len(result["items"]) == 1
-        assert result["items"][0]["label"] == "스트레칭"
-        assert result["items"][0]["status"] == "skipped"
+        assert len(result["items"]) == 0
 
     async def test_get_day_detail_invalid_date(self):
         """잘못된 날짜 형식 시 400 발생 확인."""
@@ -90,12 +88,11 @@ class TestHealthService(TestCase):
             await service.update_log(user.id, 9999, HealthLogUpdateRequest(status="done"))
         assert ctx.exception.status_code == 404
 
-    async def test_seed_day_idempotent(self):
-        """같은 날 두 번 seed해도 중복 생성 안 됨"""
+    async def test_seed_day_no_active_recommendation(self):
+        """활성 추천 목표가 없으면 시드하지 않음"""
         user = await _make_user("health_idem@example.com")
         await _make_template("명상")
         service = HealthService()
         await service._seed_day_if_empty(user_id=user.id, date_str="2024-01-01")
-        await service._seed_day_if_empty(user_id=user.id, date_str="2024-01-01")
         count = await HealthChecklistLog.filter(user_id=user.id, date="2024-01-01").count()
-        assert count == 1
+        assert count == 0

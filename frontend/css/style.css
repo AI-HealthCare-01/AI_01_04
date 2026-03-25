@@ -347,11 +347,11 @@ body { background:#f7faf8; min-height:100vh; display:flex; flex-direction:column
 
 /* ── Main Card ── */
 .dashboard-card {
-  max-width:1200px;
+  max-width:1600px;
   margin:32px auto;
   background:#fff;
   border-radius:20px;
-  padding:32px 36px 40px;
+  padding:32px 48px 40px;
   border:1px solid #e5e7eb;
 }
 
@@ -606,13 +606,12 @@ body { background:#f7faf8; min-height:100vh; display:flex; flex-direction:column
 }
 
 .history-list { display:flex; flex-wrap:wrap; gap:6px; }
-.history-pill {
-  border-radius:999px; background:rgba(109,162,133,.12); color:#6da285;
-  padding:4px 10px; font-size:.76rem; font-weight:600;
-  cursor:pointer; transition:all .15s; border:1.5px solid transparent;
+.scan-select-card {
+  border:1.5px solid #e5e7eb; border-radius:10px; padding:10px 12px;
+  cursor:pointer; transition:all .15s; background:#fff;
 }
-.history-pill:hover { border-color:#6da285; }
-.history-pill.selected { background:#6da285; color:#fff; border-color:#6da285; }
+.scan-select-card:hover { border-color:#6da285; }
+.scan-select-card.selected { border-color:#6da285; background:rgba(109,162,133,.06); }
 
 .quick-chip-wrap { display:flex; flex-wrap:wrap; gap:6px; }
 .quick-chip {
@@ -632,7 +631,7 @@ body { background:#f7faf8; min-height:100vh; display:flex; flex-direction:column
 /* Chat area */
 .chat-area {
   border:1px solid #e5e7eb; border-radius:16px; background:#fafdfb;
-  display:flex; flex-direction:column; min-height:540px;
+  display:flex; flex-direction:column; min-height:720px;
 }
 .chat-header {
   padding:14px 18px; border-bottom:1px solid #eef3f0;
@@ -645,7 +644,7 @@ body { background:#f7faf8; min-height:100vh; display:flex; flex-direction:column
 }
 .btn-reset:hover { background:#eee; }
 
-.chat-log { flex:1; overflow-y:auto; padding:16px 18px; max-height:400px; }
+.chat-log { flex:1; overflow-y:auto; padding:16px 18px; max-height:580px; }
 
 /* KakaoTalk-style messages */
 .chat-msg { display:flex; gap:8px; margin-bottom:14px; }
@@ -694,7 +693,7 @@ body { background:#f7faf8; min-height:100vh; display:flex; flex-direction:column
 .btn-send:disabled { opacity:.6; cursor:not-allowed; }
 
 @media(max-width:768px) {
-  .chat-log { max-height:300px; }
+  .chat-log { max-height:400px; }
 }
 
 /* ===== Floating Chat Widget ===== */

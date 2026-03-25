@@ -41,12 +41,14 @@ class ChatContextService:
         diseases = await self._get_user_diseases(user_id)
         medications = await self._get_active_medications(user_id)
         scan_summary = await self._get_scan_summary(user_id)
+        scan_cards = await self._get_scan_cards(user_id)
 
         return {
             "user_id": user_id,
             "diseases": diseases,
             "medications": medications,
             "scan_summary": scan_summary,
+            "scan_cards": scan_cards,
             "has_diseases": len(diseases) > 0,
             "has_medications": len(medications) > 0,
             "has_scans": scan_summary["total"] > 0,
@@ -118,6 +120,35 @@ class ChatContextService:
             "completed_count": len(completed),
             "latest_scan_status": scans[0].status if scans else None,
         }
+
+    async def _get_scan_cards(self, user_id: int) -> list[dict[str, Any]]:
+        """저장 완료된 스캔별 진단명+약품명 카드 목록을 반환한다."""
+        scans = await Scan.filter(user_id=user_id, status="saved").order_by("-created_at").limit(20)
+        cards: list[dict[str, Any]] = []
+        for s in scans:
+            diagnoses: list[str] = []
+            if isinstance(s.diagnosis_list, list):
+                diagnoses = [d for d in s.diagnosis_list if isinstance(d, str) and d.strip()]
+
+            drug_names: list[str] = []
+            if isinstance(s.drugs, list):
+                for d in s.drugs:
+                    name = d.get("name") if isinstance(d, dict) else str(d)
+                    if name and name.strip():
+                        drug_names.append(name.strip())
+
+            if not diagnoses and not drug_names:
+                continue
+
+            cards.append(
+                {
+                    "scan_id": s.id,
+                    "document_date": s.document_date,
+                    "diagnoses": diagnoses,
+                    "drug_names": drug_names,
+                }
+            )
+        return cards
 
     async def deactivate_prescription(self, user_id: int, prescription_id: int) -> bool:
         """사용자가 '다 먹었다' 처리. end_date를 어제로 당긴다."""

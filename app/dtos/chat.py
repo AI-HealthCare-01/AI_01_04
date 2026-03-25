@@ -26,6 +26,7 @@ class UserContextResponse(BaseModel):
     diseases: list[dict[str, Any]]
     medications: list[dict[str, Any]]
     scan_summary: dict[str, Any]
+    scan_cards: list[dict[str, Any]] = []
     has_diseases: bool
     has_medications: bool
     has_scans: bool

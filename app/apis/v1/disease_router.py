@@ -2,7 +2,7 @@
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import ORJSONResponse as Response
 
 from app.dependencies.security import get_request_user
@@ -19,11 +19,14 @@ async def search_diseases(
     limit: Annotated[int, Query(ge=1, le=50)] = 10,
 ) -> Response:
     """상병코드 또는 질병명으로 검색."""
-    keyword = q.strip()
-    results = await DiseaseCodeMapping.filter(name__icontains=keyword).limit(limit)
-    if not results:
-        results = await DiseaseCodeMapping.filter(code__istartswith=keyword.upper()).limit(limit)
-    return Response(
-        [{"code": r.code, "name": r.name, "display": f"{r.code} {r.name}"} for r in results],
-        status_code=status.HTTP_200_OK,
-    )
+    try:
+        keyword = q.strip()
+        results = await DiseaseCodeMapping.filter(name__icontains=keyword).limit(limit)
+        if not results:
+            results = await DiseaseCodeMapping.filter(code__istartswith=keyword.upper()).limit(limit)
+        return Response(
+            [{"code": r.code, "name": r.name, "display": f"{r.code} {r.name}"} for r in results],
+            status_code=status.HTTP_200_OK,
+        )
+    except Exception:
+        raise HTTPException(status_code=500, detail="질병 검색 중 오류가 발생했습니다.") from None

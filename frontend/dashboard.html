@@ -336,7 +336,8 @@
         status: 'pending',
         isRec: true,
       }));
-    } else {
+    } else if (summary.recent_prescription) {
+      // 처방전이 있을 때만 health history fallback (없으면 빈 상태 유지)
       try {
         const healthHistory = await window.api.getHealthHistory('?size=1');
         if (healthHistory.items?.length) {

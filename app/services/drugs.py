@@ -5,7 +5,10 @@
 
 from __future__ import annotations
 
+from fastapi import HTTPException
+
 from app.repositories.drug_repository import DrugRepository
+from app.utils.cache import TTL_DRUG_SEARCH, cache_get, cache_set
 
 
 class DrugService:
@@ -47,8 +50,15 @@ class DrugService:
 
     async def search(self, keyword: str, *, limit: int = 20) -> list[dict]:
         """약품명 키워드로 검색하여 응답 딕셔너리 목록을 반환한다."""
-        rows = await self._search_with_fallbacks(keyword, limit)
-        return [
+        cached = await cache_get("drug", keyword, limit)
+        if cached is not None:
+            return cached
+
+        try:
+            rows = await self._search_with_fallbacks(keyword, limit)
+        except Exception:
+            raise HTTPException(status_code=500, detail="약물 검색 중 오류가 발생했습니다.") from None
+        result = [
             {
                 "id": row.id,
                 "name": row.name,
@@ -62,6 +72,9 @@ class DrugService:
             }
             for row in rows
         ]
+        if result:
+            await cache_set("drug", keyword, limit, value=result, ttl=TTL_DRUG_SEARCH)
+        return result
 
     @staticmethod
     def _correct_ocr_typo(keyword: str) -> str:
