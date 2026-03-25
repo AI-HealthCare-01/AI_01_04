@@ -20,7 +20,6 @@
   </div>
   <div class="user-area d-flex align-items-center gap-3">
     <span class="text-muted" id="header-user-name">환영합니다</span>
-    <span id="patient-badge" class="badge bg-light text-dark border rounded-pill" style="font-size:.72rem">-</span>
     <a href="profile.html" class="btn btn-myinfo"><i class="bi bi-person-fill me-1"></i>내 정보</a>
   </div>
 </nav>
@@ -106,6 +105,9 @@
         <textarea id="chat-question" rows="1" data-placeholder="chatbot.questionPlaceholder" placeholder="예: 이 약은 식후에 먹어야 하나요?" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat(event)}"></textarea>
         <button class="btn-send" id="send-chat-btn" onclick="sendChat(event)"><i class="bi bi-send me-1"></i><span data-text="chatbot.sendButton">전송</span></button>
       </div>
+      <div style="padding:8px 18px;text-align:center;font-size:.72rem;color:#999;border-top:1px solid #eef3f0;background:#fafdfb;">
+        ⚕️ 본 서비스는 의료 전문가의 진료를 대체하지 않습니다. 정확한 진단과 처방은 반드시 담당 의료진과 상담하세요.
+      </div>
     </div>
   </div>
 </div>
@@ -138,6 +140,21 @@ function renderMarkdown(text) {
     .replace(/^\[(.+?)\]$/gm, '<div style="margin:10px 0 4px;font-weight:700;color:#6da285">[$1]</div>')
     .replace(/^- (.+)$/gm, '<div style="padding-left:12px">• $1</div>')
     .replace(/\n/g, '<br>');
+}
+
+function appendStreamMessage() {
+  const log = document.getElementById('chat-log');
+  const name = escapeHtml(getText('chatbot.assistantName', '메디메이트'));
+  const html = `
+    <div class="chat-msg assistant" id="stream-msg">
+      <div class="chat-avatar">🤖</div>
+      <div class="chat-msg-body">
+        <div class="chat-msg-name">${name}</div>
+        <div class="chat-bubble" id="stream-bubble"></div>
+      </div>
+    </div>`;
+  log.insertAdjacentHTML('beforeend', html);
+  log.scrollTop = log.scrollHeight;
 }
 
 function appendMessage(role, content) {
@@ -352,11 +369,11 @@ async function sendChat(event) {
 
   try {
     btn.disabled = true;
-    setStatus(getText('chatbot.sending', '질문을 전송하고 있습니다...'), 'info');
+    setStatus('', 'info');
     appendMessage('user', question);
     document.getElementById('chat-question').value = '';
 
-    const response = await window.api.sendChatMessage({
+    const body = {
       patient_id: String(currentUser.id),
       session_id: currentSessionId,
       mode,
@@ -364,10 +381,56 @@ async function sendChat(event) {
       disease_code: fallbackDisease,
       medications: fallbackMedications,
       use_context: true,
+    };
+
+    const token = localStorage.getItem('access_token');
+    const res = await fetch(`${window.api.fetchAPI.length ? API_BASE_URL : BACKEND_ORIGIN + '/api/v1'}/chatbot/chat/stream`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify(body),
     });
 
-    if (response.session_id) currentSessionId = response.session_id;
-    appendMessage('assistant', response.chat_answer || getText('chatbot.emptyAnswer', '답변을 받아오지 못했습니다.'));
+    if (!res.ok) throw new Error('응답 오류: ' + res.status);
+
+    appendStreamMessage();
+    const bubble = document.getElementById('stream-bubble');
+    const log = document.getElementById('chat-log');
+    let fullText = '';
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop();
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        try {
+          const data = JSON.parse(line.slice(6));
+          if (data.token) {
+            fullText += data.token;
+            bubble.innerHTML = renderMarkdown(fullText);
+            log.scrollTop = log.scrollHeight;
+          }
+          if (data.done && data.session_id) {
+            currentSessionId = data.session_id;
+          }
+        } catch {}
+      }
+    }
+
+    const streamMsg = document.getElementById('stream-msg');
+    if (streamMsg) streamMsg.removeAttribute('id');
+    const streamBubble = document.getElementById('stream-bubble');
+    if (streamBubble) streamBubble.removeAttribute('id');
+
+    if (!fullText) {
+      appendMessage('assistant', getText('chatbot.emptyAnswer', '답변을 받아오지 못했습니다.'));
+    }
     setStatus(getText('chatbot.success', '답변이 도착했습니다.'), 'success');
     await loadMedicationHistory();
   } catch (err) {
@@ -390,8 +453,6 @@ async function initChatbotPage() {
 
     localStorage.setItem('user_name', name);
     document.getElementById('header-user-name').textContent = `환영합니다, ${name}님`;
-    document.getElementById('patient-badge').innerText = `${getText('chatbot.patientIdLabel', '내 ID')}: ${currentUser.id}`;
-
     const check = await window.api.checkChatbotPatient(currentUser.id);
     if (!check || !check.exists) {
       setStatus(getText('chatbot.patientCheckFailed', '현재 사용자 정보가 상담 대상과 연결되지 않았습니다.'), 'warning');
@@ -428,5 +489,6 @@ if (!localStorage.getItem('access_token')) {
 }
 </script>
 
+<script src="js/accessibility.js"></script>
 </body>
 </html>

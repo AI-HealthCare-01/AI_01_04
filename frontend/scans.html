@@ -50,8 +50,9 @@
        ondragleave="this.classList.remove('dragover')"
        ondrop="event.preventDefault();this.classList.remove('dragover');handleDropUpload(event)">
     <i class="bi bi-cloud-arrow-up"></i>
-    <h6>이미지 선택하기</h6>
-    <p>또는 여기에 파일을 끌어다 놓으세요.</p>
+    <h6>진료기록 또는 처방전 파일 업로드</h6>
+    <p>클릭하여 파일을 선택하거나, 여기에 파일을 끌어다 놓으세요.</p>
+    <p style="font-size:.75rem;color:#888;margin-top:4px">허용 형식: <strong>JPG, PNG, PDF</strong> &nbsp;|&nbsp; 최대 <strong>10MB</strong></p>
     <input type="file" id="file-upload" class="d-none" accept="image/png,image/jpeg,image/jpg,application/pdf" onchange="handleFileUpload(event)">
   </div>
 
@@ -149,6 +150,16 @@ function resizeImage(file, maxHeight = 2000, quality = 0.85) {
 async function handleFileUpload(event) {
   const file = event.target.files[0];
   if (!file) return;
+  if (!['image/png','image/jpeg','image/jpg','application/pdf'].includes(file.type)) {
+    setStatus('JPG, PNG, PDF 파일만 업로드 가능합니다.', 'danger');
+    event.target.value = '';
+    return;
+  }
+  if (file.size > 10*1024*1024) {
+    setStatus('파일 크기가 10MB를 초과합니다. 10MB 이하 파일을 선택해 주세요.', 'danger');
+    event.target.value = '';
+    return;
+  }
   showFileInfo(file);
   setStatus('<span class="spinner-border spinner-border-sm me-2"></span>이미지 최적화 중...', 'info');
   const optimized = await resizeImage(file);
@@ -259,5 +270,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   } catch {}
 });
 </script>
+<script src="js/accessibility.js"></script>
 </body>
 </html>
