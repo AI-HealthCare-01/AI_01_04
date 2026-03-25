@@ -5,6 +5,8 @@
 
 from __future__ import annotations
 
+from fastapi import HTTPException
+
 from app.repositories.drug_repository import DrugRepository
 
 
@@ -47,7 +49,10 @@ class DrugService:
 
     async def search(self, keyword: str, *, limit: int = 20) -> list[dict]:
         """약품명 키워드로 검색하여 응답 딕셔너리 목록을 반환한다."""
-        rows = await self._search_with_fallbacks(keyword, limit)
+        try:
+            rows = await self._search_with_fallbacks(keyword, limit)
+        except Exception:
+            raise HTTPException(status_code=500, detail="약물 검색 중 오류가 발생했습니다.") from None
         return [
             {
                 "id": row.id,

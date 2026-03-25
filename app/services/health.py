@@ -98,24 +98,29 @@ class HealthService:
         except DateTimeError as e:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e
 
-        days = list(reversed(list(date_range_inclusive(start, end))))
+        try:
+            days = list(reversed(list(date_range_inclusive(start, end))))
 
-        rows: list[dict] = []
-        for d in days:
-            ds = d.isoformat()
-            await self._seed_day_if_empty(user_id=user_id, date_str=ds)
+            rows: list[dict] = []
+            for d in days:
+                ds = d.isoformat()
+                await self._seed_day_if_empty(user_id=user_id, date_str=ds)
 
-            day_logs = await HealthChecklistLog.filter(user_id=user_id, date=d).all()
-            rate = _calc_rate_from_logs(day_logs)
+                day_logs = await HealthChecklistLog.filter(user_id=user_id, date=d).all()
+                rate = _calc_rate_from_logs(day_logs)
 
-            rows.append(
-                {
-                    "date": ds,
-                    "rate": rate,
-                }
-            )
+                rows.append(
+                    {
+                        "date": ds,
+                        "rate": rate,
+                    }
+                )
 
-        return {"items": rows}
+            return {"items": rows}
+        except HTTPException:
+            raise
+        except Exception as e:
+            raise HTTPException(status_code=500, detail="건강관리 이력 조회 중 오류가 발생했습니다.") from e
 
     async def get_day_detail(self, user_id: int, date: str) -> dict:
         """특정 날짜의 체크리스트 상세를 조회한다 (없으면 시드 후 반환).
