@@ -8,6 +8,7 @@ from __future__ import annotations
 from fastapi import HTTPException
 
 from app.repositories.drug_repository import DrugRepository
+from app.utils.cache import TTL_DRUG_SEARCH, cache_get, cache_set
 
 
 class DrugService:
@@ -67,6 +68,9 @@ class DrugService:
             }
             for row in rows
         ]
+        if result:
+            await cache_set("drug", keyword, limit, value=result, ttl=TTL_DRUG_SEARCH)
+        return result
 
     @staticmethod
     def _correct_ocr_typo(keyword: str) -> str:

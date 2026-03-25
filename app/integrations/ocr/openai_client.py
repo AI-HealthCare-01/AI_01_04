@@ -14,61 +14,46 @@ def get_openai_client() -> AsyncOpenAI:
     """OCR 후처리용 AsyncOpenAI 싱글턴 인스턴스를 반환한다."""
     global _client
     if _client is None:
-        _client = AsyncOpenAI(api_key=config.OPENAI_API_KEY)
+        _client = AsyncOpenAI(
+            api_key=config.OPENAI_API_KEY,
+            timeout=15.0,
+            max_retries=1,
+        )
     return _client
 
 
-PRESCRIPTION_SYSTEM_PROMPT = """
-너는 한국어 처방전 OCR 후처리기다.
-반드시 JSON만 반환한다.
-키는 정확히 document_date, diagnosis_list, clinical_note, drugs, raw_text, ocr_raw.
-- document_date: YYYY-MM-DD 또는 null
-- diagnosis_list: 진단명/질병명/질병분류기호(KCD 코드) 배열. 여러 개가 있으면 모두 추출. 예: ["I109 기타 및 상세불명의 원발성 고혈압", "E118 합병증을 동반하지 않은 1형 당뇨병"]. 없으면 []
-  OCR 오인식 주의: KCD 코드 첫 글자는 반드시 영문 대문자다. '1', 'l' 로 인식된 경우 'I'로, '0'으로 인식된 경우 'O'로 보정하라. 예: "1219" → "I219", "l109" → "I109"
-  칸 분리 형식 주의: 한국 처방전의 질병분류기호는 각 글자가 별도 칸에 나뉘어 있는 경우가 많다. OCR이 이를 개별 문자로 인식하여 공백으로 분리될 수 있다. 예: "I 1 0 9" → "I109", "E 1 1 8" → "E118". 이런 패턴을 발견하면 공백을 제거하고 KCD 코드로 보정하여 diagnosis_list에 추가하라.
-  OCR 누락 보완: 질병분류기호 칸에서 일부 글자가 OCR에 의해 누락될 수 있다. 처방된 약물 정보를 참고하여 누락된 질병코드를 추론하라. 예: 노바스크정(고혈압약)이 처방되었으면 I10 계열(고혈압) 코드가 있을 가능성이 높다. parser_hints의 candidate_diagnosis_codes에 이미 추출된 코드가 있으면 그것을 신뢰하되, 처방약과 매칭되지 않는 누락 코드가 있으면 추론하여 추가하라.
-  한국 첫 방문 질병분류기호 위치: 첫 방문 질병분류기호는 주로 '질병분류', '상병코드', '질병코드' 등의 라벨 근처에 위치한다. 해당 라벨 근처에 영문자+숫자 또는 숫자만으로 된 3~5자리 코드가 있으면 KCD 코드로 간주하고 영문자 보정 후 diagnosis_list에 추가하라.
-- clinical_note: null
-- drugs: 객체 배열. 각 약품에 대해 다음 필드를 추출한다. (없으면 [])
-    - name: 약품명 (OCR 텍스트를 가장 유사한 한국 약물명으로 보정. 보정 불가능하면 "인식 불가")
-      약품명 OCR 오인식 주의: "점안액"이 "점인액", "정인액", "정안액" 등으로 오인식될 수 있다. "점안액"으로 보정하라. "정"과 "점"이 혼동될 수 있다: "점안액"은 안약이므로 "정"으로 바꾸지 말 것. "정"은 알약 단위이므로 "점"으로 바꾸지 말 것.
-    - edi_code: 보험코드/EDI코드/약품코드 (9자리 숫자). 처방전에 "코드", "보험코드", "EDI", "약품코드" 라벨 근처 숫자가 있으면 추출. 없으면 null
-    - dose_amount: 1회 투여량 문자열 (예: "1"). 없으면 null
-    - dose_unit: 단위 (정, ml, 캡슐 등). 점안액/안약의 경우 반드시 "방울". 없으면 null
-    - dose_count: 1일 투여횟수 정수 (예: 2). "하루 4번" → 4, "1일 3회" → 3. 없으면 null
-    - dose_timing: 복용 시점. 처방전의 "용법", "복용법", "투약방법" 란을 반드시 확인하여 각 약품별 복용 시점을 추출하라.
-      허용 값: "아침 식후", "아침 식전", "점심 식후", "점심 식전", "저녁 식후", "저녁 식전", "자기 전", "필요시"
-      예시: "저녁 식후 복용" → "저녁 식후", "취침 전" → "자기 전", "식후 30분" → "아침 식후", "하루 4번 양안에" → "아침 식후"(dose_count=4), "필요시 복용" → "필요시"
-      중요: "하루 N번", "1일 N회" 같이 횟수만 있고 시점이 없으면 dose_timing은 "아침 식후"로 설정하라. "필요시"는 "필요시 복용", "PRN", "통증 시" 등 명시적으로 필요시라고 적힌 경우에만 사용하라.
-      용법이 명시되지 않으면 null
-    - dose_days: 투약일수 정수 (예: 30). 없으면 null
-  용법 추출 중요: 한국 처방전에는 "용법" 또는 "복용법" 란에 "저녁 식후 1회", "자기전 점안", "하루 4번 양안에" 등의 지시가 있다. 이 정보를 각 약품의 dose_timing과 dose_count에 반드시 반영하라. 약품별로 용법이 다를 수 있으므로 각각 개별적으로 추출하라.
-  예시: {"name": "노바스크정5mg", "edi_code": "670600380", "dose_amount": "1", "dose_unit": "정", "dose_count": 1, "dose_timing": "식후", "dose_days": 30}
-- raw_text: 입력 원문 그대로
-- ocr_raw: 입력 원본 JSON 그대로
-
-중요: 질병 코드와 질병명이 여러 줄에 걸쳐 있으면 각각 별도 항목으로 분리하여 diagnosis_list에 추가한다.
-예시: "I109 기타 및 상세불명의 원발성 고혈압" 과 "E118 합병증을 동반하지 않은 1형 당뇨병"이 있으면
-diagnosis_list: ["I109 기타 및 상세불명의 원발성 고혈압", "E118 합병증을 동반하지 않은 1형 당뇨병"]
+PRESCRIPTION_SYSTEM_PROMPT = """\
+한국 처방전 OCR 후처리기. JSON만 반환.
+출력 키: document_date, diagnosis_list, drugs.
+- document_date: "YYYY-MM-DD" | null
+- diagnosis_list: "KCD코드 진단명" 문자열 배열. 여러 개면 모두 추출. 없으면 []
+  처방전에 코드만 있고 진단명이 없으면, KCD 코드에 해당하는 한국어 진단명을 의학 지식으로 추론하여 "코드 진단명" 형식으로 반환.
+  예: "U071 코로나바이러스감염증-19", "J209 급성 기관지염", "I10 본태성 고혈압"
+  hints.codes에 후보가 있으면 신뢰하되, 처방약으로 추론 가능한 누락 코드는 추가.
+- drugs: 배열. 각 항목 필드: name, edi_code, dose_amount, dose_unit, dose_count, dose_timing, dose_days. 없으면 []
+  - name: 처방전 원문의 약품명을 함량·제형 포함하여 그대로 출력. 예: "노바스크정5mg", "트라젠타듀오정2.5/1정". "(내복)/1정" 같은 투여경로·수량 접미사는 제거하되, 함량(mg, 밀리그램 등)과 제형(정, 캡슐 등)은 반드시 포함. 축약 금지. 불가시 "인식 불가"
+  - edi_code: 약품명 앞에 있는 9자리 숫자 코드(보험코드). 예: "648900030". 반드시 추출. 없으면 null
+  - dose_amount: "1회투여량" 칸의 숫자 문자열 | null
+  - dose_unit: 정,ml,캡슐,방울 등 | null
+  - dose_count: "1일투여횟수" 칸의 숫자를 정확히 읽어서 정수로 반환. 처방전 표에서 해당 약품 행의 "1일투여횟수" 열 값을 그대로 사용. 절대 임의로 변경하지 말 것. null 금지 — 읽을 수 없으면 1.
+  - dose_timing 허용값: "식후","식전","아침 식후","아침 식전","점심 식후","점심 식전","저녁 식후","저녁 식전","자기 전","필요시" | null
+  - dose_days: "총투약일수" 칸의 숫자를 정수로 반환 | null
+  처방전은 표 형식이며 각 약품 행에 1회투여량, 1일투여횟수, 총투약일수 열이 있다.
+  각 열의 숫자를 해당 약품 행에서 정확히 읽어 매핑할 것.
+  용법란("용법","복용법","투약방법")이 있으면 dose_timing에 반영.
+  dose_timing이 "식후" 또는 "식전"이면 dose_count로 복용 시간대를 자동 결정하므로, 특정 시간대가 명시되지 않은 경우 "식후"를 기본값으로 사용.
+  "필요시"는 용법에 "필요시","필요할 때","PRN","가려울 때","기침 시" 등 증상 발생 시 복용하라고 명시된 경우에만 사용. 그 외 모든 약품(점안액·외용제·하루 N회 투여 포함)은 "식후"를 기본값으로 설정.
 """
 
 
-MEDICAL_RECORD_SYSTEM_PROMPT = """
-너는 한국어 진료기록지 OCR 후처리기다.
-반드시 JSON만 반환한다.
-키는 정확히 document_date, diagnosis_list, clinical_note, drugs, raw_text, ocr_raw.
-- document_date: YYYY-MM-DD 또는 null
-- diagnosis_list: 진단명/질병명/질병코드 배열. 여러 개가 있으면 모두 추출. 없으면 []
-- clinical_note: 진료 내용, 주증상, 소견, 생활지도, 경과관찰 내용 등을 자연스럽게 정리한 문자열, 없으면 null
-- drugs: 객체 배열. 진료기록지에서 약물명이 명확히 보일 때만 추출. 각 항목은 {"name": "약품명", "dose_amount": null, "dose_unit": null, "dose_count": null, "dose_timing": null, "dose_days": null}. 없으면 []
-- raw_text: 입력 원문 그대로
-- ocr_raw: 입력 원본 JSON 그대로
-
-추출 규칙:
-1. 진단명/질병코드가 명확하면 diagnosis_list에 넣는다. 여러 개면 모두 추출.
-2. 진단명이 없고 증상/소견만 있으면 diagnosis_list는 []로 둔다.
-3. symptoms, assessment, plan, instruction, advice 성격의 내용은 clinical_note에 요약한다.
-4. 확실하지 않은 내용은 추측하지 말고 null 또는 빈 배열로 둔다.
+MEDICAL_RECORD_SYSTEM_PROMPT = """\
+한국 진료기록지 OCR 후처리기. JSON만 반환.
+출력 키: document_date, diagnosis_list, clinical_note, drugs.
+- document_date: "YYYY-MM-DD" | null
+- diagnosis_list: 진단명/KCD코드 배열. 없으면 []
+- clinical_note: 진료내용·소견·지도 요약 문자열 | null
+- drugs: [{name, dose_amount, dose_unit, dose_count, dose_timing, dose_days}]. 명확한 약물만. 없으면 []
+확실하지 않으면 null.
 """
 
 
@@ -116,12 +101,12 @@ async def ai_postprocess(
     parser_hints = parser_hints or {}
 
     user_payload = {
-        "document_type": document_type,
-        "raw_text": raw_text,
-        "parser_hints": {
-            "candidate_dates": parser_hints.get("candidate_dates", []),
-            "candidate_diagnosis_codes": parser_hints.get("candidate_diagnosis_codes", []),
-            "candidate_drugs": parser_hints.get("candidate_drugs", []),
+        "t": document_type,
+        "text": raw_text,
+        "hints": {
+            "dates": parser_hints.get("candidate_dates", []),
+            "codes": parser_hints.get("candidate_diagnosis_codes", []),
+            "drugs": parser_hints.get("candidate_drugs", []),
         },
     }
 
@@ -129,16 +114,11 @@ async def ai_postprocess(
         model=config.OPENAI_MODEL,
         input=[
             {"role": "system", "content": system_prompt},
-            {
-                "role": "user",
-                "content": (
-                    "다음 데이터를 스키마에 맞춰 정규화하여 json으로 반환:\n"
-                    f"{json.dumps(user_payload, ensure_ascii=False)}\n"
-                    "반드시 JSON 객체만 반환하고, raw_text와 ocr_raw는 생략해도 된다."
-                ),
-            },
+            {"role": "user", "content": json.dumps(user_payload, ensure_ascii=False)},
         ],
         text={"format": {"type": "json_object"}},
+        temperature=0.2,
+        max_output_tokens=2048,
     )
 
     text = response.output_text
@@ -217,6 +197,18 @@ def _dedupe_drugs(items: list) -> list[dict]:
     return result
 
 
+# 유효한 KCD 코드 첫 글자 (ICD-10 챕터)
+_VALID_KCD_PREFIXES = set("ABCDEFGHIJKLMNOPQRSTUV")
+
+
+def _is_valid_kcd(code: str) -> bool:
+    """KCD/ICD-10 형식인지 검증한다."""
+    code = code.strip()
+    if len(code) < 3:
+        return False
+    return code[0] in _VALID_KCD_PREFIXES and re.fullmatch(r"[A-Z]\d{2,4}[0-9A-Z]?", code) is not None
+
+
 def _reconcile_diagnosis(
     diagnosis_list: list[str],
     candidate_codes: list[str],
@@ -232,10 +224,10 @@ def _reconcile_diagnosis(
                 used_codes.add(code)
                 matched = True
                 break
-        if not matched and not re.match(r"^[A-Z]\d{2}", diag.strip()):
+        if not matched:
             kept.append(diag)
     for code in candidate_codes:
-        if code not in used_codes:
+        if code not in used_codes and _is_valid_kcd(code):
             kept.append(code)
     return _dedupe_keep_order(kept)
 
@@ -302,9 +294,7 @@ _KCD_PATTERN = re.compile(
 _KCD_LABEL_PATTERN = re.compile(
     r"(?:질병분류|상병코드|질병코드|질병\s*분류|상병\s*기호|분류기호)\s*([1lIA-Z][0-9]{2,4}[0-9A-Z]?)"
 )
-_KCD_SPACED_PATTERN = re.compile(
-    r"(?<![A-Za-z0-9])([A-Za-z1l])\s+([0-9])\s+([0-9])\s+([0-9])(?:\s+([0-9]))?(?![A-Za-z])"
-)
+_KCD_SPACED_PATTERN = re.compile(r"(?<![A-Za-z0-9])([A-Za-z])\s+([0-9])\s+([0-9])\s+([0-9])(?:\s+([0-9]))?(?![A-Za-z])")
 
 
 def _normalize_kcd(code: str) -> str:
@@ -324,7 +314,7 @@ def _extract_kcd_codes(raw_text: str) -> list[str]:
     if label_matches:
         for c in label_matches:
             n = _normalize_kcd(c)
-            if n not in seen:
+            if _is_valid_kcd(n) and n not in seen:
                 seen.add(n)
                 codes.append(n)
 
@@ -332,15 +322,15 @@ def _extract_kcd_codes(raw_text: str) -> list[str]:
     if not codes:
         for c in _KCD_PATTERN.findall(raw_text):
             n = _normalize_kcd(c)
-            if n[0].isalpha() and n not in seen:
+            if _is_valid_kcd(n) and n not in seen:
                 seen.add(n)
                 codes.append(n)
 
-    # 칸 분리 형식 (예: I 1 0 9)
+    # 칸 분리 형식 (예: J 2 0 9)
     for m in _KCD_SPACED_PATTERN.finditer(raw_text):
         raw_code = "".join(g for g in m.groups() if g is not None)
         n = _normalize_kcd(raw_code)
-        if re.fullmatch(r"[A-Z]\d{2,4}[0-9A-Z]?", n) and n not in seen:
+        if _is_valid_kcd(n) and n not in seen:
             seen.add(n)
             codes.append(n)
 

@@ -58,24 +58,9 @@
       </div>
 
       <div class="sb-card" id="medication-fields">
-        <div class="sb-title"><i class="bi bi-clipboard2-pulse me-1"></i><span data-text="chatbot.diseaseCodeLabel">질환 코드 또는 질환명</span></div>
-        <div style="margin-bottom:8px">
-          <label style="font-size:.7rem;color:#aaa;margin-bottom:2px;display:block" data-text="chatbot.diseaseCodeLabel">질환 코드</label>
-          <input type="text" id="disease-code" data-placeholder="chatbot.diseaseCodePlaceholder" placeholder="예: J00 또는 감기"/>
-        </div>
-        <div>
-          <label style="font-size:.7rem;color:#aaa;margin-bottom:2px;display:block" data-text="chatbot.medicationsLabel">복용 중인 약</label>
-          <textarea id="medications-input" rows="3" data-placeholder="chatbot.medicationsPlaceholder" placeholder="약 이름을 쉼표(,)로 구분해서 입력하세요."></textarea>
-        </div>
-      </div>
-
-      <div class="sb-card">
-        <div class="sb-title d-flex justify-content-between align-items-center">
-          <span><i class="bi bi-clock-history me-1"></i><span data-text="chatbot.historyTitle">최근 복약 상담 참고 이력</span></span>
-          <button type="button" style="background:none;border:1px solid #ddd;border-radius:6px;padding:2px 8px;font-size:.7rem;color:#666;cursor:pointer" onclick="loadMedicationHistory()" data-text="chatbot.refreshHistory">새로고침</button>
-        </div>
-        <div id="history-list" class="history-list">
-          <span class="text-muted" style="font-size:.76rem" data-text="chatbot.historyLoading">이력을 불러오는 중입니다...</span>
+        <div class="sb-title"><i class="bi bi-clipboard2-pulse me-1"></i>스캔 문서 선택</div>
+        <div id="scan-card-list" style="display:flex;flex-direction:column;gap:6px">
+          <span style="font-size:.76rem;color:#aaa">스캔 정보를 불러오는 중...</span>
         </div>
       </div>
 
@@ -120,6 +105,9 @@ let currentUser = null;
 let currentUserContext = null;
 let currentActiveRecommendations = [];
 let currentSessionId = null;
+let currentScanCards = [];
+let currentSelectedDiseases = [];
+let currentSelectedMeds = [];
 let isSending = false;
 
 function setStatus(message = '', type = 'info') {
@@ -181,6 +169,100 @@ function handleModeChange() {
   renderQuickQuestions();
 }
 
+function renderScanCards(cards) {
+  const container = document.getElementById('scan-card-list');
+  container.innerHTML = '';
+  if (!cards || !cards.length) {
+    container.innerHTML = '<span style="font-size:.76rem;color:#aaa">저장된 스캔 문서가 없습니다.</span>';
+    return;
+  }
+  cards.forEach((c, i) => {
+    const diag = c.diagnoses?.join(', ') || '진단명 없음';
+    const drugs = c.drug_names?.slice(0, 3).join(', ') || '약품 없음';
+    const extra = (c.drug_names?.length || 0) > 3 ? ` 외 ${c.drug_names.length - 3}건` : '';
+    const dateStr = c.document_date || '';
+    const card = document.createElement('div');
+    card.className = 'scan-select-card';
+    card.dataset.idx = i;
+    card.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:.72rem;color:#6da285;font-weight:600">${dateStr ? escapeHtml(dateStr) : 'Scan #' + c.scan_id}</span>
+        <span class="scan-check-icon" style="font-size:.8rem;color:#ccc"><i class="bi bi-check-circle"></i></span>
+      </div>
+      <div style="font-size:.78rem;color:#333;margin-top:4px;font-weight:500">${escapeHtml(diag)}</div>
+      <div style="font-size:.72rem;color:#888;margin-top:2px">${escapeHtml(drugs)}${extra}</div>
+    `;
+    card.onclick = () => {
+      card.classList.toggle('selected');
+      syncScanSelection();
+    };
+    // 첫 번째 스캔 자동 선택
+    if (i === 0) card.classList.add('selected');
+    container.appendChild(card);
+  });
+  syncScanSelection();
+}
+
+function syncScanSelection() {
+  const cards = document.querySelectorAll('.scan-select-card');
+  const selectedDiseases = new Set();
+  const selectedMeds = new Set();
+  cards.forEach(card => {
+    const icon = card.querySelector('.scan-check-icon i');
+    if (card.classList.contains('selected')) {
+      icon.className = 'bi bi-check-circle-fill';
+      icon.style.color = '#6da285';
+      const idx = parseInt(card.dataset.idx);
+      const c = currentScanCards[idx];
+      if (c) {
+        c.diagnoses?.forEach(d => selectedDiseases.add(d));
+        c.drug_names?.forEach(m => selectedMeds.add(m));
+      }
+    } else {
+      icon.className = 'bi bi-check-circle';
+      icon.style.color = '#ccc';
+    }
+  });
+  currentSelectedDiseases = [...selectedDiseases];
+  currentSelectedMeds = [...selectedMeds];
+  updateContextCard();
+}
+
+function updateContextCard() {
+  const container = document.getElementById('chatbot-context-list');
+  const sections = [];
+
+  if (currentSelectedDiseases.length) {
+    sections.push(`
+      <div class="context-card">
+        <div class="context-label">진단명</div>
+        <div class="fw-semibold">${currentSelectedDiseases.map(d => escapeHtml(d)).join('<br>')}</div>
+      </div>`);
+  }
+
+  if (currentSelectedMeds.length) {
+    sections.push(`
+      <div class="context-card">
+        <div class="context-label">약품명</div>
+        <div class="fw-semibold">${currentSelectedMeds.map(m => escapeHtml(m)).join('<br>')}</div>
+      </div>`);
+  }
+
+  if (currentActiveRecommendations?.length) {
+    sections.push(`
+      <div class="context-card">
+        <div class="context-label">활성 추천</div>
+        <div class="fw-semibold">${currentActiveRecommendations.slice(0, 3).map(r => escapeHtml(r.content || '-')).join('<br>')}</div>
+      </div>`);
+  }
+
+  if (!sections.length) {
+    container.innerHTML = '<span style="font-size:.76rem;color:#aaa">스캔 문서를 선택하면 AI가 참고할 정보가 표시됩니다.</span>';
+    return;
+  }
+  container.innerHTML = sections.join('');
+}
+
 function getQuickQuestions(mode) {
   if (mode === 'health') {
     return [
@@ -210,115 +292,10 @@ function renderQuickQuestions() {
   });
 }
 
-function renderHistory(items) {
-  const list = document.getElementById('history-list');
-  list.innerHTML = '';
-  if (!items || items.length === 0) {
-    list.innerHTML = `<span style="font-size:.76rem;color:#aaa">${escapeHtml(getText('chatbot.historyEmpty', '아직 저장된 복약 상담 참고 이력이 없습니다.'))}</span>`;
-    return;
-  }
-  const seen = new Set();
-  items.forEach(item => {
-    const key = `${item.disease_code || ''}_${item.medications || ''}`;
-    if (seen.has(key)) return;
-    seen.add(key);
-    const pill = document.createElement('span');
-    pill.className = 'history-pill';
-    pill.dataset.disease = item.disease_code || '';
-    pill.dataset.meds = item.medications || '';
-    pill.textContent = `${item.disease_code || getText('chatbot.historyNoDisease', '질환 정보 없음')} · ${item.medications || getText('chatbot.historyNoMedication', '약 정보 없음')}`;
-    pill.onclick = () => { pill.classList.toggle('selected'); syncHistoryToInputs(); };
-    list.appendChild(pill);
-  });
+function renderUserContext() {
+  updateContextCard();
 }
 
-function syncHistoryToInputs() {
-  const pills = document.querySelectorAll('.history-pill.selected');
-  const diseases = new Set();
-  const meds = new Set();
-  pills.forEach(p => {
-    if (p.dataset.disease) p.dataset.disease.split(',').forEach(d => diseases.add(d.trim()));
-    if (p.dataset.meds) p.dataset.meds.split(',').forEach(m => meds.add(m.trim()));
-  });
-  document.getElementById('disease-code').value = [...diseases].filter(Boolean).join(', ');
-  document.getElementById('medications-input').value = [...meds].filter(Boolean).join(', ');
-}
-
-function renderUserContext(context, recommendations = []) {
-  const container = document.getElementById('chatbot-context-list');
-  container.innerHTML = '';
-
-  if (!context) {
-    container.innerHTML = '<span style="font-size:.76rem;color:#aaa">참고 정보를 불러오지 못했습니다.</span>';
-    return;
-  }
-
-  const sections = [];
-
-  if (context.diseases?.length) {
-    sections.push(`
-      <div class="context-card">
-        <div class="context-label">현재 질환</div>
-        <div class="fw-semibold">${context.diseases.map(d => escapeHtml(d.name || d.kcd_code || '-')).join(', ')}</div>
-      </div>`);
-  }
-
-  if (context.medications?.length) {
-    sections.push(`
-      <div class="context-card">
-        <div class="context-label">현재 복용 중인 약</div>
-        <div class="fw-semibold">${context.medications.map(m => escapeHtml(m.drug_name || '-')).join(', ')}</div>
-      </div>`);
-  }
-
-  if (context.scan_summary) {
-    sections.push(`
-      <div class="context-card">
-        <div class="context-label">최근 스캔 상태</div>
-        <div class="fw-semibold">
-          총 ${escapeHtml(String(context.scan_summary.total || 0))}건 ·
-          완료 ${escapeHtml(String(context.scan_summary.completed_count || 0))}건 ·
-          진행중 ${escapeHtml(String(context.scan_summary.pending_count || 0))}건
-        </div>
-      </div>`);
-  }
-
-  if (recommendations?.length) {
-    sections.push(`
-      <div class="context-card">
-        <div class="context-label">활성 추천</div>
-        <div class="fw-semibold">${recommendations.slice(0, 3).map(r => escapeHtml(r.content || '-')).join('<br>')}</div>
-      </div>`);
-  }
-
-  if (!sections.length) {
-    container.innerHTML = '<span style="font-size:.76rem;color:#aaa">아직 연결된 건강/복약 정보가 없습니다.</span>';
-    return;
-  }
-
-  container.innerHTML = sections.join('');
-}
-
-function hydrateInputsFromContext(context) {
-  if (!context) return;
-
-  const diseaseBox = document.getElementById('disease-code');
-  const medBox = document.getElementById('medications-input');
-
-  if (diseaseBox && !diseaseBox.value.trim() && context.diseases?.length) {
-    diseaseBox.value = context.diseases.map(d => d.kcd_code || d.name).filter(Boolean).join(', ');
-  }
-
-  if (medBox && !medBox.value.trim() && context.medications?.length) {
-    medBox.value = context.medications.map(m => m.drug_name).filter(Boolean).join(', ');
-  }
-}
-
-async function loadMedicationHistory() {
-  if (!currentUser?.id) { renderHistory([]); return; }
-  try { renderHistory(await window.api.getChatbotHistory(currentUser.id)); }
-  catch (err) { renderHistory([]); setStatus(getText('chatbot.historyError', '복약 상담 이력을 불러오지 못했습니다: ') + err.message, 'warning'); }
-}
 
 function resetConversation() {
   document.getElementById('chat-log').innerHTML = '';
@@ -334,19 +311,16 @@ async function sendChat(event) {
   const question = document.getElementById('chat-question').value.trim();
   const mode = document.getElementById('chat-mode').value;
 
-  const rawDisease = document.getElementById('disease-code').value.trim();
-  const rawMedications = document.getElementById('medications-input').value
-    .split(',')
-    .map(s => s.trim())
-    .filter(Boolean);
-
-  const fallbackDisease = rawDisease || (
+  const rawDisease = currentSelectedDiseases.join(', ') || (
     currentUserContext?.diseases?.map(d => d.kcd_code || d.name).filter(Boolean).join(', ') || null
   );
 
-  const fallbackMedications = rawMedications.length > 0
-    ? rawMedications
+  const rawMedications = currentSelectedMeds.length > 0
+    ? currentSelectedMeds
     : (currentUserContext?.medications?.map(m => m.drug_name).filter(Boolean) || []);
+
+  const fallbackDisease = rawDisease;
+  const fallbackMedications = rawMedications;
 
   if (!currentUser?.id) {
     setStatus(getText('chatbot.userMissing', '사용자 정보를 확인할 수 없어 상담을 시작할 수 없습니다.'), 'danger');
@@ -432,7 +406,6 @@ async function sendChat(event) {
       appendMessage('assistant', getText('chatbot.emptyAnswer', '답변을 받아오지 못했습니다.'));
     }
     setStatus(getText('chatbot.success', '답변이 도착했습니다.'), 'success');
-    await loadMedicationHistory();
   } catch (err) {
     appendMessage('assistant', getText('chatbot.errorReply', '죄송합니다. 답변을 가져오는 중 문제가 생겼습니다.'));
     setStatus(err.message, 'danger');
@@ -468,14 +441,15 @@ async function initChatbotPage() {
       currentActiveRecommendations = [];
     }
 
-    renderUserContext(currentUserContext, currentActiveRecommendations);
-    hydrateInputsFromContext(currentUserContext);
+    renderUserContext();
+
+    // 스캔 카드 렌더링
+    currentScanCards = currentUserContext?.scan_cards || [];
+    renderScanCards(currentScanCards);
 
   } catch (err) {
     setStatus(getText('chatbot.initError', '상담 초기화 중 문제가 발생했습니다: ') + err.message, 'danger');
   }
-
-  await loadMedicationHistory();
 }
 
 // Auth check

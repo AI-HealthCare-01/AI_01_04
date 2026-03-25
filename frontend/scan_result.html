@@ -44,6 +44,16 @@
     <a class="sub-tab" id="subtab-goals" onclick="switchTab('goals')" style="text-decoration:none"><i class="bi bi-heart-pulse"></i> 건강 관리 목표 추천</a>
   </div>
 
+  <!-- Skeleton Loading -->
+  <div id="skeleton-loading" class="mb-4">
+    <div class="skeleton-row" style="width:40%;height:18px;margin-bottom:12px;border-radius:6px;background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);background-size:200%;animation:shimmer 1.5s infinite"></div>
+    <div class="skeleton-row" style="width:100%;height:38px;margin-bottom:16px;border-radius:8px;background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);background-size:200%;animation:shimmer 1.5s infinite"></div>
+    <div class="skeleton-row" style="width:60%;height:18px;margin-bottom:12px;border-radius:6px;background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);background-size:200%;animation:shimmer 1.5s infinite"></div>
+    <div class="skeleton-row" style="width:100%;height:80px;margin-bottom:16px;border-radius:10px;background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);background-size:200%;animation:shimmer 1.5s infinite"></div>
+    <div class="skeleton-row" style="width:100%;height:80px;margin-bottom:16px;border-radius:10px;background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);background-size:200%;animation:shimmer 1.5s infinite"></div>
+  </div>
+  <style>@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}</style>
+
   <!-- ═══ TAB: 처방전 분석결과 ═══ -->
   <div id="tab-result">
     <div id="analysis-warning" class="alert alert-warning small d-none"></div>
@@ -123,7 +133,7 @@ let savedRecommendations = [];
 let drugSearchTimer = null;
 
 const UNIT_OPTIONS = ['정','캡슐','ml','unit','포','방울'];
-const TIMING_OPTIONS = ['아침 식후','아침 식전','점심 식후','점심 식전','저녁 식후','저녁 식전','자기 전','필요시'];
+const TIMING_OPTIONS = ['식후','식전','아침 식후','아침 식전','점심 식후','점심 식전','저녁 식후','저녁 식전','자기 전','필요시'];
 
 const DEMO_SCAN_RESULT = {
   document_type: 'prescription', document_date: '2026-03-20',
@@ -212,6 +222,10 @@ async function resolveDiagnosis(raw) {
 
 /* ── Populate Form ── */
 async function populateEditForm(res) {
+  // skeleton 숨기기
+  const skeleton = document.getElementById('skeleton-loading');
+  if (skeleton) skeleton.style.display = 'none';
+
   document.getElementById('edit-document-date').value = res.document_date || '';
   const noteEl = document.getElementById('edit-clinical-note');
   if (noteEl) noteEl.value = res.clinical_note || '';
