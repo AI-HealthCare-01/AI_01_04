@@ -160,5 +160,39 @@ class ChatHealthService(BaseService):
             advice=answer,
         )
 
+        await self.maybe_summarize_and_rotate(session.id, user_id, "health")
+
         ai_result["session_id"] = str(session.id)
         return ai_result
+
+    async def prepare_health_stream(self, request: ChatRequest) -> tuple[str, str, int]:
+        """스트리밍용: 컨텍스트를 준비하고 (system_prompt, user_content, session_id)를 반환한다."""
+        user_id = int(request.patient_id)
+        session = await self._ensure_session(user_id, request)
+
+        user_question = (request.user_question or "").strip()
+        if user_question:
+            await self.chatbot_repo.add_message(session.id, "user", user_question)
+
+        messages = await self.chatbot_repo.get_messages(session.id)
+        conversation_str = self.build_conversation_context(messages)
+        prev_summary = await self.chatbot_repo.get_latest_summary(user_id, "health")
+
+        context_str = ""
+        if request.use_context:
+            ctx = await self.context_service.get_user_context(user_id)
+            context_str = self.context_service.build_context_prompt(ctx)
+
+        medi_history = await self.get_medi_history(request.patient_id)
+        medi_hist_str = "\n".join(
+            [f"- {h['created_at'].date()}: {h['disease_code']}: {h['medications']}" for h in medi_history]
+        )
+        guideline_str = await self._collect_guidelines_from_history(medi_history)
+        rag_str = await self._collect_rag(user_question)
+        recommendation_str = await self._build_recommendation_section(user_id)
+
+        system_prompt = self._build_health_system_prompt(
+            prev_summary, conversation_str, medi_hist_str, guideline_str, rag_str, context_str, recommendation_str,
+        )
+        user_content = f"\n        - 사용자 질문: {request.user_question}\n        "
+        return system_prompt, user_content, session.id
