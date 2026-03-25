@@ -10,6 +10,7 @@ from fastapi.staticfiles import StaticFiles
 from app.apis.v1 import v1_routers
 from app.core import config
 from app.db.databases import initialize_tortoise
+from app.middleware import AuditLogMiddleware
 from app.models.health import HealthChecklistTemplate
 
 logger = logging.getLogger(__name__)
@@ -99,14 +100,10 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["Accept", "Content-Type", "Authorization"],
 )
+app.add_middleware(AuditLogMiddleware)
 
 app.include_router(v1_routers)
 
-# 챗봇 테스트 UI: 개발 환경에서만 마운트
-if config.ENV != "prod":
-    from .ui import chatbot
-
-    app.include_router(chatbot.router)
 initialize_tortoise(app)
 
 # ✅ static 파일 서빙 (프로필 업로드, 스캔 업로드 등)

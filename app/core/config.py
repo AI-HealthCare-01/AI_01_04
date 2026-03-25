@@ -37,7 +37,7 @@ class Config(BaseSettings):
     DB_PASSWORD: str = ""
     DB_NAME: str = "ai_health"
     DB_CONNECT_TIMEOUT: int = 5
-    DB_CONNECTION_POOL_MAXSIZE: int = 10
+    DB_CONNECTION_POOL_MAXSIZE: int = 30
 
     COOKIE_DOMAIN: str = "localhost"
     CORS_ORIGINS: str = ""

@@ -79,7 +79,7 @@ function getPct(day) {
   const all = allItems(day);
   return all.length ? Math.round(all.filter(i=>i.done).length / all.length * 100) : 0;
 }
-function pctClass(p) { return p===100?'full':p>0?'partial':'zero'; }
+function pctClass(p) { return p>=80?'full':p>=50?'partial':'zero'; }
 
 function render() {
   const wrap = document.getElementById('med-accordion');
@@ -190,5 +190,6 @@ async function loadMedications() {
 document.addEventListener('DOMContentLoaded', loadMedications);
 </script>
 
+<script src="js/accessibility.js"></script>
 </body>
 </html>

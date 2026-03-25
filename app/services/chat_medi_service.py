@@ -136,5 +136,62 @@ class ChatMediService(BaseService):
             advice=answer,
         )
 
+        await self.maybe_summarize_and_rotate(session.id, user_id, "medication")
+
         ai_result["session_id"] = str(session.id)
         return ai_result
+
+    async def prepare_medical_stream(self, request: ChatRequest) -> tuple[str, str, int]:
+        """스트리밍용: 컨텍스트를 준비하고 (system_prompt, user_content, session_id)를 반환한다."""
+        user_id = int(request.patient_id)
+        session = await self._ensure_session(user_id, request)
+
+        user_question = (request.user_question or "").strip()
+        if user_question:
+            await self.chatbot_repo.add_message(session.id, "user", user_question)
+
+        messages = await self.chatbot_repo.get_messages(session.id)
+        conversation_str = self.build_conversation_context(messages)
+        prev_summary = await self.chatbot_repo.get_latest_summary(user_id, "medication")
+        context_str, disease_name, med_names = await self._resolve_context(user_id, request)
+
+        anchor_code, resolved_name, guideline_texts = await self.disease_repo.resolve_disease_info(
+            request.disease_code or disease_name
+        )
+        disease_name = resolved_name or disease_name
+        history = await self.get_medi_history(request.patient_id)
+        history_str = "\n".join([f"- {h['created_at'].date()}: {h['medications']}" for h in history])
+        guideline_str = "\n".join(f"- {g}" for g in guideline_texts) if guideline_texts else ""
+        rag_str = await self._collect_rag(user_question)
+
+        user_content = f"""
+        [환자 정보]
+        - 질병명: {disease_name}{f" (코드: {anchor_code})" if anchor_code else ""}
+        - 현재 처방약: {", ".join(med_names) if med_names else "없음"}
+        - 과거 복약 이력: {history_str if history_str else "없음"}
+        {f"[사용자 등록 정보]{chr(10)}{context_str}" if context_str else ""}
+        {f"[이전 대화 요약]{chr(10)}{prev_summary}" if prev_summary else ""}
+        {f"[현재 대화 맥락]{chr(10)}{conversation_str}" if conversation_str else ""}
+        [사용자 질문]
+        {user_question if user_question else "(질문 없음 — 전반적인 복약 안내를 제공하세요)"}
+        {COMMON_USER_PROMPT}"""
+
+        guideline_section = ""
+        if guideline_str or rag_str:
+            combined = "\n".join(filter(None, [guideline_str, rag_str]))
+            guideline_section = f"""
+        [참고 가이드라인 - 반드시 답변에 반영하세요]
+        {combined}"""
+
+        system_prompt = f"""
+        당신은 따뜻하고 신뢰감 있는 전문 AI 의료 파트너입니다.
+        환자의 질병({disease_name})과 처방약, 과거 복약 이력을 종합적으로 분석하여 다음 규칙을 따르세요:
+        - 사용자의 질문이 있으면 해당 질문에 직접적으로 답변하세요. 질문과 무관한 일반 리포트를 작성하지 마세요.
+        - 이전 대화 맥락이 있으면 흐름을 이어서 답변하세요.
+        - 질문이 없을 때만 아래 항목을 포함한 전반적인 복약 안내를 제공하세요:
+          1. [복용법]: 성분별 최적의 복용 시간(식전/식후)과 용량, 주의사항을 설명하세요.
+          2. [상호작용]: 처방약 간 또는 흔한 영양제와의 충돌 위험을 경고하세요.
+          3. [부작용]: 즉시 복용을 중단해야 하는 위험 징후를 명시하세요.{guideline_section}
+        {COMMON_SYSTEM_PROMPT}"""
+
+        return system_prompt, user_content, session.id

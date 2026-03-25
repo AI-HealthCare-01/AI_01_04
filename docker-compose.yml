@@ -134,9 +134,35 @@ services:
     depends_on:
       - fastapi
 
+  db-cron:
+    container_name: db-cron
+    image: postgres:16
+    env_file: .env
+    environment:
+      DB_HOST: postgres
+      DB_PORT: "5432"
+    entrypoint: |
+      sh -c '
+        apt-get update && apt-get install -y cron &&
+        echo "0 2 * * * DB_HOST=postgres DB_PORT=5432 DB_USER=$${DB_USER} DB_PASSWORD=$${DB_PASSWORD} DB_NAME=$${DB_NAME} BACKUP_DIR=/backups /scripts/db_backup.sh >> /var/log/cron.log 2>&1" > /etc/cron.d/backup &&
+        echo "0 3 * * * DB_HOST=postgres DB_PORT=5432 DB_USER=$${DB_USER} DB_PASSWORD=$${DB_PASSWORD} DB_NAME=$${DB_NAME} /scripts/data_retention.sh >> /var/log/cron.log 2>&1" >> /etc/cron.d/backup &&
+        chmod 0644 /etc/cron.d/backup && crontab /etc/cron.d/backup &&
+        touch /var/log/cron.log && cron && tail -f /var/log/cron.log
+      '
+    volumes:
+      - ./scripts/db_backup.sh:/scripts/db_backup.sh
+      - ./scripts/data_retention.sh:/scripts/data_retention.sh
+      - db_backups:/backups
+    networks:
+      - ws
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 volumes:
   postgres_data:
   static_volume:
+  db_backups:
 
 networks:
   ws:

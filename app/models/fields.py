@@ -28,3 +28,21 @@ class VectorField(TextField):
 
     def get_db_field_types(self) -> dict:
         return {"": "TEXT"}
+
+
+class EncryptedTextField(TextField):
+    """Fernet 대칭키로 암호화하여 DB에 저장하는 TextField."""
+
+    def to_db_value(self, value: str | None, instance) -> str | None:
+        if value is None:
+            return None
+        from app.utils.encryption import encrypt
+
+        return encrypt(value)
+
+    def to_python_value(self, value: str | None) -> str | None:
+        if value is None:
+            return None
+        from app.utils.encryption import decrypt
+
+        return decrypt(value)

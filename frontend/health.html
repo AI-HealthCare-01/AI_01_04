@@ -64,7 +64,9 @@ function getPct(items) {
   if (!items.length) return 0;
   return Math.round(items.filter(i => i.done).length / items.length * 100);
 }
-function pctClass(p) { return p===100?'full':p>0?'partial':'zero'; }
+function pctClass(p) { return p>=80?'full':p>=50?'partial':'zero'; }
+
+function barColor(p) { return p>=80?'#4caf50':p>=50?'#e8a735':'#d9534f'; }
 
 function render() {
   const wrap = document.getElementById('health-accordion');
@@ -80,7 +82,7 @@ function render() {
         <i class="bi bi-chevron-right dr-arrow"></i>
         <span class="dr-date"><i class="bi bi-calendar2-check me-2"></i>${day.date}</span>
         <span class="dr-pct ${pctClass(pct)}">${doneN}/${day.items.length} (${pct}%)</span>
-        <div class="progress"><div class="progress-bar" style="width:${pct}%"></div></div>
+        <div class="progress"><div class="progress-bar" style="width:${pct}%;background:${barColor(pct)}"></div></div>
       </div>
       <div class="date-detail" id="dd-${di}">
         ${day.items.map((item, ii) => `
@@ -162,5 +164,6 @@ async function loadHealth() {
 document.addEventListener('DOMContentLoaded', loadHealth);
 </script>
 
+<script src="js/accessibility.js"></script>
 </body>
 </html>
